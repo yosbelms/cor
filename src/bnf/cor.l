@@ -29,9 +29,8 @@ true\b|false\b              return 'BOOLEAN'
 "finally"                   return 'FINALLY'
 "throw"                     return 'THROW'
 
-
 0x[\da-fA-F]+|^\d*\.?\d+(?:[eE][+-]?\d+)?\b   return 'NUMBER'
-[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*\b      return 'IDENT'
+[\$\w\x7f-\uffff]+                            return 'IDENT'
 
 "{"                         return '{'
 "}"                         return '}'
