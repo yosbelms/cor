@@ -4,10 +4,8 @@ require('./path.js');
 require('./loader.js');
 
 var
-loader,
-path    = require('path'),
-fs      = require('fs'),
-loeader = cor.loader = new cor.Loader();
+path = require('path'),
+fs   = require('fs');
 
 cor.Loader.prototype.readFile = function(path, from, onLoad, onError) {
     fs.readFile(path, 'utf8', function(err, data) {
@@ -20,5 +18,5 @@ cor.Loader.prototype.readFile = function(path, from, onLoad, onError) {
     });
 };
 
-
+cor.loader = new cor.Loader();
 require('./plugins.js');
