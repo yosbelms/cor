@@ -133,7 +133,7 @@ cor http [http options]
         <tr><td colspan="2">Options:</td></tr>
         <tr>
             <td><code>-port</code></td>
-            <td>Specifies the port where the server will listen requests. Default is `8080`</td>
+            <td>Specifies the port where the server will listen requests. Default is `9000`</td>
         </tr>
     </tbody>
 </table>
@@ -143,7 +143,7 @@ Example:
 ```
 cor http
 ```
-Launch an http server using `8080` port.
+Launch an http server using `9000` port.
 
 ```
 cor http -port=8790

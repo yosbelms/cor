@@ -181,7 +181,7 @@ o.crl_keys = function(object) {
 
     if (object instanceof Array) {
         for (i = 0, len = object.length; i < len; i++) {
-            keys.push(i)
+            keys.push(i);
         }
     }
     else {

@@ -67,6 +67,6 @@ func init() {
 </html>
 ```
 
-* **Step 4.** Run `cor http` inside `hello` folder and open `http://127.0.0.1/index.html` in a browser, you should see a `Hello World` alert.
+* **Step 4.** Run `cor http` inside `hello` folder and open `http://127.0.0.1:9000/index.html` in a browser, you should see a `Hello World` alert.
 
 See the [reference](reference.html) for further information about the language.
