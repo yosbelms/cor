@@ -26,11 +26,6 @@ var EcmaNativeClasses = [
     'Number', 'Object', 'RegExp', 'String'
 ];
 
-/**
-// strict mode
-// arguments.caller y arguments.callee no pueden ser usado
-// en una lista de parametros (asda, asd, asd) si se repite algun nombre da un syntax error
-*/
 
 var
 Class   = cor.Class,
@@ -94,30 +89,40 @@ yy.parseError = function parseError (msg, hash) {
             case '\n': hash.text = 'NEW_LINE';       break;
             case ''  : hash.text = 'END_OF_PROGRAM'; break;
         }
-        msg = "unexpected " + hash.text + " at " +
-              filename            + ':' +
-              hash.loc.first_line + ':' +
-              hash.loc.first_column;
+        msg = "unexpected " + hash.text;
     }
     else {
-        msg = "unexpected " + msg + " at " +
-              filename            + ':' +
-              hash.loc.first_line + ':' +
-              hash.loc.first_column;
+        msg = "unexpected " + msg;
     }
+
+    msg += " at " + filename + ':' + hash.loc.first_line;
+
     throw msg;
 }
 
+yy.generateRoute = function(route) {
+    var
+    parsed,
+    rFileNameExt   = /([\s\S]+)*(^|\/)([\w\-]+)*(\.[\w\-]+)*$/,
+    rCapitalLetter = /^[A-Z]/,
+    rLocalModule   = /^\.([\w-]+)$/;
 
-function getNodeType(n) {
-    var name, names = [];
+    // is a local module '.local_module'?
+    parsed = rLocalModule.exec(route);
+    if (parsed) {
+        return './' + parsed[1];
+    }
 
-    for (name in yy) {
-        if (hasProp.call(yy, name) && typeof yy[name] === 'function' && n instanceof yy[name]) {
-            names.push(name);
+    // is a valid route?
+    parsed = rFileNameExt.exec(route);
+    if (parsed) {
+        // if has no file extension and has no capital letter then is a package
+        if (! parsed[4] && ! rCapitalLetter.test(parsed[3])) {
+            return (parsed[1] || '') + parsed[2] + parsed[3] + '/' + parsed[3];
         }
     }
-    return names.length > 0 ? names : null;
+
+    return route.replace(/\\/g, '/').replace(/\/+/g, '/');
 }
 
 function stringifyNode(node) {
@@ -165,6 +170,8 @@ function getLesserLineNumber(node){
 
 yy.Node = Class({
 
+    type: 'Node',
+
     runtimePrefix: 'crl_',
 
     scope: null,
@@ -172,14 +179,9 @@ yy.Node = Class({
     types: null,
 
     init: function init(children) {
-        // just for debugging
-        // this.types = getNodeType(this);
-
-        //this.children = slice.call(arguments);
         this.children = [];
         this.lineno   = yy.env.yylloc.first_line;
         this.loc      = Object.create(yy.env.yylloc);
-
 
         this.yy       = yy;
 
@@ -220,6 +222,8 @@ yy.Node = Class({
 
 yy.Mock = Class(yy.Node, {
 
+    type: 'Mock',
+
     initNode: function() {
         this; arguments;
     }
@@ -227,6 +231,8 @@ yy.Mock = Class(yy.Node, {
 })
 
 yy.List = Class(yy.Node, {
+
+    type: 'List',
 
     children: null,
 
@@ -248,6 +254,8 @@ yy.List = Class(yy.Node, {
 
 yy.SimpleStmtNode = Class(yy.Node, {
 
+    type: 'SimpleStmtNode',
+
     initNode: function() {
         this.base('initNode', arguments);
         var
@@ -258,7 +266,7 @@ yy.SimpleStmtNode = Class(yy.Node, {
         for (; i < len; i++) {
             item = this.children[i];
             if (item instanceof yy.VarNode) {
-                item.markAsLocal();
+                item.markAsLocalVar();
                 item.children = '';
                 if (this.children[i + 1]) {
                     this.children[i + 1].children = '';
@@ -267,11 +275,12 @@ yy.SimpleStmtNode = Class(yy.Node, {
             }
         }
     }
-
 })
 
 
 yy.ContextAwareNode = Class(yy.Node, {
+
+    type: 'ContextAwareNode',
 
     context: null,
 
@@ -283,11 +292,12 @@ yy.ContextAwareNode = Class(yy.Node, {
 
     compile: function() {
         this.yy.env.newContext(this.context);
-        //this.base('compile', arguments);
     }
 })
 
 yy.ModuleNode = Class(yy.ContextAwareNode, {
+
+    type: 'ModuleNode',
 
     initializerName: 'init',
 
@@ -310,7 +320,7 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
                 }
                 this.context.ignoreVar(name);
             } else if (item instanceof yy.AssignmentNode) {
-                item       = item.children[0];
+                item = item.children[0];
                 if (item.children.length > 1) {
                     isQualified = true;
                     continue;
@@ -382,6 +392,8 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
 
 yy.Lit = yy.LiteralNode = Class(yy.Node, {
 
+    type: 'Lit, LiteralNode',
+
     init: function(ch, yloc) {
         //console.log(ch);
         this.children = ch;
@@ -405,18 +417,20 @@ yy.Lit = yy.LiteralNode = Class(yy.Node, {
 })
 
 yy.SelectorExprNode = Class(yy.Node, {
-
+    type: 'SelectorExprNode'
 })
 
 yy.UnaryExprNode = Class(yy.Node, {
-
+    type: 'UnaryExprNode',
 })
 
 yy.AssociationNode = Class(yy.Node, {
-
+    type: 'AssociationNode',
 })
 
 yy.FunctionNode = Class(yy.ContextAwareNode, {
+
+    type: 'FunctionNode',
 
     name: null,
 
@@ -430,20 +444,19 @@ yy.FunctionNode = Class(yy.ContextAwareNode, {
             this.name = ch[1].children;
             this.nameLineno = ch[1].lineno;
         }
-
-        //this.context.addUsedVar('me', 'exports');
+        this.block = this.children[5];
     },
 
     compile: function() {
-        // declare scope vars
-        this.children[5].children[0].children = ' {' + this.context.compileVars();
-        //console.log(getNodeType(this.parent));
-        //this.context.addUsedVar('me', 'exports');
+        // declare scoped vars
+        this.block.children[0].children = ' {' + this.context.compileVars();
         this.base('compile', arguments);
     }
 })
 
 yy.SliceNode = Class(yy.Node, {
+
+    type: 'SliceNode',
 
     initNode: function() {
         this.base('initNode', arguments);
@@ -510,6 +523,8 @@ yy.SliceNode = Class(yy.Node, {
 
 yy.ObjectConstructorNode = Class(yy.Node, {
 
+    type: 'ObjectConstructorNode',
+
     initNode: function() {
         this.base('initNode', arguments);
         var qn,
@@ -558,6 +573,8 @@ yy.ObjectConstructorNode = Class(yy.Node, {
 
 yy.ObjectConstructorArgsNode = Class(yy.Node, {
 
+    type: 'ObjectConstructorArgsNode',
+
     initNode: function() {
         var ch = this.children;
 
@@ -599,6 +616,8 @@ yy.ObjectConstructorArgsNode = Class(yy.Node, {
 
 yy.TypeAssertNode = Class(yy.Node, {
 
+    type: 'TypeAssertNode',
+
     initNode: function() {
         this.base('initNode', arguments);
 
@@ -618,6 +637,8 @@ yy.TypeAssertNode = Class(yy.Node, {
 
 yy.AssignmentNode = Class(yy.Node, {
 
+    type: 'AssignmentNode',
+
     rUpper: /^[A-Z]+$/,
 
     initNode: function() {
@@ -627,40 +648,14 @@ yy.AssignmentNode = Class(yy.Node, {
         //console.log('init assign')
         //if (ch[0] instanceof yy.VarNode && !this.yy.env.context().isVarDeclared(ch[0].name)) {
         if (ch[0] instanceof yy.VarNode) {
-            ch[0].markAsUsed();
+            ch[0].markAsUsedVar();
         }
-
-        /*
-        var
-        ch   = this.children,
-        sch;
-
-
-        // set property "obj.prop"
-        if (ch[0] instanceof yy.SelectorExprNode) {
-            sch = ch[0].children;
-
-            this.testConstantAssignment(sch[2]);
-
-            this.children = [
-                new yy.Lit(this.runtimeFn('setProp'), getLesserLineNumber(sch[0])),
-                sch[0],
-                new yy.Lit(',\'', sch[2].lineno),
-                sch[2],
-                new yy.Lit('\',', sch[2].lineno),
-                ch[2],
-                new yy.Lit(')', ch[2].lineno),
-            ];
-        }
-        // just a var, "a = 1"
-        else if (ch[0] instanceof yy.Lit) {
-            this.testConstantAssignment(ch[0]);
-        }
-        */
     }
 })
 
 yy.VarNode = Class(yy.Node, {
+
+    type: 'VarNode',
 
     name: null,
 
@@ -670,17 +665,19 @@ yy.VarNode = Class(yy.Node, {
         this.name = this.children[0].children;
     },
 
-    markAsUsed: function() {
+    markAsUsedVar: function() {
         this.context.addUsedVar(this.name);
     },
 
-    markAsLocal: function() {
+    markAsLocalVar: function() {
         this.context.addLocalVar(this.name);
     }
 
 })
 
 yy.Str = yy.StringNode = Class(yy.Lit, {
+
+    type: 'Str, StringNode',
 
     initNode: function() {
         this.base('initNode', arguments);
@@ -701,32 +698,9 @@ yy.Str = yy.StringNode = Class(yy.Lit, {
 
 })
 
-yy.generateRoute = function(route) {
-    var
-    parsed,
-    rFileNameExt   = /([\s\S]+)*(^|\/)([\w\-]+)*(\.[\w\-]+)*$/,
-    rCapitalLetter = /^[A-Z]/,
-    rLocalModule   = /^\.([\w-]+)$/;
-
-    // is a local module '.local_module'?
-    parsed = rLocalModule.exec(route);
-    if (parsed) {
-        return './' + parsed[1];
-    }
-
-    // is a valid route?
-    parsed = rFileNameExt.exec(route);
-    if (parsed) {
-        // if has no file extension and has no capital letter then is a package
-        if (! parsed[4] && ! rCapitalLetter.test(parsed[3])) {
-            return (parsed[1] || '') + parsed[2] + parsed[3] + '/' + parsed[3];
-        }
-    }
-
-    return route.replace(/\\/g, '/').replace(/\/+/g, '/');
-}
-
 yy.UseNode = Class(yy.Node, {
+
+    type: 'UseNode',
 
     rAlias: /([\w\-]+)*(?:\.[\w\-]+)*$/,
 
@@ -782,6 +756,8 @@ yy.UseNode = Class(yy.Node, {
 
 yy.MeNode = Class(yy.Lit, {
 
+    type: 'MeNode',
+
     compile: function() {
         if (! this.insideClassContext()) {
             this.error("Using 'me' identifier outside a class context", this.lineno);
@@ -808,6 +784,8 @@ yy.MeNode = Class(yy.Lit, {
 })
 
 yy.ClassNode = Class(yy.ContextAwareNode, {
+
+    type: 'ClassNode',
 
     className: null,
 
@@ -890,6 +868,8 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
 
 yy.PropertySetNode = Class(yy.Node, {
 
+    type: 'PropertySetNode',
+
     context: null,
 
     init: function(ch, ctx) {
@@ -930,6 +910,8 @@ yy.PropertySetNode = Class(yy.Node, {
 
 yy.PropertyNode = Class(yy.Node, {
 
+    type: 'PropertyNode',
+
     name: null,
 
     nameLineno: null,
@@ -964,6 +946,8 @@ yy.PropertyNode = Class(yy.Node, {
 
 yy.MethodNode = Class(yy.Node, {
 
+    type: 'MethodNode',
+
     name: null,
 
     nameLineno: null,
@@ -983,6 +967,8 @@ yy.MethodNode = Class(yy.Node, {
 })
 
 yy.CallNode = Class(yy.Node, {
+
+    type: 'CallNode',
 
     initNode: function() {
         this.base('initNode', arguments);
@@ -1042,6 +1028,8 @@ yy.CallNode = Class(yy.Node, {
 
 yy.IfNode = Class(yy.Node, {
 
+    type: 'IfNode',
+
     initNode: function() {
         this.base('initNode', arguments);
         var
@@ -1054,6 +1042,8 @@ yy.IfNode = Class(yy.Node, {
 })
 
 yy.ElseNode = Class(yy.Node, {
+
+    type: 'ElseNode',
 
     initNode: function() {
         this.base('initNode', arguments);
@@ -1071,6 +1061,8 @@ yy.ElseNode = Class(yy.Node, {
 
 
 yy.SwitchNode = Class(yy.Node, {
+    
+    type: 'SwitchNode',
 
     initNode: function() {
         this.base('initNode', arguments);
@@ -1087,6 +1079,8 @@ yy.SwitchNode = Class(yy.Node, {
 })
 
 yy.CaseNode = Class(yy.Node, {
+
+    type: 'CaseNode',
 
     compile: function() {
         this.base('compile', arguments);
@@ -1119,6 +1113,8 @@ yy.CaseNode = Class(yy.Node, {
 
 yy.ForNode = Class(yy.Node, {
 
+    type: 'ForNode',
+
     initNode: function() {
         var ch = this.children;
 
@@ -1141,6 +1137,8 @@ yy.ForNode = Class(yy.Node, {
 
 // God save me.
 yy.ForInNode = Class(yy.Node, {
+
+    type: 'ForInNode',
 
     initNode: function() {
         var
@@ -1169,7 +1167,7 @@ yy.ForInNode = Class(yy.Node, {
                    $i + '++) ';
             str3 = v + ' = ' + $coll + '[' + $keys + '[' + $i + ']];';
 
-            ch[1].markAsLocal();
+            ch[1].markAsLocalVar();
             ch.splice(1, 2, new yy.Lit(str1, ch[2].lineno));
             ch.splice(3, 0, new yy.Lit(str2, ch[2].lineno));
             ch[4].children.splice(1, 0, new yy.Lit(str3, ch[4].children[0].lineno))
@@ -1198,8 +1196,8 @@ yy.ForInNode = Class(yy.Node, {
             str3 = k + ' = ' + $keys + '[' + $i + ']; ' +
                    v + ' = ' + $coll + '[' + k + '];';
 
-            ch[1].markAsLocal();
-            ch[3].markAsLocal();
+            ch[1].markAsLocalVar();
+            ch[3].markAsLocalVar();
             ch.splice(1, 4, new yy.Lit(str1, ch[4].lineno));
             ch.splice(3, 0, new yy.Lit(str2, ch[2].lineno));
             ch[4].children.splice(1, 0, new yy.Lit(str3, ch[4].children[0].lineno))
@@ -1209,6 +1207,8 @@ yy.ForInNode = Class(yy.Node, {
 })
 
 yy.TryNode = Class(yy.Node, {
+
+    type: 'TryNode',
 
     compile: function() {
         var
@@ -1222,6 +1222,8 @@ yy.TryNode = Class(yy.Node, {
 })
 
 yy.CatchNode = Class(yy.Node, {
+
+    type: 'CatchNode',
 
     compile: function() {
         var

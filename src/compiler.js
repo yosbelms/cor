@@ -24,7 +24,7 @@ var Compiler = cor.Class({
     env: null,
 
     init: function(src, filename, generateSourceMap, lineOffset) {
-        this.filename     = filename || '';
+        this.filename     = filename || '<vm>';
         this.lineOffset   = (lineOffset || 0);
         this.src          = src;
         this.columnsTrace = [];

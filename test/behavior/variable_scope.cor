@@ -11,7 +11,7 @@ func init() {
             expect(localVar).toBe(0)
         })
 
-        it('Localizing variables', func() {
+        it('Announcing (declaring as local) variables', func() {
             globalVar
             expect(globalVar).not.toBeDefined()
         })
