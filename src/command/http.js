@@ -92,7 +92,7 @@ function handleFile(response, urlPath, filePath, stats) {
 }
 
 function serve(port) {
-    port = port || 8080;
+    port = port || 9000;
     http.createServer(function (request, response) {
         var
         indexPagePath,
@@ -146,7 +146,7 @@ function serve(port) {
 var
 cmd = new cor.CliCommand('http', 'runs a http server for development purpose');
 
-cmd.addOption('port', 'port for the http server, default is 8080');
+cmd.addOption('port', 'port for the http server, default is 9000');
 cmd.setAction(function (input, app) {
     var port = input.getOption('port');
 
