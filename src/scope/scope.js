@@ -212,7 +212,7 @@ yy.Node = Class({
     },
 
     error: function(txt, lineno) {
-        throw 'Error: ' + txt + ', on line ' + lineno;
+        throw 'Error: ' + txt + ' at ' + yy.env.filename + ':' + lineno;
     },
 
     compile: function() {
@@ -828,7 +828,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         for (i = 0; i < members.length; i++) {
             member = members[i];
             if (hasProp.call(names, member.name)) {
-                this.error('Can not redeclare the class member "' + member.name + '"', member.nameLineno);
+                this.error('Redeclaring "' + member.name + '" in a class body', member.nameLineno);
             }
             if (member instanceof yy.MethodNode) {
                 methods.push(members.splice(i, 1)[0]);
@@ -843,6 +843,10 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
                 this.propertiesNames.push(member.name);
                 this.context.ignoreVar(member.name);
                 i--;
+            }
+
+            if (member.name === this.className) {
+                this.error('The member "' + member.name + '" is named equal to the owner class', member.nameLineno);
             }
             names[member.name] = true;
         }
@@ -865,8 +869,8 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         this.base('compile', arguments);
         var i, len,
         ch = this.children,
-        superInitStr = '',
-        combineStr   = '';
+        superInitStr  = '',
+        combineStr    = '';
 
         if (this.superClassNames.length > 0) {
              combineStr = ', [' + this.superClassNames.join(', ') + ']';

@@ -1,4 +1,4 @@
-﻿(function(){ typeof cor === 'undefined' && (cor = {});
+(function(){ typeof cor === 'undefined' && (cor = {});
 
 var
 loader = cor.loader;

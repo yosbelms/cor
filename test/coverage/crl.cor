@@ -6,15 +6,15 @@ func Client(name, age) {
 Client.prototype.manuallyInsertedInPrototype = 'foo'
 
 class Observable {
-    
+
 }
 
 class DAO {
-    
+
 }
 
 class AccountDAO : DAO, Observable {
-    
+
 }
 
 func init() {

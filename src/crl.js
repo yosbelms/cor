@@ -86,7 +86,7 @@ CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
                     _super.$setupPrototype.call(Class);
                 }
                 else {
-                    copyObj(_super, Class.prototype);
+                    copyObj(_super.prototype, Class.prototype);
                 }
             }
         }
@@ -97,8 +97,7 @@ CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
 
         Class.$classId  = this.idSeed++;
         Class.$superIds = superIds;
-
-        Class.prototype.$class = Class;
+        Class.prototype.constructor = Class;
     },
 
 
@@ -142,14 +141,16 @@ CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
             // object is defined
             if (typeof obj !== 'undefined') {
                 classId     = Class.$classId;
-                objectClass = obj.$class;
+                objectClass = obj.constructor;
 
                 //is a cor class
                 if (classId && objectClass) {
                     superIds = objectClass.$superIds;
-                    // if the type is it's own or is of a combined class
-                    if (objectClass.$classId === classId || hasProp.call(superIds, classId)) {
-                        return Class;
+                    if (typeof objectClass.$classId !== 'undefined') {
+                        // if the type is it's own or is of a combined class
+                        if (objectClass.$classId === classId || hasProp.call(superIds, classId)) {
+                            return Class;
+                        }    
                     }
                 }
 

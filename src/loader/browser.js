@@ -1,10 +1,17 @@
 (function(){ typeof cor === 'undefined' && (cor = {});
 
 var
-loader = cor.loader = new cor.Loader(),
-path   = cor.path;
+loader   = cor.loader = new cor.Loader(),
+path     = cor.path;
+isBooted = false;
 
 function bootApp() {
+    if (isBooted) {
+        return;
+    }
+    
+    isBooted = true;
+
     var
     entry, env, sentry,
     scripts = document.getElementsByTagName('script'),
@@ -23,12 +30,23 @@ function bootApp() {
     }
 
     loader.setEntry(entry, env);
+
 }
 
 if (cor.isBrowser) {
-    document.addEventListener
-        ? document.addEventListener('DOMContentLoaded', bootApp, false)
-        : document.attachEvent('onreadystatechange', bootApp);
+    if (document.readyState === 'complete') {
+        bootApp();
+    }
+    else {
+        if (document.addEventListener) {
+            document.addEventListener('DOMContentLoaded', bootApp, false);
+            window.addEventListener('load', bootApp, false);
+        }
+        else {
+            document.attachEvent('onreadystatechange', bootApp);
+            window.attachEvent('onload', bootApp);
+        }
+    }    
 }
 
 }).call(this);

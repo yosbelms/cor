@@ -117,7 +117,7 @@ CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
                     _super.$setupPrototype.call(Class);
                 }
                 else {
-                    copyObj(_super, Class.prototype);
+                    copyObj(_super.prototype, Class.prototype);
                 }
             }
         }
@@ -128,8 +128,7 @@ CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
 
         Class.$classId  = this.idSeed++;
         Class.$superIds = superIds;
-
-        Class.prototype.$class = Class;
+        Class.prototype.constructor = Class;
     },
 
 
@@ -173,14 +172,16 @@ CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
             // object is defined
             if (typeof obj !== 'undefined') {
                 classId     = Class.$classId;
-                objectClass = obj.$class;
+                objectClass = obj.constructor;
 
                 //is a cor class
                 if (classId && objectClass) {
                     superIds = objectClass.$superIds;
-                    // if the type is it's own or is of a combined class
-                    if (objectClass.$classId === classId || hasProp.call(superIds, classId)) {
-                        return Class;
+                    if (typeof objectClass.$classId !== 'undefined') {
+                        // if the type is it's own or is of a combined class
+                        if (objectClass.$classId === classId || hasProp.call(superIds, classId)) {
+                            return Class;
+                        }    
                     }
                 }
 
@@ -1840,7 +1841,7 @@ yy.Node = Class({
     },
 
     error: function(txt, lineno) {
-        throw 'Error: ' + txt + ', on line ' + lineno;
+        throw 'Error: ' + txt + ' at ' + yy.env.filename + ':' + lineno;
     },
 
     compile: function() {
@@ -2456,7 +2457,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         for (i = 0; i < members.length; i++) {
             member = members[i];
             if (hasProp.call(names, member.name)) {
-                this.error('Can not redeclare the class member "' + member.name + '"', member.nameLineno);
+                this.error('Redeclaring "' + member.name + '" in a class body', member.nameLineno);
             }
             if (member instanceof yy.MethodNode) {
                 methods.push(members.splice(i, 1)[0]);
@@ -2471,6 +2472,10 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
                 this.propertiesNames.push(member.name);
                 this.context.ignoreVar(member.name);
                 i--;
+            }
+
+            if (member.name === this.className) {
+                this.error('The member "' + member.name + '" is named equal to the owner class', member.nameLineno);
             }
             names[member.name] = true;
         }
@@ -2493,8 +2498,8 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         this.base('compile', arguments);
         var i, len,
         ch = this.children,
-        superInitStr = '',
-        combineStr   = '';
+        superInitStr  = '',
+        combineStr    = '';
 
         if (this.superClassNames.length > 0) {
              combineStr = ', [' + this.superClassNames.join(', ') + ']';
@@ -3351,7 +3356,7 @@ var Loader = Class({
     // the path of the .json file containig the environment variables
     envPath                : null,
     // the modules are astored here once compiled
-    moduleCache        : {},
+    moduleCache            : {},
     // path ignored by the loader
     ignoredPaths           : {},
     // a has map of paths to redirect the loader
@@ -3485,9 +3490,15 @@ var Loader = Class({
     // path parametter is an array
     ignorePath: function(path) {
         var i, len;
-        for (i = 0, len = path.length; i < len; i++) {
-            this.ignoredPaths[path[i]] = true;
+        if (path instanceof Array) {
+            for (i = 0, len = path.length; i < len; i++) {
+                this.ignoredPaths[path[i]] = true;
+            }    
         }
+        else {
+            this.ignoredPaths[path] = true;
+        }
+        
     },
 
     resolveMappedPath: function(srcPath) {
@@ -3575,9 +3586,10 @@ var Loader = Class({
     },
 
     requireModule: function(srcPath, from) {
-        if (! this.moduleCache[srcPath]) {
-            var ext = path.ext(srcPath);
+        if ((! this.ignoredPaths[srcPath]) && (! this.moduleCache[srcPath])) {
+            this.ignorePath(srcPath);
 
+            var ext = path.ext(srcPath);
             if (ext === '') {
                 srcPath += path.ext(from);
             }
@@ -3727,10 +3739,17 @@ cor.path    = path;
 (function(){ typeof cor === 'undefined' && (cor = {});
 
 var
-loader = cor.loader = new cor.Loader(),
-path   = cor.path;
+loader   = cor.loader = new cor.Loader(),
+path     = cor.path;
+isBooted = false;
 
 function bootApp() {
+    if (isBooted) {
+        return;
+    }
+    
+    isBooted = true;
+
     var
     entry, env, sentry,
     scripts = document.getElementsByTagName('script'),
@@ -3749,17 +3768,28 @@ function bootApp() {
     }
 
     loader.setEntry(entry, env);
+
 }
 
 if (cor.isBrowser) {
-    document.addEventListener
-        ? document.addEventListener('DOMContentLoaded', bootApp, false)
-        : document.attachEvent('onreadystatechange', bootApp);
+    if (document.readyState === 'complete') {
+        bootApp();
+    }
+    else {
+        if (document.addEventListener) {
+            document.addEventListener('DOMContentLoaded', bootApp, false);
+            window.addEventListener('load', bootApp, false);
+        }
+        else {
+            document.attachEvent('onreadystatechange', bootApp);
+            window.attachEvent('onload', bootApp);
+        }
+    }    
 }
 
 }).call(this);
 
-﻿(function(){ typeof cor === 'undefined' && (cor = {});
+(function(){ typeof cor === 'undefined' && (cor = {});
 
 var
 loader = cor.loader;

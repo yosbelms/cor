@@ -2,48 +2,48 @@
 
     var
     len = programs.length,
-	i   = -1,
+    i   = -1,
     module;
 
     while (++i < len) {
         programs[i] = newModule(programs[i], depsTable[i], programs);
     }
-	
+    
     if (window && document) {
-		if (document.readyState === 'complete') {
-			run();
-		}
-		else {
-			if (document.addEventListener) {
-				document.addEventListener('DOMContentLoaded', run, false);
-				window.addEventListener('load', run, false);
-			}
-			else {
-				document.attachEvent('onreadystatechange', run);
-				window.attachEvent('onload', run);
-			}
-		}
+        if (document.readyState === 'complete') {
+            run();
+        }
+        else {
+            if (document.addEventListener) {
+                document.addEventListener('DOMContentLoaded', run, false);
+                window.addEventListener('load', run, false);
+            }
+            else {
+                document.attachEvent('onreadystatechange', run);
+                window.attachEvent('onload', run);
+            }
+        }
     }
-	
-	var runned = false;
-	function run() {
+    
+    var runned = false;
+    function run() {
 
-		if (runned) {
-			return;
-		}
-		
-		if (document.removeEventListener) {
-			document.removeEventListener('DOMContentLoaded', run, false);
-			window.removeEventListener('load', run, false);
-		}
-		else {
-			document.detachEvent('onreadystatechange', run);
-			window.detachEvent('onload', run);
-		}
-		
-		setTimeout(programs[0]);
-		runned = true;
-	}
+        if (runned) {
+            return;
+        }
+        
+        if (document.removeEventListener) {
+            document.removeEventListener('DOMContentLoaded', run, false);
+            window.removeEventListener('load', run, false);
+        }
+        else {
+            document.detachEvent('onreadystatechange', run);
+            window.detachEvent('onload', run);
+        }
+        
+        setTimeout(programs[0]);
+        runned = true;
+    }
 
     function newModule(program, deps, programs) {
         var module = {exports : null};

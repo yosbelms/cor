@@ -12,6 +12,15 @@ class Person {
     }
 }
 
+func Native () {
+    
+}
+Native.prototype.name = 'john'
+
+class Client : Native {
+    
+}
+
 func init() {
     describe('Classes', func() {
 
@@ -42,6 +51,11 @@ func init() {
             p = @Person['yosbel']
             expect(p.getName()).toBe('yosbel')
             expect(p.getAge()).toBeUndefined()
+        })
+
+        it('Inheriting from native class', func() {
+            c = @Client
+            expect(c.name).toBe('john')
         })
 
     })

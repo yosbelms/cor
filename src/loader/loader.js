@@ -186,7 +186,7 @@ var Loader = Class({
     // the path of the .json file containig the environment variables
     envPath                : null,
     // the modules are astored here once compiled
-    moduleCache        : {},
+    moduleCache            : {},
     // path ignored by the loader
     ignoredPaths           : {},
     // a has map of paths to redirect the loader
@@ -320,9 +320,15 @@ var Loader = Class({
     // path parametter is an array
     ignorePath: function(path) {
         var i, len;
-        for (i = 0, len = path.length; i < len; i++) {
-            this.ignoredPaths[path[i]] = true;
+        if (path instanceof Array) {
+            for (i = 0, len = path.length; i < len; i++) {
+                this.ignoredPaths[path[i]] = true;
+            }    
         }
+        else {
+            this.ignoredPaths[path] = true;
+        }
+        
     },
 
     resolveMappedPath: function(srcPath) {
@@ -410,9 +416,10 @@ var Loader = Class({
     },
 
     requireModule: function(srcPath, from) {
-        if (! this.moduleCache[srcPath]) {
-            var ext = path.ext(srcPath);
+        if ((! this.ignoredPaths[srcPath]) && (! this.moduleCache[srcPath])) {
+            this.ignorePath(srcPath);
 
+            var ext = path.ext(srcPath);
             if (ext === '') {
                 srcPath += path.ext(from);
             }
