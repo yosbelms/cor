@@ -14,8 +14,7 @@
 // comments must begin and end with a new line
 "---"([\s\S]*?)"---"
 
-                            %{  
-
+                            %{
                                 var
                                 strBefore, strAfter,
                                 rBegin = /(\r\n|\n|^)\s*$/,
