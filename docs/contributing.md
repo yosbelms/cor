@@ -4,7 +4,7 @@ You can contribute to Cor project forking it on GitHub and submitting a pull req
 
 * All pull requests should be made to the `master` branch.
 
-* Before sending a pull request for a feature or bug fix, be sure to have [tests](https://yesbelms.github.io/cor/test).
+* Before sending a pull request for a feature or bug fix, be sure to have [tests](../test/index.html).
 
 * Use the same coding style as the rest of the [codebase](https://github.com/yosbelms/cor).
 

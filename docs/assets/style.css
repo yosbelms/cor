@@ -124,7 +124,7 @@ h1 {
 
 h2 {
     /*font-weight: normal;*/
-    padding-top: 60px;
+    padding-top: 10px;
     padding-bottom: 10px;
     border-bottom: 1px solid #ddd;
 }
@@ -299,6 +299,24 @@ a.button-inline:hover {
 }
 
 /**TABLE CONTENT*/
+
+.toclink {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.toclink-1 {
+    padding-left: 0px;
+}
+
+.toclink-2 {
+    padding-left: 10px;
+}
+
+.toclink-3 {
+    padding-left: 20px;
+}
+
 #top {
     position: absolute;
     width: 0px;

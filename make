@@ -23,6 +23,25 @@ function setPageTitle(html) {
     return html.replace(/<title>([\w\s]+)?<\/title>/, '<title>' + title + '</title>');
 }
 
+
+function generateTableOfContents(html) {
+    var toc = '<h1>Table of Content</h1>';
+
+    html.replace(/(?:\<h)(\d)\s*(?:id\=")(\w*)(?:"\>)([\s\S]*?)(?:\<\/h)/g, function() {
+        var
+        level = arguments[1],
+        id    = arguments[2],
+        text  = arguments[3];
+
+        if (level != 1) {
+            toc += '<a class="toclink toclink-'+ level +'" href="#' + id + '"' + '>' + text + '</a>';    
+        }
+        
+    });
+
+    return toc;
+}
+
 target.all = function() {
     target.clean();
     target.parser();
@@ -60,24 +79,24 @@ target.parser = function(debug) {
     var
     gen, parserSrc,
     opts    = {
-		debug: debug || false,
-		type: 'lalr',
-		moduleName: 'CorParser',
+        debug: debug || false,
+        type: 'lalr',
+        moduleName: 'CorParser',
         moduleType: 'js'
-	},
+    },
     fs      = require('fs'),
     jison   = require('jison'),
-	bnf     = require('jison/node_modules/ebnf-parser'),
+    bnf     = require('jison/node_modules/ebnf-parser'),
     lex     = require('jison/node_modules/lex-parser'),
     grammar = bnf.parse(fs.readFileSync('./src/bnf/cor.y', 'utf8')),
     lexer   = lex.parse(fs.readFileSync('./src/bnf/cor.l', 'utf8'));
 
     grammar.lex = lexer;
 
-	//console.log(grammar);
+    //console.log(grammar);
     gen         = new jison.Generator(grammar, opts);
     parserSrc   = gen.generate(opts);
-	parserSrc += '\ncor.Parser = CorParser.Parser; delete CorParser;';
+    parserSrc += '\ncor.Parser = CorParser.Parser; delete CorParser;';
 
     fs.writeFileSync('./src/parser.js', parserSrc);
 }
@@ -91,7 +110,7 @@ target.dist = function(args) {
         'src/crl.js',
         'src/class.js',
         'src/cor.js',
-		'src/parser.js',
+        'src/parser.js',
         'src/scope/env.js',
         'src/scope/scope.js',
         'src/compiler.js',
@@ -106,13 +125,13 @@ target.dist = function(args) {
     }
 
     // for browsers
-	if (args && args[0] === 'shim') {
-		echo('  + adding ES5 shims');
-	    files.unshift(
-	        'vendor/es5-shim/es5-shim.js',
-	        'vendor/es5-shim/es5-sham.js'
-	    );
-	}
+    if (args && args[0] === 'shim') {
+        echo('  + adding ES5 shims');
+        files.unshift(
+            'vendor/es5-shim/es5-shim.js',
+            'vendor/es5-shim/es5-sham.js'
+        );
+    }
 
     writeToDist(files, 'dist/cor');
     writeToDist('src/crl.js', 'dist/crl');
@@ -134,7 +153,13 @@ target.docs = function() {
     for (i = 0, len = files.length; i < len; i++) {
         converter = new showdown.Converter();
         outFile   = path.basename(files[i], '.md') + '.html';
-        html      = pre + converter.makeHtml(cat(files[i])) + post;
+        html = converter.makeHtml(cat(files[i]));
+        
+        if (files[i] === 'docs/reference.md') {
+            html = generateTableOfContents(html) + html;
+        }
+
+        html      = pre + html + post;
         outPath   = path.normalize('./docs/' + outFile);
         setPageTitle(html).to(outPath);
 

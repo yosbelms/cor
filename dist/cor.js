@@ -2513,9 +2513,9 @@ yy.PropertySetNode = Class(yy.Node, {
         var
         ch     = this.children,
         lineno = this.parent.children[2].lineno,
-        str, names = [], i = 0, len = this.children.length;
+        str, names = [], i, len = this.children.length;
 
-        for (; i < len; i++) {
+        for (i = 0; i < len; i++) {
             if (!(this.children[i] instanceof yy.Lit)) {
                 names.push(this.children[i].name);
                 this.context.ignoreVar(this.children[i].name);

@@ -4,7 +4,7 @@ This is a reference manual for the Cor programming language.
 
 Cor is a language designed with web development in mind. Programs are constructed from packages and modules, whose properties allow management of dependencies.
 
-### Key Concepts
+## Key Concepts
 
 * **Symplicity:** Cor has a very simple and clear syntax which leverages Go, C# and Python languages enforcing developers to write maintainable code.
 * **Embrace the Web:** Cor highlights the best parts of the web and it keeps that you love, it is friend of javascript's good parts.
