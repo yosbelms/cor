@@ -33,10 +33,12 @@
 		}
 		
 		if (document.removeEventListener) {
-			document.removeEventListener('DOMContentLoaded', run, false);	
+			document.removeEventListener('DOMContentLoaded', run, false);
+			window.removeEventListener('load', run, false);
 		}
 		else {
 			document.detachEvent('onreadystatechange', run);
+			window.detachEvent('onload', run);
 		}
 		
 		setTimeout(programs[0]);
