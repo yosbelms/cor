@@ -102,9 +102,9 @@ var Compiler = cor.Class({
         }
 
         if (node instanceof yy.Node) {
-            ch       = node.children;
-            lineno   = node.lineno;
             compiled = node.compile();
+            lineno   = node.lineno;
+            ch       = node.children;
 
             if (typeof compiled === 'string' && typeof lineno !== 'undefined') {
                 this.pushCode(compiled, lineno);

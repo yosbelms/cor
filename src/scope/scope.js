@@ -461,53 +461,59 @@ yy.SliceNode = Class(yy.Node, {
     initNode: function() {
         this.base('initNode', arguments);
 
+        this.from = this.children[2];
+        this.to   = this.children[4];
+    },
+    
+    compile: function() {
         var
         num, lit,
-        str1  = '(',
-        str2  = ')',
-        ch    =  this.children,
-        start = ch[2],
-        end   = ch[4];
+        openParen  = '(',
+        closeParen = ')',
+        from       = this.from,
+        to         = this.to,
+        ch         = this.children;
 
-        if (start === undefined) {
-            start = new yy.Lit('0', ch[1].lineno);
+        if (from === undefined) {
+            from = new yy.Lit('0', ch[1].lineno);
         }
 
         this.children = [
             ch[0],
             new yy.Lit('.slice(', ch[1].lineno),
-            start
+            from
         ];
 
-        if (end !== undefined) {
-            if (end instanceof yy.UnaryExprNode && typeof end.children[1].children === 'string') {
-                lit     = new yy.Lit(end.children[0].children + end.children[1].children, end.lineno);
-                lit.loc = end.children[1].loc;
-                end     = lit;
+        if (to !== undefined) {
+            if (to instanceof yy.UnaryExprNode && typeof to.children[1].children === 'string') {
+                lit     = new yy.Lit(stringifyNode(to), to.lineno);
+                lit.loc = to.children[1].loc;
+                to      = lit;
             }
 
-            if (end instanceof yy.Lit) {
-                end.children =  this.transformLiteral(end.children);
+            if (to instanceof yy.Lit) {
+                to.children =  this.transformLiteral(to.children);
                 this.children.push(
                     new yy.Lit(', ', ch[3].lineno),
-                    end
+                    to
                 );
             }
             else {
-                if (end instanceof yy.AssociationNode) {
-                    str1 = '';
-                    str2 = '';
+                if (to instanceof yy.AssociationNode) {
+                    openParen  = '';
+                    closeParen = '';
                 }
                 this.children.push(
-                    new yy.Lit(', +' + str1, ch[3].lineno),
-                    end,
-                    new yy.Lit(str2 + ' + 1 || 9e9', end.lineno)
+                    new yy.Lit(', +' + openParen, ch[3].lineno),
+                    to, 
+                    new yy.Lit(closeParen + ' + 1 || 9e9', to.lineno)
                 );
             }
         }
 
         this.children.push(new yy.Lit(')', ch[5].lineno));
     },
+    
 
     transformLiteral: function(l) {
         var num = parseInt(l);
@@ -527,14 +533,20 @@ yy.ObjectConstructorNode = Class(yy.Node, {
 
     initNode: function() {
         this.base('initNode', arguments);
-        var qn,
-        ch = this.children,
-        constr = ch[2],
-        prefix = 'new ',
-        className = ch[1] ? ch[1].children : null;
+        this.className       = this.children[1] ? this.children[1].children : null;
+        this.constructorArgs = this.children[2];
+    },
 
-        if (constr) {
-            if (constr.keyed) {
+    compile: function() {
+        
+        var qn,
+        ch         = this.children,
+        prefix     = 'new ',
+        constrArgs = this.constructorArgs,
+        className  = this.className;
+
+        if (constrArgs) {
+            if (constrArgs.keyed) {
                 if (className) {
                     prefix = this.runtimeFn('newByConf');
                     ch.splice(2, 0, new yy.Lit(',', ch[2].children[0].lineno))
@@ -555,18 +567,7 @@ yy.ObjectConstructorNode = Class(yy.Node, {
             ch.push(new yy.Lit('()', qn.children[qn.children.length - 1].lineno))
         }
 
-        if (!className) {
-            //ch[1] = new yy.Lit(this.runtimePrefix + 'Object', ch[0].lineno);
-        }
-
         ch[0] = new yy.Lit(prefix, ch[0].lineno);
-
-        if (className) {
-            if (className instanceof Array) {
-                className = className[0].children;
-            }
-            //this.yy.env.addUsedVar(className);
-        }
     }
 
 })
@@ -578,38 +579,39 @@ yy.ObjectConstructorArgsNode = Class(yy.Node, {
     initNode: function() {
         var ch = this.children;
 
-        this.checkKeyNames(ch[1]);
-
-        if (ch[3] || !ch[1]) { // keyed
-            ch[0].children = '{';
-            ch[2].children = '}';
-
+        if (ch[3]) { // keyed
             this.keyed = true;
+            this.checkKeyNames(ch[1]);
         }
-        else {
-            ch[0].children = '(';
-            ch[2].children = ')';
-        }
-
     },
 
-    checkKeyNames: function(ch) {
-        if (!ch) { return }
+    checkKeyNames: function(list) {
         var
-        elements = ch.children,
-        names = {}, i = 0, name,
+        elements = list.children,
+        names = {}, i, name, element,
         len = elements.length;
 
-        for (; i < len; i++) {
-            if (!(elements[i] instanceof yy.Lit)){
-                if (!(elements[i].children[0] instanceof yy.Str)) {
-                    name = elements[i].children[0].children;
-                    if (names[name] === true) {
-                        this.error('Can not repeat object key "' + name + '"', elements[i].children[0].lineno);
-                    }
-                    names[name] = true;
+        for (i = 0; i < len; i++) {
+            element = elements[i];
+
+            if (!(element instanceof yy.Lit || element.children[0] instanceof yy.Str)){
+                name = element.children[0].children;
+                if (hasProp.call(names, name)) {
+                    this.error('Can not repeat object key "' + name + '"', element.children[0].lineno);
                 }
+                names[name] = true;
             }
+        }
+    },
+
+    compile: function() {
+        if (this.keyed) {
+            this.children[0].children = '{';
+            this.children[2].children = '}';
+        }
+        else {
+            this.children[0].children = '(';
+            this.children[2].children = ')';
         }
     }
 })
@@ -620,16 +622,18 @@ yy.TypeAssertNode = Class(yy.Node, {
 
     initNode: function() {
         this.base('initNode', arguments);
+        this.typeParam = this.children[3] || new yy.Lit(this.runtimePrefix + 'Undefined', this.children[4].lineno);
+    },
 
+    compile: function() {
         var
-        ch = this.children,
-        typ = ch[3] || new yy.Lit(this.runtimePrefix + 'Undefined', ch[4].lineno);
+        ch  = this.children;
 
         this.children = [
             new yy.Lit(this.runtimeFn('assertType'), ch[0].lineno),
             ch[0],
             new yy.Lit(', ', ch[1].lineno),
-            typ,
+            this.typeParam,
             new yy.Lit(')', ch[4].lineno),
         ];
     }
@@ -645,8 +649,7 @@ yy.AssignmentNode = Class(yy.Node, {
         this.base('initNode', arguments);
         var
         ch = this.children;
-        //console.log('init assign')
-        //if (ch[0] instanceof yy.VarNode && !this.yy.env.context().isVarDeclared(ch[0].name)) {
+
         if (ch[0] instanceof yy.VarNode) {
             ch[0].markAsUsedVar();
         }
@@ -679,23 +682,22 @@ yy.Str = yy.StringNode = Class(yy.Lit, {
 
     type: 'Str, StringNode',
 
-    initNode: function() {
-        this.base('initNode', arguments);
-        var
-        i        = 0,
+    compile: function() {        
+        var i, str,
         lineno   = this.lineno,
         splitted = this.children.split(/\r\n|\n/),
         len      = splitted.length;
 
-        for (; i < len - 1; i++) {
-            splitted[i] = new yy.Lit(splitted[i].replace(/^\s+/, '') + '\\', lineno);
-            lineno++;
+        for (i = 0; i < len; i++) {
+            str = splitted[i].replace(/^\s+/, '');
+            if (i < len - 1) {
+                str += '\\';
+            }
+            splitted[i] = new yy.Lit(str, lineno + i);
         }
-        splitted[i] = new yy.Lit(splitted[i].replace(/^\s+/, ''), lineno);
 
         this.children = splitted;
     }
-
 })
 
 yy.UseNode = Class(yy.Node, {
@@ -708,6 +710,7 @@ yy.UseNode = Class(yy.Node, {
 
     rClearName: /[^\w]/,
 
+    //TODO: Refactor this method to "compile"
     initNode: function() {
         this.base('initNode', arguments);
 
@@ -831,10 +834,10 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
     check: function(block) {
         var
         members = block.children[1] ? block.children[1].children : [],
-        set, i = 0, properties = [],
+        set, i, properties = [],
         names = {}, member, methodFound = false;
 
-        for (; i < members.length; i++) {
+        for (i = 0; i < members.length; i++) {
             member = members[i];
             if (hasProp.call(names, member.name)) {
                 this.error('Can not redeclare the class member "' + member.name + '"', member.nameLineno);
@@ -954,15 +957,14 @@ yy.MethodNode = Class(yy.Node, {
 
     initNode: function() {
         this.base('initNode', arguments);
-        var
-        ch   = this.children,
-        name = ch[0].name;
 
-        this.name = name;
+        this.name = this.children[0].name;
         this.nameLineno = this.children[0].children[1].lineno;
+    },
 
-        ch[0].children[0].children = 'this.' + name + ' = function ';
-        ch[0].context.addLocalVar('me', 'this');
+    compile: function() {
+        this.children[0].children[0].children = 'this.' + this.name + ' = function ';
+        this.children[0].context.addLocalVar('me', 'this');
     }
 })
 
@@ -1030,8 +1032,7 @@ yy.IfNode = Class(yy.Node, {
 
     type: 'IfNode',
 
-    initNode: function() {
-        this.base('initNode', arguments);
+    compile: function() {
         var
         ch = this.children;
 
@@ -1045,8 +1046,7 @@ yy.ElseNode = Class(yy.Node, {
 
     type: 'ElseNode',
 
-    initNode: function() {
-        this.base('initNode', arguments);
+    compile: function() {
         var
         ch = this.children;
 
@@ -1064,7 +1064,7 @@ yy.SwitchNode = Class(yy.Node, {
     
     type: 'SwitchNode',
 
-    initNode: function() {
+    compile: function() {
         this.base('initNode', arguments);
         var
         ch = this.children;
@@ -1089,20 +1089,19 @@ yy.CaseNode = Class(yy.Node, {
 
         this.handleFallThrough(ch[1]);
 
-
-        if (ch[3]) { //if is not "default"
+        //if is not "default"
+        if (ch[3]) {
             ls = ch[3].children[0].children;
             ls.push(new yy.Lit(' break; ', ls[ls.length - 1].lineno))
         }
     },
 
     handleFallThrough: function(exprList) {
-        var
-        i = 0,
+        var i,
         ls = exprList.children,
         len = ls.length;
 
-        for (; i < len; i++) {
+        for (i = 0; i < len; i++) {
             if (ls[i].children === ',') {
                 ls[i].children = ': case ';
             }
@@ -1115,7 +1114,7 @@ yy.ForNode = Class(yy.Node, {
 
     type: 'ForNode',
 
-    initNode: function() {
+    compile: function() {
         var ch = this.children;
 
         if (ch.length <= 3) {
@@ -1128,8 +1127,6 @@ yy.ForNode = Class(yy.Node, {
 
         ch.splice(1, 0, new yy.Lit('(', ch[0].lineno));
         ch.splice(ch.length - 1, 0, new yy.Lit(') ', getLesserLineNumber(ch[ch.length - 1])));
-
-
     }
 
 })
@@ -1140,7 +1137,7 @@ yy.ForInNode = Class(yy.Node, {
 
     type: 'ForInNode',
 
-    initNode: function() {
+    compile: function() {
         var
         ch = this.children,
         k, v, str1, str2, str3,
