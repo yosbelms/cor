@@ -710,27 +710,29 @@ yy.UseNode = Class(yy.Node, {
 
     rClearName: /[^\w]/,
 
-    //TODO: Refactor this method to "compile"
     initNode: function() {
         this.base('initNode', arguments);
 
-        var
-        parsed, route, path,
-        ch     = this.children,
-        target = ch[1],
-        alias  = ch[2] ? ch[2].children : false,
-        suffix = '';
+        var parsed;
 
-        route = target.children.substring(1, target.children.length - 1); // trim quotes
+        this.aliasNode  = this.children[2];
+        this.targetNode = this.children[1];
+        this.route      = this.yy.generateRoute(this.targetNode.children.substring(1, this.targetNode.children.length - 1)); // trim quotes
+        this.alias      = this.aliasNode ? this.aliasNode.children : false;
 
-        route = this.yy.generateRoute(route);
-
-        if (! alias) {
-            parsed = this.rAlias.exec(route);
-            alias  = parsed[1] || '';
+        if (!this.alias) {
+            parsed = this.rAlias.exec(this.route);
+            this.alias = (parsed[1] || '').replace(this.rClearName, '_');
         }
+    },
 
-        alias = alias.replace(this.rClearName, '_');
+    compile: function() {
+        var
+        path,
+        ch     = this.children,
+        route  = this.route,
+        alias  = this.alias,
+        suffix = '';
 
         if (this.rCapitalLetter.test(alias)) {
             suffix = '.' + alias;
@@ -739,22 +741,23 @@ yy.UseNode = Class(yy.Node, {
         ch[0].children = 'require(';
 
         if (alias) {
-            if (! ch[2]) {
-                ch[2] = new yy.Lit(alias, ch[0].lineno)
-                ch[2].loc = ch[0].loc
+            if (! this.aliasNode) {
+                this.aliasNode = new yy.Lit(alias, ch[0].lineno)
+                this.aliasNode.loc = ch[0].loc
             }
-            ch[2].children += ' = ';
+            this.aliasNode.children += ' = ';
             this.yy.env.context().addLocalVar(alias);
         }
 
-        ch[1].children = "'" + (path || route) + "'";
-        this.children  = [
-            ch[2],
+        this.targetNode.children = "'" + route + "'";
+        this.children = [
+            this.aliasNode,
             ch[0],
-            ch[1],
+            this.targetNode,
             new yy.Lit(')' + suffix, ch[1].lineno),
         ];
     }
+   
 })
 
 yy.MeNode = Class(yy.Lit, {
