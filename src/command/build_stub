@@ -1,21 +1,49 @@
 (function(depsTable, programs) {
+
     var
-    i   = -1,
     len = programs.length,
+	i   = -1,
     module;
 
     while (++i < len) {
         programs[i] = newModule(programs[i], depsTable[i], programs);
     }
-
+	
     if (window && document) {
-        document.addEventListener
-            ? document.addEventListener('DOMContentLoaded', programs[0], false)
-            : document.attachEvent('onreadystatechange', programs[0])
+		if (document.readyState === 'complete') {
+			run();
+		}
+		else {
+			if (document.addEventListener) {
+				document.addEventListener('DOMContentLoaded', run, false);
+				window.addEventListener('load', run, false);
+			}
+			else {
+				document.attachEvent('onreadystatechange', run);
+				window.attachEvent('onload', run);
+			}
+		}
     }
+	
+	var runned = false;
+	function run() {
+
+		if (runned) {
+			return;
+		}
+		
+		if (document.removeEventListener) {
+			document.removeEventListener('DOMContentLoaded', run, false);	
+		}
+		else {
+			document.detachEvent('onreadystatechange', run);
+		}
+		
+		setTimeout(programs[0]);
+		runned = true;
+	}
 
     function newModule(program, deps, programs) {
-
         var module = {exports : null};
 
         function require(filename) {
@@ -32,4 +60,5 @@
 
         return wrapper;
     }
+
 })(
