@@ -33,172 +33,177 @@ SUCH DAMAGE.
 /*
 CRL (Cor Runtime Library)
 */
-if (typeof global === 'undefined') {
-    global = window;
-}
 
-var o         = global;
-o.crl_hasProp = Object.prototype.hasOwnProperty;
-o.crl_slice   = Array.prototype.slice;
-o.crl_Object  = Object;
+var
+hasProp = Object.prototype.hasOwnProperty,
+slice   = Array.prototype.slice;
 
-o.crl_mergeObject = function(obj, add) {
+function copyObj(from, to) {
     var name;
-    for (name in add) {
-        if (crl_hasProp.call(add, name)) {
-            obj[name] = add[name];
+    for (name in from) {
+        if (hasProp.call(from, name)) {
+            to[name] = from[name];
         }
     }
 }
 
-o.crl_instancers = [];
-o.crl_new = function(cls) {
-    var
-    args = crl_slice.call(arguments, start),
-    argc = args.length,
-    i    = -1,
-    instancer = crl_instancers[argc];
 
-    if (! instancer) {
-        var xargs = [];
-        while (++i < argc) {
-            xargs.push('a[' + i + ']');
-        }
-        crl_instancers[argc] = instancer = new Function('c', 'a', 'return new c(' + xargs.join(',') + ');');
-    }
+CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
 
-    if (typeof cls === 'function') {
-        return instancer(cls, args);
-    }
-
-    throw Error('Runtime Error: trying to instanstiate no class');
-}
-
-o.crl_newByConf = function(cls, conf) {
-    var instance, name;
-    instance = new cls();
-    for (name in conf) {
-        if (crl_hasProp.call(conf, name) && crl_hasProp.call(instance, name)) {
-            instance[name] = conf[name];
-        }
-    }
-    return instance;
-}
-
-o.crl_setProp = function(obj, prop, value) {
-    obj && (typeof obj.setProperty === 'function') && obj.setProperty(prop, value);
-    return value;
-}
-
-o.crl_classIdSeed     = 1;
-o.crl_classRegistry   = {};
-o.crl_Class           = function(){this.$plugins = []};
-o.crl_Class.prototype = {
-
-    $init: function(){
-        typeof this.$setup === 'function' && this.$setup.apply(this, arguments);
-    },
-
-    $class: crl_Class,
-
-    // plugins executed before construct
-    // $plugins: [],
-}
-
-o.crl_genClassId = function() {
-    return 'class-' + (crl_classIdSeed++);
-}
-
-// combine
-o.crl_defineClass = function(Class, supers) {
-    var
-    i, len, sup, superIds,
-    id    = crl_genClassId(),
-    proto = new crl_Class();
-
-    if (supers) {
-        superIds = {};
-        len      = supers.length;
-
-        for (i = 0; i < len; i++) {
-            sup = supers[i];
-            superIds[sup.$classId] = null;
-            crl_mergeObject(superIds, sup.$superIds);
-            sup.$classBody.call(proto);
-        }
-    }
-
-    proto.$class    = crl_classRegistry[id] = Class;
-    Class.prototype = proto;
-    Class.$classId  = id;
-    Class.$superIds = superIds;
-    Class.$classBody.call(proto);
-};
-
-
-o.crl_assertType = function(obj, Class) {
-    var ret, clsId, superIds, objCls, type,
-    nativeTypes = {
+    idSeed      : 1,
+    instancers  : [],
+    nativeTypes : {
         'String'   : String,
         'Number'   : Number,
         'Boolean'  : Boolean,
         'RegExp'   : RegExp,
         'Array'    : Array,
         'Object'   : Object,
-        'Function' : Function,
+        'Function' : Function
+    },
 
-    };
+    create: function(Class) {
+        var
+        instancerArgs,        
+        args      = slice.call(arguments, 1),
+        argc      = args.length,
+        i         = -1,
+        instancer = this.instancers[argc];
 
-    if (typeof Class === 'function') {
-        if (typeof obj !== 'undefined') {
-            clsId  = Class.$classId;
-            objCls = obj.$class;
-            if (clsId && objCls) { //is a cor class
-                superIds = objCls.$superIds;
-                if (objCls.$classId === clsId || crl_hasProp.call(superIds, clsId)) {
-                    return Class;
+        if (! instancer) {
+            var instancerArgs = [];
+            while (++i < argc) {
+                instancerArgs.push('a[' + i + ']');
+            }
+            this.instancers[argc] = instancer = new Function('c', 'a', 'return new c(' + instancerArgs.join(',') + ');');
+        }
+
+        if (typeof Class === 'function') {
+            return instancer(Class, args);
+        }
+
+        throw Error('Runtime Error: trying to instanstiate no class');
+    },
+
+    createAndConf: function(Class, conf) {
+        var
+        obj, name;
+
+        obj = new Class();
+        for (name in conf) {
+            if (hasProp.call(conf, name) && hasProp.call(obj, name)) {
+                obj[name] = conf[name];
+            }
+        }
+        return obj;
+    },
+
+    defineClass: function(Class, supers) {
+        var superIds, len, i, _super;
+
+        if (supers) {
+            superIds = {};
+            len      = supers.length;
+
+            for (i = 0; i < len; i++) {
+                _super = supers[i];
+                if (_super.$classId) {
+                    _super.$classId = this.idSeed++;
                 }
-            }
-            else if (obj instanceof Class) {
-                return obj.constructor;
-            }
-            else {
-                type = Object.prototype.toString.call(obj);
-                type = type.substring(8, type.length-1);
-                if(crl_hasProp.call(nativeTypes, type) && nativeTypes[type] === Class) {
-                    return Class;
+                superIds[_super.$classId] = null;
+                copyObj(superIds, _super.$superIds || {});
+
+                if (typeof _super.$setupPrototype === 'function') {
+                    _super.$setupPrototype.call(Class);
+                }
+                else {
+                    copyObj(_super, Class.prototype);
                 }
             }
         }
-    }
-    else {
-        throw 'Provided type must be a class';
-    }
-};
 
-o.crl_keys = function(object) {
-    var keys = [], i, len;
-
-    if (object instanceof Array) {
-        for (i = 0, len = object.length; i < len; i++) {
-            keys.push(i);
+        if (typeof Class.$setupPrototype === 'function') {
+            Class.$setupPrototype.call(Class);
         }
-    }
-    else {
-        if (Object.keys) {
-            keys = Object.keys(object);
+
+        Class.$classId  = this.idSeed++;
+        Class.$superIds = superIds;
+
+        Class.prototype.$class = Class;
+    },
+
+
+    keys: function(obj) {
+        var keys, i, len;
+
+        if (obj instanceof Array) {            
+            i    = -1;
+            len  = obj.length;
+            keys = [];
+
+            while (++i < len) {
+                keys.push(i);
+            }
         }
         else {
-            for (i in object) {
-                if (crl_hasProp.call(object, i)) {
-                    keys.push(i);
+            if (typeof Object.keys === 'function') {
+                keys = Object.keys(obj);
+            }
+            else {
+                for (i in obj) {
+                    if (hasProp.call(obj, i)) {
+                        keys.push(i);
+                    }
                 }
             }
         }
-    }
 
-    return keys;
-}
+        return keys;
+    },
+
+    assertType: function(obj, Class) {
+        var
+        ret, classId,
+        superIds, type,
+        objectClass;
+
+        // it is a Class?
+        if (typeof Class === 'function') {
+
+            // object is defined
+            if (typeof obj !== 'undefined') {
+                classId     = Class.$classId;
+                objectClass = obj.$class;
+
+                //is a cor class
+                if (classId && objectClass) {
+                    superIds = objectClass.$superIds;
+                    // if the type is it's own or is of a combined class
+                    if (objectClass.$classId === classId || hasProp.call(superIds, classId)) {
+                        return Class;
+                    }
+                }
+
+                // it is for non cor classes
+                else if (obj instanceof Class) {
+                    return obj.constructor;
+                }
+
+                // otherwise find the native type according to "Object.prototype.toString"
+                else {
+                    type = Object.prototype.toString.call(obj);
+                    type = type.substring(8, type.length - 1);
+                    if(hasProp.call(this.nativeTypes, type) && this.nativeTypes[type] === Class) {
+                        return Class;
+                    }
+                }
+            }
+        }
+        else {
+            throw 'Trying to assert type with not valid class';
+        }
+    }
+};
 
 }).call(this);
 
@@ -1453,6 +1458,8 @@ function copyObj(from, to) {
 
 yy.Context = Class({
 
+    depth: null,
+
     ownerNode: null,
 
     ignoredVars: null,
@@ -1587,6 +1594,7 @@ yy.Environment = Class({
             }
         }
         this.contexts.push(c);
+        c.depth = this.contexts.length - 1;
         return c;
     },
 
@@ -1598,8 +1606,8 @@ yy.Environment = Class({
         if (isNaN(n)) {
             n = this.contexts.length - 1;
         }
-        else if (n < 0) {
-            n = this.contexts.length + n;
+        else if (n <= 0) {
+            n = this.contexts.length + (n - 1);
         }
         return this.contexts[n];
     },
@@ -1792,7 +1800,7 @@ yy.Node = Class({
 
     type: 'Node',
 
-    runtimePrefix: 'crl_',
+    runtimePrefix: 'CRL.',
 
     scope: null,
 
@@ -1953,7 +1961,6 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
             } else if (item instanceof yy.ClassNode) {
                 name       = item.className;
                 nameLineno = item.children[1].lineno;
-                this.context.ignoreVar(name);
             }
 
             if (name) {
@@ -1970,29 +1977,8 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
         if (ls) {
             initialize = initialize || '';
             ls.children.unshift(new yy.Lit(this.context.compileVars(), 1));
-            ls.children.push(new yy.Lit('; ' + this.getClassDefine() + initialize + this.getExport(), this.lineno));
+            ls.children.push(new yy.Lit(';' + initialize + this.getExport(), this.lineno));
         }
-    },
-
-    getClassDefine: function() {
-        var
-        i, len, classNode,
-        ret        = [],
-        ch         = this.children,
-        classNodes = this.yy.env.classNodes;
-
-        if (classNodes) {
-            for (i = 0, len = classNodes.length; i < len; i++) {
-                classNode = classNodes[i];
-                ret.push(this.runtimeFn('defineClass') + classNode.className);
-                if (classNode.superClassNames.length > 0) {
-                    ret.push(',[' + classNode.superClassNames.join(',') + ']');
-                }
-                ret.push('); ');
-            }
-        }
-
-        return ret.join('');
     },
 
     getExport: function() {
@@ -2132,8 +2118,7 @@ yy.SliceNode = Class(yy.Node, {
         }
 
         this.children.push(new yy.Lit(')', ch[5].lineno));
-    },
-    
+    },    
 
     transformLiteral: function(l) {
         var num = parseInt(l);
@@ -2168,7 +2153,7 @@ yy.ObjectConstructorNode = Class(yy.Node, {
         if (constrArgs) {
             if (constrArgs.keyed) {
                 if (className) {
-                    prefix = this.runtimeFn('newByConf');
+                    prefix = this.runtimeFn('createAndConf');
                     ch.splice(2, 0, new yy.Lit(',', ch[2].children[0].lineno))
                     ch.push(3, 0,   new yy.Lit(')', ch[3].children[2].lineno))
                 }
@@ -2178,7 +2163,7 @@ yy.ObjectConstructorNode = Class(yy.Node, {
             }
             else {
                 if (!className) {
-                    ch[1] = new yy.Lit(this.runtimePrefix + 'Object', ch[0].lineno);
+                    ch[1] = new yy.Lit('Object', ch[0].lineno);
                 }
             }
         }
@@ -2242,7 +2227,7 @@ yy.TypeAssertNode = Class(yy.Node, {
 
     initNode: function() {
         this.base('initNode', arguments);
-        this.typeParam = this.children[3] || new yy.Lit(this.runtimePrefix + 'Undefined', this.children[4].lineno);
+        this.typeParam = this.children[3];
     },
 
     compile: function() {
@@ -2251,11 +2236,15 @@ yy.TypeAssertNode = Class(yy.Node, {
 
         this.children = [
             new yy.Lit(this.runtimeFn('assertType'), ch[0].lineno),
-            ch[0],
-            new yy.Lit(', ', ch[1].lineno),
-            this.typeParam,
-            new yy.Lit(')', ch[4].lineno),
+            ch[0]
         ];
+
+        if (this.typeParam) {
+            this.children.push(new yy.Lit(', ', ch[1].lineno));
+            this.children.push(this.typeParam);
+        }
+
+        this.children.push(new yy.Lit(')', ch[4].lineno));
     }
 })
 
@@ -2330,27 +2319,31 @@ yy.UseNode = Class(yy.Node, {
 
     rClearName: /[^\w]/,
 
-    //TODO: Refactor this method to "compile"
     initNode: function() {
         this.base('initNode', arguments);
 
-        var
-        parsed, route, path,
-        ch     = this.children,
-        target = ch[1],
-        alias  = ch[2] ? ch[2].children : false,
-        suffix = '';
+        var parsed;
 
-        route = target.children.substring(1, target.children.length - 1); // trim quotes
+        this.aliasNode  = this.children[2];
+        this.targetNode = this.children[1];
+        this.route      = this.yy.generateRoute(this.targetNode.children.substring(1, this.targetNode.children.length - 1)); // trim quotes
+        this.alias      = this.aliasNode ? this.aliasNode.children : false;
 
-        route = this.yy.generateRoute(route);
-
-        if (! alias) {
-            parsed = this.rAlias.exec(route);
-            alias  = parsed[1] || '';
+        if (!this.alias) {
+            parsed = this.rAlias.exec(this.route);
+            this.alias = (parsed[1] || '').replace(this.rClearName, '_');
         }
 
-        alias = alias.replace(this.rClearName, '_');
+        this.yy.env.context().addLocalVar(this.alias);
+    },
+
+    compile: function() {
+        var
+        path,
+        ch     = this.children,
+        route  = this.route,
+        alias  = this.alias,
+        suffix = '';
 
         if (this.rCapitalLetter.test(alias)) {
             suffix = '.' + alias;
@@ -2359,22 +2352,22 @@ yy.UseNode = Class(yy.Node, {
         ch[0].children = 'require(';
 
         if (alias) {
-            if (! ch[2]) {
-                ch[2] = new yy.Lit(alias, ch[0].lineno)
-                ch[2].loc = ch[0].loc
+            if (! this.aliasNode) {
+                this.aliasNode = new yy.Lit(alias, ch[0].lineno)
+                this.aliasNode.loc = ch[0].loc
             }
-            ch[2].children += ' = ';
-            this.yy.env.context().addLocalVar(alias);
+            this.aliasNode.children += ' = ';
         }
 
-        ch[1].children = "'" + (path || route) + "'";
-        this.children  = [
-            ch[2],
+        this.targetNode.children = "'" + route + "'";
+        this.children = [
+            this.aliasNode,
             ch[0],
-            ch[1],
-            new yy.Lit(')' + suffix, ch[1].lineno),
+            this.targetNode,
+            new yy.Lit(')' + suffix + ';', ch[1].lineno),
         ];
     }
+   
 })
 
 yy.MeNode = Class(yy.Lit, {
@@ -2417,24 +2410,25 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
     initNode: function() {
         this.base('initNode', arguments);
         var
-        ch              = this.children,
-        cname           = ch[1].children,
-        stub            = '(){this.$init.apply(this, arguments)}; ' + cname + '.$classBody = function ' + cname + '()',
-        superClassNames = this.getSuperClassNames();
+        ch    = this.children,
+        cname = ch[1].children;
 
-        this.check(ch[3]);
+        this.className       = cname;
+        this.superClassNames = this.getSuperClassNames();
+        this.block           = ch[3];
+        this.propertiesNames = [];
 
-        this.children = [
-            new yy.Lit('function ', ch[0].lineno),
-            ch[1],
-            new yy.Lit(stub, ch[1].lineno),
-            ch[3],
-        ];
+        this.propertySet = new yy.PropertySetNode();
+        this.propertySet.parent = this;
+        
+        this.methodSet = new yy.MethodSetNode();
+        this.methodSet.parent = this;
 
-        this.className = cname;
-        this.superClassNames = superClassNames;
+        this.setupSets(this.block);
 
         this.yy.env.registerClass(this);
+
+        this.yy.env.context().addLocalVar(this.className);
     },
 
     getSuperClassNames: function() {
@@ -2451,11 +2445,13 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         return str.split(',');
     },
 
-    check: function(block) {
-        var
-        members = block.children[1] ? block.children[1].children : [],
-        set, i, properties = [],
-        names = {}, member, methodFound = false;
+    setupSets: function(block) {
+        var i, member,
+        members     = block.children[1] ? block.children[1].children : [],
+        methods     = [],
+        properties  = [],
+        names       = {},
+        methodFound = false;
 
         for (i = 0; i < members.length; i++) {
             member = members[i];
@@ -2463,27 +2459,59 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
                 this.error('Can not redeclare the class member "' + member.name + '"', member.nameLineno);
             }
             if (member instanceof yy.MethodNode) {
+                methods.push(members.splice(i, 1)[0]);
+                i--;
                 methodFound = true;
             }
             else if (methodFound === true) {
-                this.error('Properties declaration goes before methods declaration "' + member.name + '"', member.nameLineno);
+                this.error('Declareing property "' + member.name + '" after method declaration', member.nameLineno);
             }
             else {
                 properties.push(members.splice(i, 1)[0]);
+                this.propertiesNames.push(member.name);
+                this.context.ignoreVar(member.name);
                 i--;
             }
             names[member.name] = true;
         }
 
-        if (properties.length > 0) {
-            set = new yy.PropertySetNode(properties, this.context);
-            set.parent = this;
-            block.children.splice(1, 0, set);
+        this.propertySet.adopt(properties);
+        if (properties.length) {
+            this.propertySet.lineno = properties[properties.length - 1].lineno;
+        }
+        else {
+            this.propertySet.lineno = block.children[0].lineno;
+        }
+
+        this.methodSet.adopt(methods);
+        if (methods.length) {
+            this.methodSet.lineno = methods[methods.length - 1].lineno;
         }
     },
 
     compile: function() {
         this.base('compile', arguments);
+        var i, len,
+        ch = this.children,
+        superInitStr = '',
+        combineStr   = '';
+
+        if (this.superClassNames.length > 0) {
+             combineStr = ', [' + this.superClassNames.join(', ') + ']';
+        }
+
+        for (i = 0, len = this.superClassNames.length; i < len; i++) {
+            superInitStr += this.superClassNames[i] + '.call(this);';
+        }
+
+        this.children = [
+            new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
+            new yy.Lit('('+ this.propertiesNames.join(', ') +'){' + superInitStr, ch[1].lineno),
+            this.propertySet,
+            new yy.Lit('};', this.propertySet.lineno),
+            this.methodSet,
+            new yy.Lit(this.runtimeFn('defineClass') + this.className +  combineStr + ')', ch[3].lineno),
+        ];
     }
 
 })
@@ -2491,42 +2519,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
 
 yy.PropertySetNode = Class(yy.Node, {
 
-    type: 'PropertySetNode',
-
-    context: null,
-
-    init: function(ch, ctx) {
-        yy.Node.prototype.init.apply(this, ch);
-        this.context = ctx;
-    },
-
-    initNode: function() {
-        this.base('initNode', arguments);
-        var
-        ch = this.children;
-        if (ch[0]) {
-            ch.push(new yy.Lit(' };', ch[ch.length - 1].lineno));
-        }
-    },
-
-    compile: function() {
-        var
-        ch     = this.children,
-        lineno = this.parent.children[2].lineno,
-        str, names = [], i, len = this.children.length;
-
-        for (i = 0; i < len; i++) {
-            if (!(this.children[i] instanceof yy.Lit)) {
-                names.push(this.children[i].name);
-                this.context.ignoreVar(this.children[i].name);
-            }
-        }
-
-        str = 'this.$setup = function setup(' + names.join(', ') + '){'
-
-        ch.splice(0, 0, new yy.Lit(str, lineno));
-        ch.splice(1, 0, new yy.Lit(this.context.compileVars(), ch[0].lineno));
-    }
+    type: 'PropertySetNode'
 
 })
 
@@ -2566,6 +2559,23 @@ yy.PropertyNode = Class(yy.Node, {
     }
 })
 
+yy.MethodSetNode = Class(yy.Node,{
+
+    type: 'MethodSetNode',
+
+    compile: function() {
+        var
+        ch = this.children,
+        cname = this.parent.className,
+        fnName = '$setupPrototype';
+
+        if (ch.length > 0) {
+            ch.splice(0, 0, new yy.Lit(cname + '.' + fnName + ' = function (){', getLesserLineNumber(ch[0])));
+            ch.push(new yy.Lit('};', this.lineno));
+        }
+    }
+
+})
 
 yy.MethodNode = Class(yy.Node, {
 
@@ -2583,7 +2593,7 @@ yy.MethodNode = Class(yy.Node, {
     },
 
     compile: function() {
-        this.children[0].children[0].children = 'this.' + this.name + ' = function ';
+        this.children[0].children[0].children = 'this.prototype.' + this.name + ' = function ';
         this.children[0].context.addLocalVar('me', 'this');
     }
 })

@@ -705,6 +705,8 @@ yy.UseNode = Class(yy.Node, {
             parsed = this.rAlias.exec(this.route);
             this.alias = (parsed[1] || '').replace(this.rClearName, '_');
         }
+
+        this.yy.env.context().addLocalVar(this.alias);
     },
 
     compile: function() {
@@ -727,7 +729,6 @@ yy.UseNode = Class(yy.Node, {
                 this.aliasNode.loc = ch[0].loc
             }
             this.aliasNode.children += ' = ';
-            this.yy.env.context().addLocalVar(alias);
         }
 
         this.targetNode.children = "'" + route + "'";
@@ -735,7 +736,7 @@ yy.UseNode = Class(yy.Node, {
             this.aliasNode,
             ch[0],
             this.targetNode,
-            new yy.Lit(');' + suffix, ch[1].lineno),
+            new yy.Lit(')' + suffix + ';', ch[1].lineno),
         ];
     }
    
@@ -798,6 +799,8 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         this.setupSets(this.block);
 
         this.yy.env.registerClass(this);
+
+        this.yy.env.context().addLocalVar(this.className);
     },
 
     getSuperClassNames: function() {
@@ -864,9 +867,6 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         ch = this.children,
         superInitStr = '',
         combineStr   = '';
-
-        var ctx = this.yy.env.context(-1);
-        ctx.addLocalVar(this.className);
 
         if (this.superClassNames.length > 0) {
              combineStr = ', [' + this.superClassNames.join(', ') + ']';
