@@ -1,0 +1,113 @@
+func Client(name, age) {
+    this.name = name
+    this.age  = age
+}
+
+Client.prototype.manuallyInsertedInPrototype = 'foo'
+
+class Observable {
+    
+}
+
+class DAO {
+    
+}
+
+class AccountDAO : DAO, Observable {
+    
+}
+
+func init() {
+
+    describe('CRL', func() {
+
+        describe('create', func() {
+            it('Should work withs arguments', func() {
+                c = CRL.create(Client, 'Yosbel', 28)
+
+                expect(c.name).toBe('Yosbel')
+                expect(c.age).toBe(28)
+            })
+
+            it('Should work withs no arguments', func() {
+                c = CRL.create(Client)
+
+                expect(c.name).toBeUndefined()
+                expect(c.age).toBeUndefined()
+            })
+        })        
+
+        describe('createAndConf', func(){
+            it('Should work with defined properties', func() {
+                c = CRL.createAndConf(Client, @[name: 'Yosbel', age: 28])
+
+                expect(c.name).toBe('Yosbel')
+                expect(c.age).toBe(28)
+            })
+
+            it('Should not work with not defined properties', func() {
+                c = CRL.createAndConf(Client, @[lastName: 'Marin'])
+
+                expect(c.lastName).not.toBe('Marin')
+            })
+        })
+        
+
+        describe('keys', func(){
+            it('From Arrays should extract just numeric indexes', func() {
+                arr = ['mango', 'orange', 'guava']
+                arr.someProp = 'Foo'
+
+                keys = CRL.keys(arr)
+                expect(keys).toEqual([0, 1, 2])
+                expect(keys.someProp).toBeUndefined()
+            })
+
+            it('From Objects should not extract property names of prototype', func() {
+                c = @Client
+
+                keys = CRL.keys(c)
+                expect(keys).toEqual(['name', 'age'])
+                expect(keys).not.toContain('manuallyInsertedInPrototype')
+            })
+        })
+
+        describe('assertType', func(){
+            describe('For Cor classes', func() {
+
+                account = @AccountDAO
+
+                it('Should work for instances', func() {
+                    expect(CRL.assertType(account, AccountDAO)).toBeTruthy()
+                })
+
+                it('Should work for inheritance', func() {
+                    expect(CRL.assertType(account, DAO)).toBeTruthy()
+                    expect(CRL.assertType(account, Observable)).toBeTruthy()
+                })
+
+                it('Should work even passing native types', func() {
+                    expect(CRL.assertType(account, Object)).toBeTruthy()
+                })
+
+            })
+
+            describe('For non Cor classes', func() {
+
+                c = @Client
+
+                it('Should work for instances', func() {
+                    expect(CRL.assertType(c, Client)).toBeTruthy()
+                    expect(CRL.assertType(c, AccountDAO)).toBeFalsy()
+                })
+
+                it('Should work even passing native types', func() {
+                    expect(CRL.assertType(c, Object)).toBeTruthy()
+                })
+
+            })
+        })
+
+    })
+
+}

@@ -19,6 +19,8 @@ function copyObj(from, to) {
 
 yy.Context = Class({
 
+    depth: null,
+
     ownerNode: null,
 
     ignoredVars: null,
@@ -153,6 +155,7 @@ yy.Environment = Class({
             }
         }
         this.contexts.push(c);
+        c.depth = this.contexts.length - 1;
         return c;
     },
 
@@ -164,8 +167,8 @@ yy.Environment = Class({
         if (isNaN(n)) {
             n = this.contexts.length - 1;
         }
-        else if (n < 0) {
-            n = this.contexts.length + n;
+        else if (n <= 0) {
+            n = this.contexts.length + (n - 1);
         }
         return this.contexts[n];
     },

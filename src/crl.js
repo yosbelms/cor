@@ -2,171 +2,176 @@
 /*
 CRL (Cor Runtime Library)
 */
-if (typeof global === 'undefined') {
-    global = window;
-}
 
-var o         = global;
-o.crl_hasProp = Object.prototype.hasOwnProperty;
-o.crl_slice   = Array.prototype.slice;
-o.crl_Object  = Object;
+var
+hasProp = Object.prototype.hasOwnProperty,
+slice   = Array.prototype.slice;
 
-o.crl_mergeObject = function(obj, add) {
+function copyObj(from, to) {
     var name;
-    for (name in add) {
-        if (crl_hasProp.call(add, name)) {
-            obj[name] = add[name];
+    for (name in from) {
+        if (hasProp.call(from, name)) {
+            to[name] = from[name];
         }
     }
 }
 
-o.crl_instancers = [];
-o.crl_new = function(cls) {
-    var
-    args = crl_slice.call(arguments, start),
-    argc = args.length,
-    i    = -1,
-    instancer = crl_instancers[argc];
 
-    if (! instancer) {
-        var xargs = [];
-        while (++i < argc) {
-            xargs.push('a[' + i + ']');
-        }
-        crl_instancers[argc] = instancer = new Function('c', 'a', 'return new c(' + xargs.join(',') + ');');
-    }
+CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
 
-    if (typeof cls === 'function') {
-        return instancer(cls, args);
-    }
-
-    throw Error('Runtime Error: trying to instanstiate no class');
-}
-
-o.crl_newByConf = function(cls, conf) {
-    var instance, name;
-    instance = new cls();
-    for (name in conf) {
-        if (crl_hasProp.call(conf, name) && crl_hasProp.call(instance, name)) {
-            instance[name] = conf[name];
-        }
-    }
-    return instance;
-}
-
-o.crl_setProp = function(obj, prop, value) {
-    obj && (typeof obj.setProperty === 'function') && obj.setProperty(prop, value);
-    return value;
-}
-
-o.crl_classIdSeed     = 1;
-o.crl_classRegistry   = {};
-o.crl_Class           = function(){this.$plugins = []};
-o.crl_Class.prototype = {
-
-    $init: function(){
-        typeof this.$setup === 'function' && this.$setup.apply(this, arguments);
-    },
-
-    $class: crl_Class,
-
-    // plugins executed before construct
-    // $plugins: [],
-}
-
-o.crl_genClassId = function() {
-    return 'class-' + (crl_classIdSeed++);
-}
-
-// combine
-o.crl_defineClass = function(Class, supers) {
-    var
-    i, len, sup, superIds,
-    id    = crl_genClassId(),
-    proto = new crl_Class();
-
-    if (supers) {
-        superIds = {};
-        len      = supers.length;
-
-        for (i = 0; i < len; i++) {
-            sup = supers[i];
-            superIds[sup.$classId] = null;
-            crl_mergeObject(superIds, sup.$superIds);
-            sup.$classBody.call(proto);
-        }
-    }
-
-    proto.$class    = crl_classRegistry[id] = Class;
-    Class.prototype = proto;
-    Class.$classId  = id;
-    Class.$superIds = superIds;
-    Class.$classBody.call(proto);
-};
-
-
-o.crl_assertType = function(obj, Class) {
-    var ret, clsId, superIds, objCls, type,
-    nativeTypes = {
+    idSeed      : 1,
+    instancers  : [],
+    nativeTypes : {
         'String'   : String,
         'Number'   : Number,
         'Boolean'  : Boolean,
         'RegExp'   : RegExp,
         'Array'    : Array,
         'Object'   : Object,
-        'Function' : Function,
+        'Function' : Function
+    },
 
-    };
+    create: function(Class) {
+        var
+        instancerArgs,        
+        args      = slice.call(arguments, 1),
+        argc      = args.length,
+        i         = -1,
+        instancer = this.instancers[argc];
 
-    if (typeof Class === 'function') {
-        if (typeof obj !== 'undefined') {
-            clsId  = Class.$classId;
-            objCls = obj.$class;
-            if (clsId && objCls) { //is a cor class
-                superIds = objCls.$superIds;
-                if (objCls.$classId === clsId || crl_hasProp.call(superIds, clsId)) {
-                    return Class;
+        if (! instancer) {
+            var instancerArgs = [];
+            while (++i < argc) {
+                instancerArgs.push('a[' + i + ']');
+            }
+            this.instancers[argc] = instancer = new Function('c', 'a', 'return new c(' + instancerArgs.join(',') + ');');
+        }
+
+        if (typeof Class === 'function') {
+            return instancer(Class, args);
+        }
+
+        throw Error('Runtime Error: trying to instanstiate no class');
+    },
+
+    createAndConf: function(Class, conf) {
+        var
+        obj, name;
+
+        obj = new Class();
+        for (name in conf) {
+            if (hasProp.call(conf, name) && hasProp.call(obj, name)) {
+                obj[name] = conf[name];
+            }
+        }
+        return obj;
+    },
+
+    defineClass: function(Class, supers) {
+        var superIds, len, i, _super;
+
+        if (supers) {
+            superIds = {};
+            len      = supers.length;
+
+            for (i = 0; i < len; i++) {
+                _super = supers[i];
+                if (_super.$classId) {
+                    _super.$classId = this.idSeed++;
                 }
-            }
-            else if (obj instanceof Class) {
-                return obj.constructor;
-            }
-            else {
-                type = Object.prototype.toString.call(obj);
-                type = type.substring(8, type.length-1);
-                if(crl_hasProp.call(nativeTypes, type) && nativeTypes[type] === Class) {
-                    return Class;
+                superIds[_super.$classId] = null;
+                copyObj(superIds, _super.$superIds || {});
+
+                if (typeof _super.$setupPrototype === 'function') {
+                    _super.$setupPrototype.call(Class);
+                }
+                else {
+                    copyObj(_super, Class.prototype);
                 }
             }
         }
-    }
-    else {
-        throw 'Provided type must be a class';
-    }
-};
 
-o.crl_keys = function(object) {
-    var keys = [], i, len;
-
-    if (object instanceof Array) {
-        for (i = 0, len = object.length; i < len; i++) {
-            keys.push(i);
+        if (typeof Class.$setupPrototype === 'function') {
+            Class.$setupPrototype.call(Class);
         }
-    }
-    else {
-        if (Object.keys) {
-            keys = Object.keys(object);
+
+        Class.$classId  = this.idSeed++;
+        Class.$superIds = superIds;
+
+        Class.prototype.$class = Class;
+    },
+
+
+    keys: function(obj) {
+        var keys, i, len;
+
+        if (obj instanceof Array) {            
+            i    = -1;
+            len  = obj.length;
+            keys = [];
+
+            while (++i < len) {
+                keys.push(i);
+            }
         }
         else {
-            for (i in object) {
-                if (crl_hasProp.call(object, i)) {
-                    keys.push(i);
+            if (typeof Object.keys === 'function') {
+                keys = Object.keys(obj);
+            }
+            else {
+                for (i in obj) {
+                    if (hasProp.call(obj, i)) {
+                        keys.push(i);
+                    }
                 }
             }
         }
-    }
 
-    return keys;
-}
+        return keys;
+    },
+
+    assertType: function(obj, Class) {
+        var
+        ret, classId,
+        superIds, type,
+        objectClass;
+
+        // it is a Class?
+        if (typeof Class === 'function') {
+
+            // object is defined
+            if (typeof obj !== 'undefined') {
+                classId     = Class.$classId;
+                objectClass = obj.$class;
+
+                //is a cor class
+                if (classId && objectClass) {
+                    superIds = objectClass.$superIds;
+                    // if the type is it's own or is of a combined class
+                    if (objectClass.$classId === classId || hasProp.call(superIds, classId)) {
+                        return Class;
+                    }
+                }
+
+                // it is for non cor classes
+                else if (obj instanceof Class) {
+                    return obj.constructor;
+                }
+
+                // otherwise find the native type according to "Object.prototype.toString"
+                else {
+                    type = Object.prototype.toString.call(obj);
+                    type = type.substring(8, type.length - 1);
+                    if(hasProp.call(this.nativeTypes, type) && this.nativeTypes[type] === Class) {
+                        return Class;
+                    }
+                }
+            }
+        }
+        else {
+            throw 'Trying to assert type with not valid class';
+        }
+    }
+};
 
 }).call(this);
