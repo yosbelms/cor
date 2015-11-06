@@ -14,7 +14,7 @@
     cor.isNode    = isNode;
 
 
-    cor.version = '0.0.1';
+    cor.version = '0.0.2';
 
     cor.compile = function(src, filename) {
         var
