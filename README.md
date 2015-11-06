@@ -9,7 +9,7 @@
 
 **The language of the Web**
 
-Client side code base is now bigger in order to provide the best user experience and balance between client and server sides. Becouse that, front-end code demmands arganization. Cor provides a compact syntax and features which leverages modern programming languages allowing applicaton scale development.
+Client side code base is now bigger in order to provide the best user experience and balance between client and server sides. Becouse that, front-end code demmands arganization. Cor provides a compact syntax and features which leverages modern programming languages allowing application scale development.
 
 ## Installation
 
