@@ -1,0 +1,18 @@
+#!/usr/bin/env node
+
+require('../src/class.js');
+require('../src/cli.js');
+
+var
+buildCmd   = require('../src/command/build.js');
+compileCmd = require('../src/command/compile.js');
+httpCmd    = require('../src/command/http.js');
+
+cli = new cor.CliApp();
+cli.setup('cor');
+
+cli.addCommand(buildCmd);
+cli.addCommand(compileCmd);
+cli.addCommand(httpCmd);
+
+cli.run();

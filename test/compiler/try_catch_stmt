@@ -1,0 +1,30 @@
+func init() {
+    try {
+        a = 3
+    }
+    
+    try {
+        a = 3
+    } catch e {
+        a = 2
+    }
+
+    try {
+        a = 3
+    } finally {
+        a = 2
+    }
+    
+    
+    try {
+        a = 3
+    } catch e {
+        a = 2
+    } finally {
+    
+    }
+    
+
+    throw
+    throw a
+}

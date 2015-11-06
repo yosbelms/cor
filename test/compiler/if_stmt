@@ -1,0 +1,17 @@
+func a() {
+    if a {
+
+    }
+    
+    if a.b() {
+        
+    } else {
+    
+    }
+
+    if a.b() {
+        
+    } else if a {
+    
+    }
+}

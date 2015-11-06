@@ -1,0 +1,29 @@
+{
+    "author"      : "Yosbel Marin",
+    "name"        : "cor-lang",
+    "version"     : "0.0.1",
+    "license"     : "BSD",
+    "description" : "The Language of the Web",
+    "repository"  : "https://github.com/yosbelms/cor.git",
+
+    "preferGlobal": true,
+
+    "bin": {
+        "cor": "./bin/cor"
+    },
+
+    "devDependencies": {
+        "jison"        : "0.4.15",
+        "shelljs"      : "0.5.3",
+        "jasmine"      : "2.3.2"
+    },
+
+    "keywords": [
+         "language",
+         "javascript",
+         "application",
+         "cor",
+         "cor-lang",
+         "compiler"
+    ]
+}

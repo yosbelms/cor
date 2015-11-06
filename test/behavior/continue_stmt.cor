@@ -1,0 +1,15 @@
+
+func init() {
+    describe('Continue Statement', func() {
+        it('Should Work', func() {
+            a = 0
+            b = 0
+            for ;a < 20; a++ {
+                if a < 15 { continue }
+                b++
+            }
+
+            expect(b).toBe(5)
+        })
+    })
+}

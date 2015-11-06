@@ -1,0 +1,14 @@
+func a() {
+    switch a {
+        case 1: b = 2
+    }
+
+    switch a {
+        case 1, 2, 3 :
+            ok()
+        case 4, 5, 6 :
+            no()
+        default:
+            idk()
+    }
+}

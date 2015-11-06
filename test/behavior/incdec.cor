@@ -1,0 +1,27 @@
+func incdecInExpr() {
+    cor.compile('
+        a = b++
+    ')
+}
+
+func init() {
+    describe('IncDec Statement', func() {
+
+        it('Should increment', func() {
+            a = 0
+            a++
+            expect(a).toBe(1)
+        })
+
+        it('Should decrement', func() {
+            a = 0
+            a--
+            expect(a).toBe(-1)
+        })
+
+        it('Should throw if used as expression', func() {
+            expect(incdecInExpr).toThrow()
+        })
+
+    })
+}

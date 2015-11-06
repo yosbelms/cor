@@ -1,0 +1,35 @@
+(function(depsTable, programs) {
+    var
+    i   = -1,
+    len = programs.length,
+    module;
+
+    while (++i < len) {
+        programs[i] = newModule(programs[i], depsTable[i], programs);
+    }
+
+    if (window && document) {
+        document.addEventListener
+            ? document.addEventListener('DOMContentLoaded', programs[0], false)
+            : document.attachEvent('onreadystatechange', programs[0])
+    }
+
+    function newModule(program, deps, programs) {
+
+        var module = {exports : null};
+
+        function require(filename) {
+            return programs[deps[filename]]();
+        }
+
+        function wrapper() {
+            if (! module.exports) {
+                module.exports = {};
+                program(require, module, module.exports);
+            }
+            return module.exports;
+        }
+
+        return wrapper;
+    }
+})(

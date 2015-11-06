@@ -1,0 +1,17 @@
+func a () {
+    for {
+
+    }
+
+    for a = b() {
+
+    }
+
+    for i = 0; i < ln; i++ {
+
+    }
+
+    for ;; {
+    
+    }
+}

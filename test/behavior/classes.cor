@@ -1,0 +1,48 @@
+
+class Person {
+    name = 'default name'
+    age
+
+    func getName() {
+        return me.name
+    }
+
+    func getAge() {
+        return me.age
+    }
+}
+
+func init() {
+    describe('Classes', func() {
+
+        it('Should instantiate', func() {
+            p = @Person
+            expect(p).toBeDefined()
+            expect(p).not.toBe(nil)
+        })
+
+        it('Shuld has default properties', func() {
+            p = @Person
+            expect(p.name).toBe('default name')
+        })
+
+        it('Shuld allow to set properties by a positional constructor', func() {
+            p = @Person['yosbel', 28]
+            expect(p.name).toBe('yosbel')
+            expect(p.age).toBe(28)
+        })
+
+        it('Shuld allow to set properties by a hashed constructor', func() {
+            p = @Person[name: 'yosbel', age: 28]
+            expect(p.name).toBe('yosbel')
+            expect(p.age).toBe(28)
+        })
+
+        it('Methods should work too ', func() {
+            p = @Person['yosbel']
+            expect(p.getName()).toBe('yosbel')
+            expect(p.getAge()).toBeUndefined()
+        })
+
+    })
+}

@@ -1,0 +1,52 @@
+
+func init() {
+    describe('Switch Statement, showld work for', func() {
+
+        it('One Simple case', func() {
+            a = 1
+            switch a {
+                case 1: b = 2
+            }
+            expect(b).toBe(2)
+        })
+
+        it('Several Simple case', func() {
+            a = 2
+            switch a {
+                case 1: b = 1
+                case 2: b = 2
+            }
+            expect(b).toBe(2)
+        })
+
+        it('Complex cases', func() {
+            a = 3
+            switch a {
+                case 1, 2: b = 1
+                case 3, 4: b = 2
+            }
+            expect(b).toBe(2)
+        })
+
+        it('Default case', func() {
+            a = 10
+            switch a {
+                case 1, 2: b = 1
+                case 3, 4: b = 2
+                default: b = 5
+            }
+            expect(b).toBe(5)
+        })
+
+        it('Default case fallthroug', func() {
+            a = 10
+            switch a {
+                default: b = 5
+                case 1, 2: b = 1
+                case 3, 4: b = 2
+            }
+            expect(b).toBe(1)
+        })
+
+    })
+}

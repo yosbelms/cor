@@ -1,0 +1,98 @@
+
+class Person {
+	name = 'Yosbel'
+}
+
+class Client : Person {
+
+}
+
+
+func init() {
+    describe('Type Assertion', func() {
+
+        it('Work for classes', func() {
+            p = @Person
+            expect(p.(Person)).toBeTruthy()
+        })
+
+        it('Work for combined classes', func() {
+            c = @Client
+            expect(c.(Person)).toBeTruthy()
+            expect(c.(Client)).toBeTruthy()
+        })
+
+        it('Should throw if no class is passed', func() {
+            a = 1
+
+            expect(func(){ a.(nil) }).toThrow()
+            expect(func(){ a.(1) }).toThrow()
+            expect(func(){ a.('') }).toThrow()
+        })
+
+        describe('Should work for native', func() {
+
+            it('String', func() {
+                s = 's'
+
+                expect(''.(String)).toBeTruthy()
+                expect(s.(String)).toBeTruthy()
+                expect('5'.(Number)).toBeFalsy()
+            })
+
+            it('Number', func() {
+                n = 3.4e3
+
+                expect(n.(Number)).toBeTruthy()
+                expect(3.4.(Number)).toBeTruthy()
+            })
+
+            it('Boolean', func() {
+                t = true
+                f = false
+
+                expect(t.(Boolean)).toBeTruthy()
+                expect(f.(Boolean)).toBeTruthy()
+                expect(false.(Boolean)).toBeTruthy()
+
+                expect(1.(Boolean)).toBeFalsy()
+                expect(0.(Boolean)).toBeFalsy()
+            })
+
+            ---
+            it('Regular Expression', func() {
+                r = |^([a-z]+)*$|
+
+                expect(r.(RegExp)).toBeTruthy()
+                expect(|^A+$|.(RegExp)).toBeTruthy()
+
+                expect('^A+$'.(RegExp)).toBeFalsy()
+            })
+            ---
+
+            it('Array', func() {
+                a = [1, 2]
+
+                expect(a.(Array)).toBeTruthy()
+                expect(arguments.(Array)).toBeFalsy()
+            })
+
+            it('Object', func() {
+                o = @[1, 2]
+                p = @Person
+
+                expect(o.(Object)).toBeTruthy()
+                expect(p.(Object)).toBeTruthy()
+            })
+
+            it('Function', func() {
+                f = func(){}
+
+                expect(f.(Function)).toBeTruthy()
+                expect(''.(Function)).toBeFalsy()
+            })
+
+        })
+
+    })
+}

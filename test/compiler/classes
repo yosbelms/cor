@@ -1,0 +1,36 @@
+
+class Empty  {}
+
+class WithProps  {
+    prop1
+    prop2
+}
+
+class Person {
+    firstName
+    lastName
+
+    func getFullName() {
+        return me.firstName + me.lastName
+    }
+}
+
+class Client : Person {
+    account
+
+    func getFullName() {
+        return super(Person)
+    }
+
+    func getAccount() {
+        return me.account
+    }
+}
+
+
+class VIPClient : Client, Empty {
+    func vip() {
+
+    }
+}
+

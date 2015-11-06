@@ -1,0 +1,5 @@
+
+func incdecop() {
+    a = 2 + i++
+    a = 2 + i--
+}

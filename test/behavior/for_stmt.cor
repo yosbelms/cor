@@ -1,0 +1,97 @@
+
+
+func init() {
+    describe('For Statement shouls work', func() {
+
+        it('With no condition', func() {
+            a = 1
+            for {
+                a++
+                if a == 2 {
+                    break
+                }
+            }
+            expect(a).toBe(2)
+        })
+
+        it('Whith conditions', func() {
+            a = 5
+            for a {
+                a--
+            }
+            expect(a).toBe(0)
+        })
+
+        it('With Assignment Expression', func() {
+            iterator = func(arr) {
+                i = 0
+                return func() {
+                    v = arr[i]
+                    i++
+                    return v
+                }
+            }
+
+            original = [1, 5, 2, 6]
+            copy     = []
+
+            iterate  = iterator(original)
+
+            for item = iterate() {
+                copy.push(item)
+            }
+
+            expect(copy).toEqual(original)
+        })
+
+        describe('Classic For Statement should work too', func(){
+
+            it('With empty clause', func(){
+                a = 0
+                for ;; {
+                    a++
+                    break
+                }
+                expect(a).toBe(1)
+            })
+
+            it('Only with pre', func(){
+                for a = 5; ; {
+                    break
+                }
+                expect(a).toBe(5)
+            })
+
+            it('Only with condition', func(){
+                a = 5
+                for ; a; {
+                    a--
+                }
+                expect(a).toBe(0)
+            })
+
+            it('Only with post', func(){
+                a = 5
+                for ; ; a-- {
+                    if a == 0 { break }
+                }
+                expect(a).toBe(0)
+            })
+
+            it('With condition and post', func(){
+                a = 5
+                for ; a; a-- { }
+                expect(a).toBe(0)
+            })
+
+            it('With full clause', func(){
+                for a = 5; a; a-- { }
+                expect(a).toBe(0)
+            })
+
+        })
+    })
+
+
+
+}

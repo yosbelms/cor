@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="assets/style.css">
+        <title></title>
+    </head>
+    <body>
+	<span id="top"></span>
+	
+	<div class="goto-top"><a href="#top">^</a></div>
+
+    <nav class="navbar" role="navigation">
+        <div class="nav content">
+            <a href="../index.html">
+                <p class="brand"><strong>Cor</strong></p>
+            </a>
+            <ul class="right">
+                <li class="inline"><a href="get_started.html">Get started</a></li>
+                <li class="inline"><a href="reference.html">Reference</a></li>
+                <li class="inline"><a href="commands.html">Commands</a></li>
+                <li class="inline"><a href="contributing.html">Contributing</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="body content">
+

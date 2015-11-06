@@ -1,0 +1,24 @@
+        <div class="full-rule"></div>
+
+        <div class="feature footer-links">
+            <ul>
+                <li><a href="http://groups.google.com/group/cor-lang">Discussions</a></li>
+                <li> . </li>
+                <li><a href="mailto:cor-lang@googlegroups.com">Mailing list</a></li>
+                <li> . </li>
+                <li><a href="http://github.com/yosbelms/cor/issues">Issues</a></li>
+                <li> . </li>
+                <li><a href="http://github.com/yosbelms/cor/contributors">Contributors</a></li>
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <div class="content">
+            <div class="inline"> Copyright 2015 (c) Yosbel Mar&iacute;n Sardi&ntilde;as </div>
+            <div class="inline right"> Cor - The language of the Web </div>
+        </div>
+    </div>
+    </body>
+</html>

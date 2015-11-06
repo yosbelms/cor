@@ -1,0 +1,19 @@
+
+func init() {
+    describe('Return Statement', func() {
+
+        it('Shuld return values', func() {
+            fn = func(p) { return p }
+            expect(fn(true)).toBe(true)
+        })
+
+        it('Shuld return undefined if the value is in the next line', func() {
+            fn = func(p) {
+                return
+                p
+            }
+            expect(fn(true)).not.toBeDefined()
+        })
+
+    })
+}

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="assets/style.css">
+        <title>Get started</title>
+    </head>
+    <body>
+	<span id="top"></span>
+	
+	<div class="goto-top"><a href="#top">^</a></div>
+
+    <nav class="navbar" role="navigation">
+        <div class="nav content">
+            <a href="../index.html">
+                <p class="brand"><strong>Cor</strong></p>
+            </a>
+            <ul class="right">
+                <li class="inline"><a href="get_started.html">Get started</a></li>
+                <li class="inline"><a href="reference.html">Reference</a></li>
+                <li class="inline"><a href="commands.html">Commands</a></li>
+                <li class="inline"><a href="contributing.html">Contributing</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="body content">
+
+<h1 id="getstarted">Get started</h1>
+
+<p>Cor is an open source language that compiles to javascript, it is designed for application-scale development. You can install it from NPM and use the CLI tools written in <a href="http://nodejs.org">Node.js</a>.</p>
+
+<h3 id="keyconcepts">Key Concepts</h3>
+
+<ul>
+<li><strong>Symplicity:</strong> Cor has a very simple and clear syntax which leverages Go, C# and Python languages enforcing developers to write maintainable code.</li>
+
+<li><strong>Embrace the Web:</strong> Cor highlights the best parts of the web and keeps that you love, it is friend of javascript good parts.</li>
+
+<li><strong>Scalability of Maintenance:</strong> Software is not just written and forgotten, it must be maintained. Cor empower you to write scalable software by providing structures such as packages, modules and classes.</li>
+
+<li><strong>Development Experience:</strong> Cor brings back the missing coding/run/test development flow lost in languages that compiles to javascript. That's it, it has an asynchronous pluggable loader which compiles in the fly, offering the best possible development experience thanks to self-contained sourcemaps. However, it provides cli tools to compile and build.</li>
+</ul>
+
+<h2 id="installation">Installation</h2>
+
+<p>Cor compiler can run in any javascript environment however is primarily thinked to run in the browser. The parser is written using <a href="http://jison.org">Jison</a> and the cli tool is available as a <a href="http://nodejs.org">Node.js</a> utility. For commands reference see <a href="commands.html">Commands</a>.</p>
+
+<p>From NPM:</p>
+
+<pre><code>npm install -g cor-lang
+</code></pre>
+
+<p>Directly from git repository:</p>
+
+<pre><code>npm install -g yosbelms/cor
+</code></pre>
+
+<p>Once installed you should have access to <code>cor</code> command which can compile and build sources. For cli usage run <code>cor help</code> command. The files containing source code should have <code>.cor</code> extension. However, Cor read files through <code>Cor Loader</code>, a component that can be extended to add support for any kind of processors such as Markdown, Handlebars, YAML... and every else.</p>
+
+<p>Examples:</p>
+
+<ul>
+<li>Compiles source code located in <code>src</code> directory and writes it to <code>compiled</code> directory:</li>
+</ul>
+
+<pre><code>cor compile src -o=compiled
+</code></pre>
+
+<ul>
+<li>Compiles and builds <code>app.cor</code> and its dependences and writing the result to <code>app.js</code> file:</li>
+</ul>
+
+<pre><code>cor build app.cor -o=app.js
+</code></pre>
+
+<p>Output file (<code>app.js</code>) is now ready to be used in a web page by <code>&lt;srcipt src="app.js"&gt;&lt;/script&gt;</code> tag. See <a href="commands.html">commands</a> for reference.</p>
+
+<h2 id="helloworldtutorial">Hello World tutorial</h2>
+
+<ul>
+<li><strong>Step 1.</strong> Make the following file tree structure:</li>
+</ul>
+
+<pre><code>hello
+  |__ hello.cor
+  |__ index.html
+</code></pre>
+
+<ul>
+<li><strong>Step 2.</strong> Write the following source to <code>hello.cor</code> file:</li>
+</ul>
+
+<pre><code>func init() {
+    alert('Hello World')
+}
+</code></pre>
+
+<ul>
+<li><strong>Step 3.</strong> Include Cor library (located at <code>corlang/dist/cor.js</code>) inside <code>index.html</code> using <code>script</code> tag and then specify the application entry script using <code>data-entry="hello.cor"</code> in a separated script tag:</li>
+</ul>
+
+<pre><code>&lt;html&gt;
+    &lt;script type="text/javascript" src="cor/dist/cor.js"&gt;&lt;/script&gt;
+    &lt;script data-entry="hello.cor"&gt;&lt;/script&gt;
+&lt;/html&gt;
+</code></pre>
+
+<ul>
+<li><strong>Step 4.</strong> Run <code>cor http</code> inside hello folder and open <code>http://127.0.0.1/index.html</code> in a browser, you should see a <code>Hello World</code> alert.</li>
+</ul>        <div class="full-rule"></div>
+
+        <div class="feature footer-links">
+            <ul>
+                <li><a href="http://groups.google.com/group/cor-lang">Discussions</a></li>
+                <li> . </li>
+                <li><a href="mailto:cor-lang@googlegroups.com">Mailing list</a></li>
+                <li> . </li>
+                <li><a href="http://github.com/yosbelms/cor/issues">Issues</a></li>
+                <li> . </li>
+                <li><a href="http://github.com/yosbelms/cor/contributors">Contributors</a></li>
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <div class="content">
+            <div class="inline"> Copyright 2015 (c) Yosbel Mar&iacute;n Sardi&ntilde;as </div>
+            <div class="inline right"> Cor - The language of the Web </div>
+        </div>
+    </div>
+    </body>
+</html>

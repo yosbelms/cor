@@ -1,0 +1,9 @@
+func a () {
+    for v in coll {
+
+    }
+
+    for k, v in coll {
+
+    }
+}

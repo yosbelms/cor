@@ -1,0 +1,9 @@
+func a() {
+    str = ''
+    str = ' '
+    str = 'Aaron Swartz'
+    str = '
+        select *
+        from Blog
+    '
+}

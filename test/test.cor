@@ -1,0 +1,8 @@
+use './util'
+use './compiler'
+use './behavior'
+use './coverage'
+
+func init() {
+    util.jasmineEnv.execute()
+}

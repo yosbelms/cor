@@ -1,0 +1,7 @@
+
+func index_expr() {
+    a[1]
+    a[b]
+    a['c']
+    a[('a' + 'b')]
+}

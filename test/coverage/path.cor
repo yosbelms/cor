@@ -1,0 +1,41 @@
+
+path = cor.path
+
+func init() {
+
+    describe('Path', func() {
+
+        it('isRelative', func() {
+            expect(path.isRelative('../')).toBe(true)
+            expect(path.isRelative('./')).toBe(true)
+            expect(path.isRelative('/path')).toBe(false)
+            expect(path.isRelative('c:\path')).toBe(false)
+            expect(path.isRelative('path')).toBe(false)
+        })
+
+        it('isAbsolute', func() {
+            expect(path.isAbsolute('../')).toBe(false)
+            expect(path.isAbsolute('./')).toBe(false)
+            expect(path.isAbsolute('/path')).toBe(true)
+            expect(path.isAbsolute('c:\path')).toBe(true)
+            expect(path.isAbsolute('path')).toBe(false)
+        })
+
+        it('parse', func() {
+            p = path.parse('/dirA/dirB/fname.ext')
+
+            expect(p.root).toBe('/')
+            expect(p.dir).toBe('dirA/dirB/')
+            expect(p.basename).toBe('fname.ext')
+            expect(p.ext).toBe('.ext')
+        })
+
+        it('basename', func() {
+            expect(path.basename('/dirA/dirB/fname.ext')).toBe('fname')
+            expect(path.basename('fname.ext1.ext2')).toBe('fname.ext1')
+            expect(path.basename('fname.ext1.ext2', '.ext1.ext2')).toBe('fname')
+        })
+
+    })
+
+}

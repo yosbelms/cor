@@ -1,0 +1,6 @@
+func a() {
+    a = func () {}
+    a = func () {
+        return x
+    }
+}

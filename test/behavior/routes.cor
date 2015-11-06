@@ -1,0 +1,31 @@
+
+r = cor.yy.generateRoute
+
+func init() {
+    describe('Routes generation  for Use Statement should work for', func() {
+
+        it('Package type routes', func() {
+            expect(r('pkg')).toBe('pkg/pkg')
+            expect(r('./pkg')).toBe('./pkg/pkg')
+            expect(r('./pkg/sub_pkg')).toBe('./pkg/sub_pkg/sub_pkg')
+        })
+
+        it('Local Module type routes', func() {
+            expect(r('.pkg')).toBe('./pkg')
+            expect(r('.Class')).toBe('./Class')
+        })
+
+        it('Class type routes', func() {
+            expect(r('./Class')).toBe('./Class')
+            expect(r('/Class')).toBe('/Class')
+            expect(r('Class')).toBe('Class')
+            expect(r('Class.x')).toBe('Class.x')
+        })
+
+        it('Delegated type routes', func() {
+            expect(r('./js/lib.js')).toBe('./js/lib.js')
+            expect(r('./js/lib.min.js')).toBe('./js/lib.min.js')
+        })
+
+    })
+}

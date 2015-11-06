@@ -1,0 +1,59 @@
+
+
+func init() {
+    obj = @[
+        id: '001',
+        name: 'yosbel',
+        age: 28,
+    ]
+    objKeys   = ['id', 'name', 'age']
+    objValues = ['001', 'yosbel', 28]
+
+    arr       = [1, 5, 10]
+    arrKeys   = [0, 1, 2]
+    //arrValues = ['001', 'yosbel', 28]
+
+    describe('ForIn Statement shouls work', func() {
+
+        describe('With objects', func() {
+            it('using just value', func() {
+                stack = []
+                for v in obj {
+                    stack.push(v)
+                }
+                expect(stack).toEqual(objValues)
+            })
+
+            it('using keys and value', func() {
+                stack = @[]
+                for k, v in obj {
+                    stack[k] = v
+                }
+                expect(stack).toEqual(obj)
+            })
+
+        })
+
+        describe('With arrays', func() {
+            it('using just value', func() {
+                stack = []
+                for v in arr {
+                    stack.push(v)
+                }
+                expect(stack).toEqual(arr)
+            })
+
+            it('using keys and value', func() {
+                stack = []
+                for k, v in arr {
+                    stack[k] = v
+                }
+                expect(stack).toEqual(arr)
+            })
+
+        })
+
+
+    })
+
+}

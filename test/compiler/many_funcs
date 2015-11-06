@@ -1,0 +1,8 @@
+
+func a() {
+    return true
+}
+
+func b() {
+    return false
+}

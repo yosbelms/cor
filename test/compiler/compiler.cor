@@ -1,0 +1,75 @@
+
+use '../util'
+
+notShouldThrowList = [
+    'compiler/empty_program',
+
+    'compiler/single_decl',
+    'compiler/single_decl_wraped_by_spaces',
+
+    'compiler/single_func',
+    'compiler/many_funcs',
+    'compiler/type_assert',
+
+    'compiler/classes',
+    'compiler/slices',
+    'compiler/incdec_stmt',
+    'compiler/call_expr',
+    'compiler/index_expr',
+    'compiler/obj_constructors',
+    'compiler/strings',
+    'compiler/lambda',
+    'compiler/assignment',
+
+    'compiler/for_stmt',
+    'compiler/for_in_stmt',
+    'compiler/if_stmt',
+    'compiler/switch_stmt',
+    'compiler/use_stmt',
+    'compiler/try_catch_stmt',
+]
+
+shouldThrowList = [
+    'compiler/module_members_with_equal_name1',
+    'compiler/module_members_with_equal_name2',
+
+    'compiler/wrong_incdec_used_as_expr',
+]
+
+func getNotThrowExpectation(filename) {
+    ret = func() {
+        expect(util.fileCompiler(filename)).not.toThrow()
+    }
+    return ret
+}
+
+func getThrowExpectation(filename) {
+    ret = func() {
+        expect(util.fileCompiler(filename)).toThrow()
+    }
+    return ret
+}
+
+func getSpec(filename) {
+    return filename.split('/').pop();
+}
+
+func init() {
+    describe('Compiler', func() {
+
+        describe('Should not throw compiling', func(){
+            for filename in notShouldThrowList {
+                it(getSpec(filename), getNotThrowExpectation(filename))
+            }
+        })
+
+
+        describe('Should throw compiling', func(){
+            for filename in shouldThrowList {
+                it(getSpec(filename), getThrowExpectation(filename))
+            }
+        })
+
+    })
+
+}

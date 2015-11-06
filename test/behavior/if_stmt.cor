@@ -1,0 +1,21 @@
+
+
+func init() {
+    describe('If Statement', func() {
+
+        it('Shuld work', func() {
+            a = 1
+            if a {
+                b = 2
+            }
+
+            if c {
+                c = true
+            }
+
+            expect(b).toBe(2)
+            expect(c).toBeFalsy()
+        })
+
+    })
+}

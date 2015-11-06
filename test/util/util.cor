@@ -1,0 +1,104 @@
+
+---
+Bootstrapping Jasmine
+---
+
+use '../vendor/jasmine/jasmine.js' jsmnR
+
+// hack for hasmine-html
+window.jasmineRequire = jsmnR
+
+use '../vendor/jasmine/jasmine-html.js'
+
+htmlReporter = nil
+jasmineEnv   = nil
+
+func prepareJasmine() {
+    jasmine = jsmnR.core(jsmnR)
+    jsmnR.html(jasmine)
+    jasmineEnv = env = jasmine.getEnv()
+    jasmineInterface = jsmnR.interface(jasmine, env)
+
+    for k, item in jasmineInterface {
+        window[k] = item
+    }
+
+    queryString = @jasmine.QueryString[@[
+        getWindowLocation: func() {
+            return window.location
+        },
+    ]]
+
+    catchingExceptions = queryString.getParam('catch')
+    env.catchExceptions(catchingExceptions)
+
+    htmlReporter = @jasmine.HtmlReporter[@[
+        env: env,
+        onRaiseExceptionsClick: func() {
+            queryString.navigateWithNewParam('catch', !env.catchingExceptions())
+        },
+        onThrowExpectationsClick: func() {
+            queryString.navigateWithNewParam('throwFailures', !env.throwingExpectationFailures())
+        },
+        addToExistingQueryString: func(key, value) {
+            return queryString.fullStringWithNewParam(key, value)
+        },
+        getContainer: func() {
+            return document.body
+        },
+        createElement: func() {
+            return document.createElement.apply(document, arguments)
+        },
+        createTextNode: func() {
+            return document.createTextNode.apply(document, arguments)
+        },
+        timer: @jasmine.Timer,
+    ]]
+
+    env.addReporter(jasmineInterface.jsApiReporter)
+    env.addReporter(htmlReporter)
+
+    specFilter = @jasmine.HtmlSpecFilter[@[
+        filterString: func() {
+            return queryString.getParam('spec')
+        },
+    ]]
+
+    env.specFilter = func(spec) {
+        return specFilter.matches(spec.getFullName())
+    }
+}
+
+func browserHack() {
+    window.setTimeout    = window.setTimeout
+    window.setInterval   = window.setInterval
+    window.clearTimeout  = window.clearTimeout
+    window.clearInterval = window.clearInterval
+}
+
+func fileCompiler(path) {
+    compiler = func() {
+        return compile(file(path))
+    }
+
+    return compiler
+}
+
+
+func file(path) {
+    return cor.loader.readFile(path);
+}
+
+func compile(src) {
+    return cor.compile(src)
+}
+
+func run() {
+    return cor.run.apply(cor, arguments)
+}
+
+func init() {
+    prepareJasmine()
+    browserHack()
+    htmlReporter.initialize()
+}

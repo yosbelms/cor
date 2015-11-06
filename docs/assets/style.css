@@ -1,0 +1,294 @@
+@font-face {
+  font-family: 'Oxygen';
+  src: url('./Oxygen-Regular.ttf') format('truetype');
+}
+
+body {
+    font-family: Oxygen, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin: 0px;
+    background-color: #fafafa;
+    font-size: 15px;
+}
+
+a {
+    text-decoration: none;
+    color: #269abc;
+}
+
+.inline {
+    display: inline;
+}
+
+.left {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+/* NAV BAR */
+.navbar {
+    left: 0px;
+    right: 0px;
+    width: auto;
+    position: fixed;
+    z-index: 1;
+    top: 0px;
+    display: block;
+    color: #fff;
+    text-align: center;
+    background-color: #555;
+    padding: 5px 0px 5px 0px;
+}
+
+.brand {
+    float: left;
+    display: inline;
+    margin-left: 3px;
+}
+
+.navbar a {
+    text-decoration: none;
+    color: #fff;
+}
+
+.nav > ul {
+    list-style: none;
+    padding-left: 0px;
+}
+
+.nav li {
+    margin-left: 10px;
+}
+
+.nav li a {
+    padding-bottom: 10px;
+}
+
+.nav li a:hover {
+    border-bottom: 2px solid #aaa;
+}
+
+.nav li a:active {
+    /*border-bottom: 2px solid #fff;*/
+}
+
+/* CONTENT */
+
+ul {
+    padding-left: 20px;
+}
+
+.content {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 800px;
+    width: auto;
+}
+
+.body {
+    margin-top: 58px;
+}
+
+
+pre {
+    background-color: #eee;
+    border: 1px solid #aaa;
+    padding: 10px;
+    border-radius: 3px;
+}
+
+code {
+    background-color: #eee;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    padding: 0px 5px;
+    color: #555;
+    border-radius: 3px;
+}
+
+pre code {
+    padding: 0px;
+    color: #000;
+    font-size: 13px;
+}
+
+h1, h2, h3, h4 {
+    color: #286090;
+}
+
+h1 {
+    padding-top: 20px;
+}
+
+h2 {
+    /*font-weight: normal;*/
+    margin-top: 40px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+table {
+    margin-top: 10px;
+}
+
+td {
+    padding: 5px 15px 5px 0;
+    vertical-align: top;
+}
+
+.logo {
+    border-radius: 100%;
+    border: 12px solid #fff;
+    margin: 0 auto 30px;
+    width: 144px;
+    height: 144px;
+    font-size: 88px;
+    line-height: 127px;
+    font-family: Oxygen;
+    display: block;
+    font-weight: bold;
+    color: #fff;
+    text-align: center;
+    cursor: default;
+    background-color: #204d74;
+}
+
+.rule {
+    width: 100%;
+    margin: 70px auto;
+}
+
+.full-rule {
+    width: 100%;
+    margin: 40px auto;
+    border-top: 1px solid #ddd;
+}
+
+
+.lead {
+    max-width: 70%;
+    margin-right: auto;
+    margin-left: auto;
+    font-weight: normal;
+}
+
+.master {
+    left: 0px;
+    right: 0px;
+    width: auto;
+    padding-top: 60px;
+    background-color: #286090;
+    text-align: center;
+    height: 550px;
+    color: #fff;
+}
+
+.master .lead {
+    font-size: 30px;
+}
+
+.feature {
+    left: 0px;
+    right: 0px;
+    margin: auto;
+    text-align: center;
+    display: block;
+    padding-bottom: 10px;
+    height: auto;
+}
+
+.feature .title {
+    font-size: 40px;
+    font-weight: bold;
+    border: none;
+    margin: 0px;
+    padding: 100px 0 0 0;
+    line-height: 1;
+}
+
+.feature .lead {
+    font-size: 22px;
+}
+
+
+.grid {
+    margin-left: -50px;
+    margin-right: -50px;
+    width: auto;
+    display: table;
+}
+
+.grid .col{
+    width: 290px;
+    min-width: 90px;
+    position: relative;
+    display: inline;
+    float: left;
+    padding: 0 5px;
+}
+
+.grid .col h3 {
+    font-size: 23px
+}
+
+.grid .col p {
+    font-size: 18px;
+}
+
+a.button {
+    color: #fff;
+    border: 1px solid #fff;
+    padding: 12px 28px;
+    font-size: 20px;
+    border-radius: 10px;
+    font-weight: normal;
+    background-color: transparent;
+}
+
+a.button:hover {
+    color: #204d74;
+    background-color: #fff;
+}
+
+
+/* FOOTER */
+.footer {
+    padding: 10px 0px;
+    background-color: #eee;
+    font-size: 11px;
+}
+
+.footer-links > ul {
+    list-style: none;
+    padding-left: 0px;
+}
+
+.footer-links > ul > li {
+    display: inline;
+    line-height: 1;
+}
+
+/**TABLE CONTENT*/
+#top {
+    position: absolute;
+    width: 0px;
+    height: 0px;
+    top: 0px;
+    left: 0px;
+}
+.goto-top {
+    position: fixed;
+    display: block;
+    right: 10px;
+    bottom: 10px;
+    width: 35px;
+    height: 35px;
+    font-size: 40px;
+    font-weight: bold;
+}
+
+.goto-top a:hover {
+    color: #204d74;
+}
