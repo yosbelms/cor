@@ -1,17 +1,17 @@
 # Get started
 
-Cor is an open source language that compiles to javascript, it is designed for application-scale development. You can install it from NPM and use the CLI tools written in [Node.js](http://nodejs.org).
+Cor is an open source language that compiles to javascript, it is designed for application-scale development. You can install it from NPM and use the CLI tools with [Node.js](http://nodejs.org).
 
 ### Key Concepts
 
 * **Symplicity:** Cor has a very simple and clear syntax which leverages Go, C# and Python languages enforcing developers to write maintainable code.
-* **Embrace the Web:** Cor highlights the best parts of the web and keeps that you love, it is friend of javascript good parts.
+* **Embrace the Web:** Cor highlights the best parts of the web and it keeps that you love, it is friend of javascript's good parts.
 * **Scalability of Maintenance:** Software is not just written and forgotten, it must be maintained. Cor empower you to write scalable software by providing structures such as packages, modules and classes.
-* **Development Experience:** Cor brings back the missing coding/run/test development flow lost in languages that compiles to javascript. That's it, it has an asynchronous pluggable loader which compiles in the fly, offering the best possible development experience thanks to self-contained sourcemaps. However, it provides cli tools to compile and build.
+* **Development Experience:** Cor brings coding/run/test development flow. It is possible thanks to an asynchronous pluggable loader which compiles sources in the fly, offering the best possible development experience thanks to self-contained source-maps. However, it provides CLI tools to compile and build sources.
 
 ## Installation
 
-Cor compiler can run in any javascript environment however is primarily thinked to run in the browser. The parser is written using [Jison](http://jison.org) and the cli tool is available as a [Node.js](http://nodejs.org) utility. For commands reference see [Commands](commands.html).
+Cor compiler can run in any javascript environment however is primarily devised to run in the browser. The parser is written using [Jison](http://jison.org) and the CLI tool is available as a [Node.js](http://nodejs.org) utility. For commands reference see [Commands](commands.html).
 
 From NPM:
 
@@ -46,8 +46,8 @@ Output file (`app.js`) is now ready to be used in a web page by `<srcipt src="ap
 * **Step 1.** Make the following file tree structure:
 ```
 hello
-  |__ hello.cor
-  |__ index.html
+  |── index.html
+  └── hello.cor
 ```
 
 * **Step 2.** Write the following source to `hello.cor` file:
@@ -65,4 +65,6 @@ func init() {
 </html>
 ```
 
-* **Step 4.** Run `cor http` inside hello folder and open `http://127.0.0.1/index.html` in a browser, you should see a `Hello World` alert.
+* **Step 4.** Run `cor http` inside `hello` folder and open `http://127.0.0.1/index.html` in a browser, you should see a `Hello World` alert.
+
+See the [reference](reference.html) for further information about the language.

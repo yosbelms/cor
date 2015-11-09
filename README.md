@@ -9,7 +9,9 @@
 
 **The language of the Web**
 
-Client side code base is now bigger in order to provide the best user experience and balance between client and server sides. Becouse that, front-end code demmands arganization. Cor provides a compact syntax and features which leverages modern programming languages allowing application scale development.
+Cor is a compact language that compiles to javascript. It borrows ideas from existing languages such as C#, Go and Python. It is designed for to build and maintain large web applications in a simple way.
+
+> Note: Cor is still work in progress. Make sure to star the project if you are interested!
 
 ## Installation
 

@@ -10,7 +10,7 @@ Usage:
 ```
 cor help [command]
 ```
-Shows available commands. Also prints usage and documentation about a specified command.
+Will shows available commands. Also prints usage and documentation about a specified command.
 
 Example:
 ```
@@ -101,7 +101,7 @@ cor compile <path> [compile options]
         </tr>
         <tr>
             <td><code>-v</code></td>
-            <td>Specifies if print or not file names as the are compiled.</td>
+            <td>Specifies if print or not file names as they are compiled.</td>
         </tr>
     </tbody>
 </table>
@@ -121,7 +121,7 @@ In this case the output directory is `../delivery_dir/mylib`
 
 ## Http
 
-`http` command launch a simple http server using current directory (`cwd`) as the root. If a directory is requested it will list all files inside as a list of html links (`<a href=""></a>`). This server is for development purpose, do not use it in production.
+`http` command launch a simple http server using current directory (`cwd`) as the root. If a directory is requested it will list all files inside as a list of html links (`<a href=""></a>`). This server is for development purpose; do not use it in production.
 
 Usage:
 ```

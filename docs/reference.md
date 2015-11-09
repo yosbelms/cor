@@ -14,7 +14,7 @@ The loader is a component which manages dependencies and dynamically loads files
 
 ## CRL (Cor Runtime Library)
 
-CRL is a small library which makes possible to take advantage of features such as *literal constructors, for-in statements, class combination and type assertions*, these beloved features would not be possible without CRL. Cor tends to depend less on it, but, without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by compiled routines.
+CRL is a small library which makes possible to take advantage of features such as *literal constructors, for-in statements, class combination and type assertions*, these beloved Cor properties would not be possible without CRL. Cor tends to depend less on it, but, without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by compiled routines.
 
 
 ## Semicolon Insertion
@@ -62,7 +62,7 @@ Example to show comments usage:
 ```
 ---
 sum(a int, b int) int
-This function returns the sum of a plus b
+This function returns the result of a plus b
 ---
 func sum(a, b) {
     // sum two numbers
@@ -75,7 +75,7 @@ func sum(a, b) {
 
 ## Variables and Lexical Scoping
 
-Cor does not has a keyword to declare variables, instead Cor declares it for you the first time it is used. If a variable with equal name is declared in outer scope the compiler will assume you are using the declared outside. Unless writing the variable as a simple statement. This technique is called **variable announcing**.
+Cor does not has a keyword to declare variables, instead Cor declares it for you the first time it is used. If a variable with equal name is declared in outer scope the compiler will assume you are using the declared outside. Unless you write the variable as a simple statement. This technique is called **variable announcing**.
 
 Example:
 ```
@@ -345,10 +345,26 @@ Once this module is initialized, `http` variable will have an instance of `HttpS
 
 There are three types of modules.
 1. **Main Module:** Is the module which has the same name as its package with `.cor` suffix.
-2. **???? Module:** The first letter of its name is uppercased.
-3. **Regular Module:** Is
+2. **Exposed Module:** Are modules that the first letter of its name is uppercased and it can be accessed from any other module outside or inside of it's package, but just can be used the construction (variable, class or function) which has the name equal to the module name. It is an attempt to be compliant with coding standards which enforces to have a class per file.
+3. **Inner Module:** Is a module which can be only used in other modules inside the same package. It is a inner module if it is not a main module and is not exposed.
 
-*Note: A module may only contain variable declarations, functions, classes, and use statements.*
+*Note: A module may only contain variable declarations, functions, classes, and `use` statements.*
+
+Example:
+
+```
+app                       
+  |── app.cor             // main module
+  |── model               
+  |     |── Client.cor    // exposed module
+  |     |── Account.cor   // exposed module
+  |     └── util.cor      // inner module
+  ...
+  |
+  |── controller  
+  └── view
+        
+```
 
 
 ## Packages

@@ -42,7 +42,7 @@
 
 <h2 id="crlcorruntimelibrary">CRL (Cor Runtime Library)</h2>
 
-<p>CRL is a small library which makes possible to take advantage of features such as <em>literal constructors, for-in statements, class combination and type assertions</em>, these beloved features would not be possible without CRL. Cor tends to depend less on it, but, without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by compiled routines.</p>
+<p>CRL is a small library which makes possible to take advantage of features such as <em>literal constructors, for-in statements, class combination and type assertions</em>, these beloved Cor properties would not be possible without CRL. Cor tends to depend less on it, but, without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by compiled routines.</p>
 
 <h2 id="semicoloninsertion">Semicolon Insertion</h2>
 
@@ -88,7 +88,7 @@ This is a docblock
 
 <pre><code>---
 sum(a int, b int) int
-This function returns the sum of a plus b
+This function returns the result of a plus b
 ---
 func sum(a, b) {
     // sum two numbers
@@ -100,7 +100,7 @@ func sum(a, b) {
 
 <h2 id="variablesandlexicalscoping">Variables and Lexical Scoping</h2>
 
-<p>Cor does not has a keyword to declare variables, instead Cor declares it for you the first time it is used. If a variable with equal name is declared in outer scope the compiler will assume you are using the declared outside. Unless writing the variable as a simple statement. This technique is called <strong>variable announcing</strong>.</p>
+<p>Cor does not has a keyword to declare variables, instead Cor declares it for you the first time it is used. If a variable with equal name is declared in outer scope the compiler will assume you are using the declared outside. Unless you write the variable as a simple statement. This technique is called <strong>variable announcing</strong>.</p>
 
 <p>Example:</p>
 
@@ -370,12 +370,26 @@ func init() {
 <ol>
 <li><strong>Main Module:</strong> Is the module which has the same name as its package with <code>.cor</code> suffix.</li>
 
-<li><strong>???? Module:</strong> The first letter of its name is uppercased.</li>
+<li><strong>Exposed Module:</strong> Are modules that the first letter of its name is uppercased and it can be accessed from any other module outside or inside of it's package, but just can be used the construction (variable, class or function) which has the name equal to the module name. It is an attempt to be compliant with coding standards which enforces to have a class per file.</li>
 
-<li><strong>Regular Module:</strong> Is</li>
+<li><strong>Inner Module:</strong> Is a module which can be only used in other modules inside the same package. It is a inner module if it is not a main module and is not exposed.</li>
 </ol>
 
-<p><em>Note: A module may only contain variable declarations, functions, classes, and use statements.</em></p>
+<p><em>Note: A module may only contain variable declarations, functions, classes, and <code>use</code> statements.</em></p>
+
+<p>Example:</p>
+
+<pre><code>app                       
+  |── app.cor             // main module
+  |── model               
+  |     |── Client.cor    // exposed module
+  |     |── Account.cor   // exposed module
+  |     └── util.cor      // inner module
+  ...
+  |
+  |── controller  
+  └── view
+</code></pre>
 
 <h2 id="packages">Packages</h2>
 
