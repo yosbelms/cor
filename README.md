@@ -9,7 +9,7 @@
 
 **The language of the Web**
 
-Cor is a compact language that compiles to javascript. It borrows ideas from existing languages such as C#, Go and Python. It is designed for to build and maintain large web applications in a simple way.
+Cor is a compact language that compiles to javascript. It is designed to build and maintain large web applications in a simple way.
 
 > Note: Cor is still work in progress. Make sure to star the project if you are interested!
 
