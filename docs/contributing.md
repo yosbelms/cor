@@ -16,4 +16,4 @@ find one.
 
 * In your pull request for a feature or bug fix, do not add documentation to `docs/` or rebuild `dist/cor.js` or `dist/crl.js` file. We'll do that for you before cutting a new release. However you can pull request to improve the existing documentation.
 
-* Do not use tickets to ask for help with (debugging) your application. Ask on the [mailing list](https://groups.google.com/forum/#!forum/cor-lang), or if you understand your specific problem, ask on [StackOverflow](http://stackoverflow.com/questions/tagged/cor).
+* Do not use tickets to ask for help with (debugging) your application. Ask on [Ost.io](http://ost.io/@yosbelms/cor).
