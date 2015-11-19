@@ -22,7 +22,7 @@
     </div>
 
     <!--clicky stub-->
-    <a title="Google Analytics Alternative" href="http://clicky.com/100894043"><img alt="Google Analytics Alternative" src="//static.getclicky.com/media/links/badge.gif" border="0" /></a>
+    <a title="Google Analytics Alternative" href="http://clicky.com/100894043" style="display: none;"><img alt="Google Analytics Alternative" src="//static.getclicky.com/media/links/badge.gif" border="0" /></a>
     <script type="text/javascript">
     var clicky_site_ids = clicky_site_ids || [];
     clicky_site_ids.push(100894043);
