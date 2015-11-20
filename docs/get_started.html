@@ -32,21 +32,16 @@
 
 <p>Cor is an open source language that compiles to javascript, it is designed for application-scale development. You can install it from NPM and use the CLI tools with <a href="http://nodejs.org">Node.js</a>.</p>
 
-<h3 id="keyconcepts">Key Concepts</h3>
+<h2 id="download">Download</h2>
 
-<ul>
-<li><strong>Symplicity:</strong> Cor has a very simple and clear syntax which leverages Go, C# and Python languages enforcing developers to write maintainable code.</li>
+<p>The Cor compiler can run in any javascript environment however is primarily devised to run in the browser. You can download available releases <a class="button-inline" href="https://github.com/yosbelms/cor/releases">here</a>.</p>
 
-<li><strong>Embrace the Web:</strong> Cor highlights the best parts of the web and it keeps that you love, it is friend of javascript's good parts.</li>
+<p>It can be also downloaded with <a href="http://bower.io">Bower</a>:</p>
 
-<li><strong>Scalability of Maintenance:</strong> Software is not just written and forgotten, it must be maintained. Cor empower you to write scalable software by providing structures such as packages, modules and classes.</li>
+<pre><code>bower install cor-lang
+</code></pre>
 
-<li><strong>Development Experience:</strong> Cor brings coding/run/test development flow. It is possible thanks to an asynchronous pluggable loader which compiles sources in the fly, offering the best possible development experience thanks to self-contained source-maps. However, it provides CLI tools to compile and build sources.</li>
-</ul>
-
-<h2 id="installation">Installation</h2>
-
-<p>Cor compiler can run in any javascript environment however is primarily devised to run in the browser. The parser is written using <a href="http://jison.org">Jison</a> and the CLI tool is available as a <a href="http://nodejs.org">Node.js</a> utility. For commands reference see <a href="commands.html">Commands</a>.</p>
+<p>The CLI tool is available as a <a href="http://nodejs.org">Node.js</a> utility. For commands reference see <a href="commands.html">Commands</a>.</p>
 
 <p>From NPM:</p>
 
@@ -58,25 +53,25 @@
 <pre><code>npm install -g yosbelms/cor
 </code></pre>
 
-<p>Once installed you should have access to <code>cor</code> command which can compile and build sources. For cli usage run <code>cor help</code> command. The files containing source code should have <code>.cor</code> extension. However, Cor read files through <code>Cor Loader</code>, a component that can be extended to add support for any kind of processors such as Markdown, Handlebars, YAML... and every else.</p>
+<p>Once installed using NPM you should have access to <code>cor</code> command which can compile and build sources. For cli usage run <code>cor help</code> command. The files containing source code should have <code>.cor</code> extension. However, Cor read files through <code>Cor Loader</code>, a component that can be extended to add support for any kind of processors such as Markdown, Handlebars, YAML... and every else.</p>
 
 <p>Examples:</p>
 
 <ul>
-<li>Compiles source code located in <code>src</code> directory and writes it to <code>compiled</code> directory:</li>
+<li>Compiles and builds <code>app.cor</code> file and its dependences, the resulting file should be located at <code>app.cor.js</code> file:</li>
 </ul>
 
-<pre><code>cor compile src -o=compiled
+<pre><code>cor build app.cor
 </code></pre>
 
 <ul>
-<li>Compiles and builds <code>app.cor</code> and its dependences and writing the result to <code>app.js</code> file:</li>
+<li>Compiles and builds <code>app</code> package and its dependences writing the result to <code>./app/app.js</code> file:</li>
 </ul>
 
-<pre><code>cor build app.cor -o=app.js
+<pre><code>cor build ./app -o=app.js
 </code></pre>
 
-<p>Output file (<code>app.js</code>) is now ready to be used in a web page by <code>&lt;srcipt src="app.js"&gt;&lt;/script&gt;</code> tag. See <a href="commands.html">commands</a> for reference.</p>
+<p>Output file (<code>app.js</code>) is now ready to be used in a web page through <code>&lt;srcipt src="app.js"&gt;&lt;/script&gt;</code> tag. See <a href="commands.html">commands</a> for reference.</p>
 
 <h2 id="helloworldtutorial">Hello World tutorial</h2>
 
@@ -99,7 +94,7 @@
 </code></pre>
 
 <ul>
-<li><strong>Step 3.</strong> Include Cor library (located at <code>corlang/dist/cor.js</code>) inside <code>index.html</code> using <code>script</code> tag and then specify the application entry script using <code>data-entry="hello.cor"</code> in a separated script tag:</li>
+<li><strong>Step 3.</strong> Include Cor library (located at <code>cor/dist/cor.js</code>) inside <code>index.html</code> using <code>script</code> tag and then specify the application entry script using <code>data-entry="hello.cor"</code> in a separated script tag:</li>
 </ul>
 
 <pre><code>&lt;html&gt;

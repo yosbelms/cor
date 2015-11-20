@@ -124,7 +124,7 @@ h1 {
 
 h2 {
     /*font-weight: normal;*/
-    margin-top: 40px;
+    padding-top: 60px;
     padding-bottom: 10px;
     border-bottom: 1px solid #ddd;
 }
@@ -212,7 +212,6 @@ td {
     font-size: 22px;
 }
 
-
 .grid {
     margin-left: -50px;
     margin-right: -50px;
@@ -237,12 +236,13 @@ td {
     font-size: 18px;
 }
 
+/* BUTTON */
 a.button {
     color: #fff;
     border: 1px solid #fff;
-    padding: 12px 28px;
+    padding: 10px 20px;
     font-size: 20px;
-    border-radius: 10px;
+    border-radius: 8px;
     font-weight: normal;
     background-color: transparent;
 }
@@ -252,6 +252,34 @@ a.button:hover {
     background-color: #fff;
 }
 
+a.button-inverse {
+    color: #204d74;
+    border: 1px solid #204d74;
+    padding: 10px 20px;
+    font-size: 20px;
+    border-radius: 8px;
+    font-weight: normal;
+    background-color: transparent;
+}
+
+a.button-inverse:hover {
+    color: #fff;
+    background-color: #204d74;
+}
+
+
+a.button-inline {
+    color: #fff;
+    border: 0px;
+    padding: 0px 7px;
+    background-color: #d9534f;
+    border-radius: 3px;
+    font-weight: normal;
+}
+
+a.button-inline:hover {
+    background-color: #c9302c;
+}
 
 /* FOOTER */
 .footer {
@@ -291,4 +319,47 @@ a.button:hover {
 
 .goto-top a:hover {
     color: #204d74;
+}
+
+@media (max-width: 800px) {
+    h1, h2, h3, h4 {
+        text-align: center;
+        margin-top: 70px;
+    }
+}
+
+@media (max-width: 900px) {
+    
+    .body {
+        margin: 80px 8px 0 8px;
+    }
+    
+    .brand {
+        float: none;
+        display: block;
+    }
+    
+    .navbar .right {
+        float: none;
+    }
+    
+    .grid {
+        margin: auto;
+    }
+    
+    .grid .col {
+        margin: auto;
+        display: block;
+        float: none;
+        width: auto;
+        max-width: 500px;
+    }
+    
+    .rule {
+        margin: 20px auto;
+    }
+    
+    .goto-top {
+        display: none;
+    }
 }
