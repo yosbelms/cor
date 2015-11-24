@@ -3757,8 +3757,8 @@ function bootApp() {
     i       = -1;
 
     while (++i < len) {
-        entry = scripts[i].getAttribute('data-entry');
-        env   = scripts[i].getAttribute('data-env');
+        entry = entry || scripts[i].getAttribute('data-entry');
+        env   = env   || scripts[i].getAttribute('data-env');
     }
 
     if (entry && path.ext(entry) === '') {
