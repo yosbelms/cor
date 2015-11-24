@@ -35,4 +35,3 @@ npm install -g yosbelms/cor
 * Contributors are listed here: http://github.com/yosbelms/cor/contributors
 
 Copyright 2015 (c) Yosbel Marin. This software is licensed under the BSD License.
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/yosbelms/cor/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
