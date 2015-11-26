@@ -882,9 +882,9 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
 
         this.children = [
             new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
-            new yy.Lit('('+ this.propertiesNames.join(', ') +'){' , ch[1].lineno),
+            new yy.Lit('('+ this.propertiesNames.join(', ') +'){' + superInitStr , ch[1].lineno),
             this.propertySet,
-            new yy.Lit(superInitStr + '};', this.propertySet.lineno),
+            new yy.Lit('};', this.propertySet.lineno),
             this.methodSet,
             new yy.Lit(this.runtimeFn('defineClass') + this.className +  combineStr + ')', ch[3].lineno),
         ];
@@ -924,14 +924,11 @@ yy.PropertyNode = Class(yy.Node, {
         ch  = this.children,
         str;
 
-        ch[0].children = '(this.' + this.name + ' === undefined) && (this.' + this.name;
+        ch[0].children = 'this.' + this.name;
         str = ' = ' + this.name;
         if (this.hasDefaultValue) {
             str += ' === undefined ? ';
-            ch.splice(3, 0, new yy.Lit(': ' + this.name + ')', ch[2].lineno))
-        }
-        else {
-            str += ');';
+            ch.splice(3, 0, new yy.Lit(': ' + this.name, ch[2].lineno))
         }
 
         ch[1].children = str;
@@ -940,20 +937,8 @@ yy.PropertyNode = Class(yy.Node, {
 
 yy.MethodSetNode = Class(yy.Node,{
 
-    type: 'MethodSetNode',
-
-    compile: function() {
-        var
-        ch = this.children,
-        cname = this.parent.className,
-        fnName = '$setupPrototype';
-
-        if (ch.length > 0) {
-            ch.splice(0, 0, new yy.Lit(cname + '.' + fnName + ' = function (){', getLesserLineNumber(ch[0])));
-            ch.push(new yy.Lit('};', this.lineno));
-        }
-    }
-
+    type: 'MethodSetNode'
+    
 })
 
 yy.MethodNode = Class(yy.Node, {
@@ -972,7 +957,8 @@ yy.MethodNode = Class(yy.Node, {
     },
 
     compile: function() {
-        this.children[0].children[0].children = 'this.prototype.' + this.name + ' = function ';
+        var className = this.parent.parent.className;
+        this.children[0].children[0].children = className + '.prototype.' + this.name + ' = function ';
         this.children[0].context.addLocalVar('me', 'this');
     }
 })
