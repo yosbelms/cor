@@ -4,7 +4,7 @@ Cor is an open source language that compiles to javascript, it is designed for a
 
 ## Download
 
-The Cor compiler can run in any javascript environment however is primarily devised to run in the browser. You can download available releases <a class="button-inline" href="https://github.com/yosbelms/cor/releases">here</a>.
+Cor can be used as either through HTML script tag or CLI. The Cor compiler can run in any javascript environment however is primarily devised to run in the browser. Available releases can be downloaded <a class="button-inline" href="https://github.com/yosbelms/cor/releases">here</a>.
 
 It can be also downloaded with [Bower](http://bower.io):
 
@@ -12,7 +12,7 @@ It can be also downloaded with [Bower](http://bower.io):
 bower install cor-lang
 ```
 
-The CLI tool is available as a [Node.js](http://nodejs.org) utility. For commands reference see [Commands](commands.html).
+The CLI tool is available as a [Node.js](http://nodejs.org) utility. For commands reference see [Commands](documentation.html#commands).
 
 From NPM:
 
@@ -40,7 +40,7 @@ cor build app.cor
 cor build ./app -o=app.js
 ```
 
-Output file (`app.js`) is now ready to be used in a web page through `<srcipt src="app.js"></script>` tag. See [commands](commands.html) for reference.
+Output file (`app.js`) is now ready to be used in a web page through `<srcipt src="app.js"></script>` tag. See [commands](documentation.html#commands) for reference.
 
 
 ## Hello World tutorial
@@ -69,4 +69,4 @@ func init() {
 
 * **Step 4.** Run `cor http` inside `hello` folder and open `http://127.0.0.1:9000/index.html` in a browser, you should see a `Hello World` alert.
 
-See the [reference](reference.html) for further information about the language.
+See the [documentation](documentation.html) for further information about the language.
