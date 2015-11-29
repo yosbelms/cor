@@ -7,36 +7,37 @@ class Emitter {
 }
 
 class Person {
-    
+    name
+    age
     hairColor = 'black'
 
-    func init(name, age) {
-        me.name = name + '-init'
-        me.age  = age  + '-init'
+    func init() {
+        me.name = me.name + '-init'
+        me.age  = me.age  + '-init'
     }
 }
 
 class Client : Person {
-    
+    name
+    age    
 }
 
 
 class ClientA : Client {
-    func init(name, age) {
-        Client.call(me)
-        me.name = name
-        me.age  = age
-    }
+    name
+    age
+    func init() {}
 }
 
 class ClientB : Emitter, ClientA  {
-    
+    name
+    age    
 }
 
 class ClientC : ClientA, Emitter {
+    name
+    age
     func init() {
-        ClientA.call(me)
-        Emitter.call(me)
         super(ClientA)
         super(Emitter)
     }

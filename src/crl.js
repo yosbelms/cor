@@ -61,7 +61,7 @@ CRL = {
 
         throw Error('Runtime Error: trying to instanstiate no class');
     },
-
+    
     applyConf: function(obj, conf) {
         if (conf instanceof this.Conf) {
             copyObj(conf.data, obj, true);

@@ -875,26 +875,23 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         this.base('compile', arguments);
         var i, len,
         ch = this.children,
-        superInitStr = '',
-        combineStr   = '',
-        applyConfStr = 'var $isConfig=' + this.runtimeFn('applyConf') + 'this, arguments[0]);(typeof this.init===\'function\')&&',
+        superInitStr   = '',
+        combineStr     = '',
+        applyConfStr   = this.runtimeFn('applyConf') + 'this, arguments[0]);',
         prepareInitStr = 'this.$mutex=this.$mutex?this.$mutex+1:1;',
-        runInitStr = 'if(this.$mutex===1){' + applyConfStr + 'this.init.apply(this, $isConfig?null:arguments);delete this.$mutex;}else{this.$mutex--}',
-        argsStr      = '';
+        runInitStr     = 'if(this.$mutex===1){' + applyConfStr + '(typeof this.init===\'function\')&&this.init.call(this);delete this.$mutex;}else{this.$mutex--}',
+        argsStr        = '';
 
         if (this.superClassNames.length > 0) {
              combineStr = ', [' + this.superClassNames.join(', ') + ']';
         }
 
-        if (!this.initializerNode) {
-            argsStr = this.propertiesNames.join(', ');
+        argsStr = this.propertiesNames.join(', ');
+    
+        for (i = 0, len = this.superClassNames.length; i < len; i++) {
+            superInitStr += this.superClassNames[i] + '.call(this);';
         }
-
-        if (!this.initializerNode) {
-            for (i = 0, len = this.superClassNames.length; i < len; i++) {
-                superInitStr += this.superClassNames[i] + '.call(this);';
-            }    
-        }
+        
 
         this.children = [
             new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
@@ -942,23 +939,13 @@ yy.PropertyNode = Class(yy.Node, {
         classHasInitializer = !!this.parent.parent.initializerNode;
 
         ch[0].children = 'this.' + this.name;
-        if (classHasInitializer) {
-            if (this.hasDefaultValue) {
-                str = ' = ';
-            }
-            else {
-                str = ';';
-            }
+        
+        if (this.hasDefaultValue) {
+            str = '=(' + this.name + '===undefined||' + this.name + '===null)?';
+            ch.splice(3, 0, new yy.Lit(':' + this.name, ch[2].lineno))
         }
         else {
-            str = ' = ' + this.name;
-            if (this.hasDefaultValue) {
-                str += ' === undefined ? ';
-                ch.splice(3, 0, new yy.Lit(': ' + this.name, ch[2].lineno))
-            }
-            else {
-                str += ';';
-            }
+            str = '=' + this.name + ';';
         }
 
         ch[1].children = str;
