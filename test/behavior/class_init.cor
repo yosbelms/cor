@@ -1,45 +1,35 @@
 class Emitter {
-    active = true
-
-    func init(){
-        me.isEmitter = true
-    }
+    isEmitter = true
+    active    = true
 }
 
 class Person {
-    name
-    age
-    hairColor = 'black'
-
-    func init() {
-        me.name = me.name + '-init'
-        me.age  = me.age  + '-init'
+    func init(name, age) {
+        me.name      = name
+        me.age       = age
+        me.hairColor = 'black'
     }
 }
 
 class Client : Person {
     name
-    age    
+    age
 }
 
 
 class ClientA : Client {
-    name
-    age
-    func init() {}
+
 }
 
 class ClientB : Emitter, ClientA  {
     name
-    age    
+    age
 }
 
 class ClientC : ClientA, Emitter {
-    name
-    age
-    func init() {
-        super(ClientA)
-        super(Emitter)
+    func init(name, age) {
+        super(ClientA, @CRL.Conf[@[name: name, age: age]])
+        super(Emitter, null)
     }
 }
 
@@ -49,13 +39,13 @@ func init() {
         
         p  = @Person['peter', 10]
         c  = @Client['gladys', 50]
-        ca = @ClientA['gleidys', 25]
+        ca = @ClientA[name: 'gleidys', age: 25]
         cb = @ClientB['emanuel', 18]
         cc = @ClientC['lliliam', 28]
 
-        it('Should replace default behavior', func() {
-            expect(p.name).toBe('peter-init')
-            expect(p.age).toBe('10-init')
+        it('Should replace default constructor behavior', func() {
+            expect(p.name).toBe('peter')
+            expect(p.age).toBe(10)
         })
 
         it('Should keep default values', func() {
@@ -63,7 +53,7 @@ func init() {
         })
 
         it('Should has default inherited values', func() {
-            expect(c.name).toBe('gladys-init')
+            expect(c.name).toBe('gladys')
             expect(c.hairColor).toBe('black')
         })
 
@@ -73,13 +63,13 @@ func init() {
             expect(ca.age).toBe(25)
         })
 
-        it('Should be inherited by subclassing and called', func() {
+        it('Should be inherited by combining', func() {
 
             expect(cb.name).toBe('emanuel')
             expect(cb.age).toBe(18)
             expect(cb.active).toBe(true)
             expect(cb.hairColor).toBe('black')
-            expect(cb.isEmitter).toBeUndefined()
+            expect(cb.isEmitter).toBe(true)
         })
 
 

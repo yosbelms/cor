@@ -9,13 +9,17 @@ slice   = Array.prototype.slice;
 
 function copyObj (from, to, strict) {
     var name;
-    for (name in from) {
-        if (strict && hasProp.call(from, name)) {
-            to[name] = from[name];
+    if (strict) {
+        for (name in from) {
+            if (hasProp.call(from, name)) {
+                to[name] = from[name];
+            }
         }
-        else {
+    }
+    else {
+        for (name in from) {
             to[name] = from[name];
-        }
+        }   
     }
 
     return to;
