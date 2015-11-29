@@ -1,4 +1,4 @@
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(cor){
 
 var
 Class   = cor.Class,
@@ -185,4 +185,4 @@ yy.Environment = Class({
 
 cor.yy = yy;
 
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);

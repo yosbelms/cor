@@ -1,4 +1,4 @@
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(cor){
 
 var EcmaReservedKeywords = [
     // Ecma-262 Keyword
@@ -887,7 +887,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         this.children = [
             new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
             this.methodSet,
-            new yy.Lit(this.runtimeFn('defineClass') + this.className + combineStr +')', ch[3].lineno),
+            new yy.Lit(this.runtimeFn('defClass') + this.className + combineStr +')', ch[3].lineno),
         ];
     },
 
@@ -917,7 +917,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
             this.propertySet,
             new yy.Lit(runInitStr + '};', this.propertySet.lineno),
             this.methodSet,
-            new yy.Lit(this.runtimeFn('defineClass') + this.className +  combineStr + ')', ch[3].lineno),
+            new yy.Lit(this.runtimeFn('defClass') + this.className +  combineStr + ')', ch[3].lineno),
         ];
     
     },
@@ -1297,4 +1297,4 @@ yy.CatchNode = Class(yy.Node, {
 })
 
 
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);

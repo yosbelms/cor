@@ -1,4 +1,4 @@
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(cor){
 
 var
 INDENT = '    ',
@@ -732,4 +732,4 @@ function setHelpCommand(cli) {
     hlp.setHidden(true);
 }
 
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);

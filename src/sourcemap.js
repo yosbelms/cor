@@ -1,4 +1,4 @@
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(cor){
 
 var
 Class                = cor.Class,
@@ -160,4 +160,4 @@ SourceMap = Class({
 
 cor.SourceMap = SourceMap;
 
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);

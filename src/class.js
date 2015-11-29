@@ -1,7 +1,7 @@
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(cor){
 
 /*
-A library to provide some OO principles across
+A library to provide some OO features across
 Cor source code
 
 
@@ -95,4 +95,4 @@ function newBaseMethod() {
 
 cor.Class = Class;
 
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);

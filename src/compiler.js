@@ -1,4 +1,4 @@
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(cor){
 
 var yy = cor.yy;
 
@@ -112,7 +112,7 @@ var Compiler = cor.Class({
             }
         }
 
-        // visit recursively children
+        // visit children recursively
         if (ch instanceof Array) {
             for (i = 0; i < ch.length; i++) {
                 this.visitNode(ch[i]);
@@ -129,4 +129,4 @@ var Compiler = cor.Class({
 
 cor.Compiler = Compiler;
 
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);

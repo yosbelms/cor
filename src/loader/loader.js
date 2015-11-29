@@ -1,4 +1,4 @@
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(cor){
 
 var
 parseJson = typeof JSON !== 'undefined' ? JSON.parse : function parseJson(str) {
@@ -564,4 +564,4 @@ cor.Loader  = Loader;
 cor.Program = Program;
 cor.path    = path;
 
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);

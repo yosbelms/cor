@@ -1,5 +1,7 @@
-(function(){ typeof cor === 'undefined' && (cor = {});;
-    var
+(function(){
+    cor = (typeof cor === 'undefined' ? {} : cor);
+
+    var    
     isBrowser   = typeof window !== 'undefined' &&
                   typeof window.document !== 'undefined',
     isNode      = ! isBrowser &&
@@ -40,4 +42,4 @@
         return module.exports;
     }
 
-}).call(this);
+})();

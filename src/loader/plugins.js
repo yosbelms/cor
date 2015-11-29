@@ -1,4 +1,4 @@
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(cor){
 
 var
 loader = cor.loader;
@@ -113,4 +113,4 @@ loader.addPlugin({
 
 });
 
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);

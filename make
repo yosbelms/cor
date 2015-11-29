@@ -108,8 +108,8 @@ target.dist = function(args) {
     var
     files = [
         'src/crl.js',
-        'src/class.js',
         'src/cor.js',
+        'src/class.js',
         'src/parser.js',
         'src/scope/env.js',
         'src/scope/scope.js',

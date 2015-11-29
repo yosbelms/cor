@@ -1,4 +1,4 @@
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(cor){
 
 var
 loader   = cor.loader = new cor.Loader(),
@@ -49,4 +49,4 @@ if (cor.isBrowser) {
     }    
 }
 
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);
