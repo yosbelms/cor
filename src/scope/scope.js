@@ -878,6 +878,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         ch = this.children,
         superInitStr = '',
         combineStr   = '',
+        applyConfStr = this.runtimeFn('applyConf') + 'this, new CRL.Conf(arguments[0]));',
         argsStr      = '';
 
         if (this.superClassNames.length > 0) {
@@ -896,7 +897,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
             new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
             new yy.Lit('('+ argsStr +'){' + superInitStr , ch[1].lineno),
             this.propertySet,
-            new yy.Lit('};', this.propertySet.lineno),
+            new yy.Lit(applyConfStr + '};', this.propertySet.lineno),
             this.methodSet,
             new yy.Lit(this.runtimeFn('defineClass') + this.className +  combineStr + ')', ch[3].lineno),
         ];
