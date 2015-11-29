@@ -878,8 +878,8 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         superInitStr   = '',
         combineStr     = '',
         applyConfStr   = this.runtimeFn('applyConf') + 'this, arguments[0]);',
-        prepareInitStr = 'this.$mutex=this.$mutex?this.$mutex+1:1;',
-        runInitStr     = 'if(this.$mutex===1){' + applyConfStr + '(typeof this.init===\'function\')&&this.init.call(this);delete this.$mutex;}else{this.$mutex--}',
+        prepareInitStr = 'var $isConf=arguments[0] instanceof CRL.Conf;this.$mutex=this.$mutex?this.$mutex+1:1;',
+        runInitStr     = 'if(this.$mutex===1){' + applyConfStr + '(typeof this.init===\'function\')&&this.init();delete this.$mutex;}else{this.$mutex--}',
         argsStr        = '';
 
         if (this.superClassNames.length > 0) {
@@ -941,11 +941,11 @@ yy.PropertyNode = Class(yy.Node, {
         ch[0].children = 'this.' + this.name;
         
         if (this.hasDefaultValue) {
-            str = '=(' + this.name + '===undefined||' + this.name + '===null)?';
+            str = '=(' + this.name + '===undefined||' + this.name + '===null||$isConf)?';
             ch.splice(3, 0, new yy.Lit(':' + this.name, ch[2].lineno))
         }
         else {
-            str = '=' + this.name + ';';
+            str = '=' + this.name;
         }
 
         ch[1].children = str;
