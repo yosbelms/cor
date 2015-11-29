@@ -32,14 +32,14 @@ a {
     left: 0px;
     right: 0px;
     width: auto;
-    position: fixed;
-    z-index: 1;
-    top: 0px;
+    margin-top: 0px;
     display: block;
     color: #fff;
     text-align: center;
     background-color: #555;
-    padding: 5px 0px 5px 0px;
+    display: block;
+    min-height: 50px;
+    padding-bottom: 1px;
 }
 
 .brand {
@@ -63,7 +63,7 @@ a {
 }
 
 .nav li a {
-    padding-bottom: 10px;
+    padding-bottom: 5px;
 }
 
 .nav li a:hover {
@@ -86,11 +86,6 @@ ul {
     max-width: 800px;
     width: auto;
 }
-
-.body {
-    margin-top: 58px;
-}
-
 
 pre {
     background-color: #eee;
@@ -122,8 +117,7 @@ h1 {
     padding-top: 20px;
 }
 
-h2 {
-    /*font-weight: normal;*/
+h2, h3 {
     padding-top: 10px;
     padding-bottom: 10px;
     border-bottom: 1px solid #ddd;
@@ -302,7 +296,13 @@ a.button-inline:hover {
 
 .toclink {
     display: block;
-    margin-bottom: 5px;
+    padding: 1px;
+    border-radius: 3px;
+    border-bottom: 1px dashed #eee;
+}
+
+a.toclink:hover {
+    background-color: #eee;
 }
 
 .toclink-1 {
@@ -342,19 +342,19 @@ a.button-inline:hover {
 @media (max-width: 800px) {
     h1, h2, h3, h4 {
         text-align: center;
-        margin-top: 70px;
+        margin-top: 10px;
     }
 }
 
 @media (max-width: 900px) {
-    
-    .body {
-        margin: 80px 8px 0 8px;
+
+    .master: {
+        right: -10px;
+        left: -10px;
     }
     
     .brand {
         float: none;
-        display: block;
     }
     
     .navbar .right {
