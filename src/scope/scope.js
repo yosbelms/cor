@@ -779,6 +779,10 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
 
     superClassNames: null,
 
+    initializerNode: null,
+
+    initializerName: 'init',
+
     initNode: function() {
         this.base('initNode', arguments);
         var
@@ -831,9 +835,12 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
                 this.error('Redeclaring "' + member.name + '" in a class body', member.nameLineno);
             }
             if (member instanceof yy.MethodNode) {
+                if (member.name === this.initializerName) {
+                    this.initializerNode = member;
+                }
                 methods.push(members.splice(i, 1)[0]);
-                i--;
                 methodFound = true;
+                i--;
             }
             else if (methodFound === true) {
                 this.error('Declareing property "' + member.name + '" after method declaration', member.nameLineno);
@@ -869,11 +876,16 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         this.base('compile', arguments);
         var i, len,
         ch = this.children,
-        superInitStr  = '',
-        combineStr    = '';
+        superInitStr = '',
+        combineStr   = '',
+        argsStr      = '';
 
         if (this.superClassNames.length > 0) {
              combineStr = ', [' + this.superClassNames.join(', ') + ']';
+        }
+
+        if (!this.initializerNode) {
+            argsStr = this.propertiesNames.join(', ');
         }
 
         for (i = 0, len = this.superClassNames.length; i < len; i++) {
@@ -882,7 +894,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
 
         this.children = [
             new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
-            new yy.Lit('('+ this.propertiesNames.join(', ') +'){' + superInitStr , ch[1].lineno),
+            new yy.Lit('('+ argsStr +'){' + superInitStr , ch[1].lineno),
             this.propertySet,
             new yy.Lit('};', this.propertySet.lineno),
             this.methodSet,
@@ -921,14 +933,20 @@ yy.PropertyNode = Class(yy.Node, {
 
     compile: function() {
         var
+        str = '',
         ch  = this.children,
-        str;
+        classHasInitializer = !!this.parent.parent.initializerNode;
 
         ch[0].children = 'this.' + this.name;
-        str = ' = ' + this.name;
-        if (this.hasDefaultValue) {
-            str += ' === undefined ? ';
-            ch.splice(3, 0, new yy.Lit(': ' + this.name, ch[2].lineno))
+        if (classHasInitializer) {
+            str = ' = ';
+        }
+        else {
+            str = ' = ' + this.name;
+            if (this.hasDefaultValue) {
+                str += ' === undefined ? ';
+                ch.splice(3, 0, new yy.Lit(': ' + this.name, ch[2].lineno))
+            }
         }
 
         ch[1].children = str;
