@@ -35,23 +35,42 @@ func init() {
                 expect(c.name).toBeUndefined()
                 expect(c.age).toBeUndefined()
             })
+        })    
+
+
+         describe('CRL.Conf', func(){
+            
+            it('Should work', func() {
+                c = @CRL.Conf
+
+                expect(c).toBeTruthy()
+                expect(c.data).toBeDefined()
+
+                cfg = @[a: 1]
+                c = @CRL.Conf[cfg]
+
+                expect(c.data).toBe(cfg)
+            })
+            
         })        
 
-        describe('createAndConf', func(){
-            it('Should work with defined properties', func() {
-                c = CRL.createAndConf(Client, @[name: 'Yosbel', age: 28])
+        describe('applyConf', func(){
+            
+            it('Should work', func() {                
+                obj = @[]
+                CRL.applyConf(obj, @CRL.Conf[@[name: 'john']])
 
-                expect(c.name).toBe('Yosbel')
-                expect(c.age).toBe(28)
+                expect(obj.name).toBe('john')
             })
 
-            it('Should not work with not defined properties', func() {
-                c = CRL.createAndConf(Client, @[lastName: 'Marin'])
+            it('Should not work if second parameter is no a CRL.Conf instance', func() {
+                obj = @[name: 'peter']
+                CRL.applyConf(obj, @[name: 'john'])
 
-                expect(c.lastName).not.toBe('Marin')
+                expect(obj.name).toBe('peter')
             })
+            
         })
-        
 
         describe('keys', func(){
             it('From Arrays should extract just numeric indexes', func() {
