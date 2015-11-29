@@ -23,6 +23,7 @@ class Client : Person {
 
 class ClientA : Client {
     func init(name, age) {
+        Client.call(me)
         me.name = name
         me.age  = age
     }
@@ -34,6 +35,8 @@ class ClientB : Emitter, ClientA  {
 
 class ClientC : ClientA, Emitter {
     func init() {
+        ClientA.call(me)
+        Emitter.call(me)
         super(ClientA)
         super(Emitter)
     }
@@ -79,7 +82,7 @@ func init() {
         })
 
 
-        it('Should be called by "super" builtin', func() {
+        it('Should be called by "super" builtin function', func() {
 
             expect(cc.name).toBe('lliliam')
             expect(cc.age).toBe(28)

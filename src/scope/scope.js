@@ -525,9 +525,8 @@ yy.ObjectConstructorNode = Class(yy.Node, {
         if (constrArgs) {
             if (constrArgs.keyed) {
                 if (className) {
-                    prefix = this.runtimeFn('createAndConf');
-                    ch.splice(2, 0, new yy.Lit(',', ch[2].children[0].lineno))
-                    ch.push(3, 0,   new yy.Lit(')', ch[3].children[2].lineno))
+                    ch.splice(2, 0, new yy.Lit('(new ' + this.runtimePrefix + 'Conf(', ch[2].children[0].lineno))
+                    ch.push(3, 0,   new yy.Lit('))', ch[3].children[2].lineno))
                 }
                 else {
                     prefix = '';
@@ -878,7 +877,9 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         ch = this.children,
         superInitStr = '',
         combineStr   = '',
-        applyConfStr = this.runtimeFn('applyConf') + 'this, new CRL.Conf(arguments[0]));',
+        applyConfStr = this.runtimeFn('applyConf') + 'this, arguments[0]);(typeof this.init===\'function\')&&',
+        prepareInitStr = 'this.$mutex=this.$mutex?this.$mutex+1:1;',
+        runInitStr = 'if(this.$mutex===1){' + applyConfStr + 'this.init.apply(this, arguments);delete this.$mutex;}else{this.$mutex--}',
         argsStr      = '';
 
         if (this.superClassNames.length > 0) {
@@ -889,15 +890,17 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
             argsStr = this.propertiesNames.join(', ');
         }
 
-        for (i = 0, len = this.superClassNames.length; i < len; i++) {
-            superInitStr += this.superClassNames[i] + '.call(this);';
+        if (!this.initializerNode) {
+            for (i = 0, len = this.superClassNames.length; i < len; i++) {
+                superInitStr += this.superClassNames[i] + '.call(this);';
+            }    
         }
 
         this.children = [
             new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
-            new yy.Lit('('+ argsStr +'){' + superInitStr , ch[1].lineno),
+            new yy.Lit('('+ argsStr +'){' + prepareInitStr + superInitStr , ch[1].lineno),
             this.propertySet,
-            new yy.Lit(applyConfStr + '};', this.propertySet.lineno),
+            new yy.Lit(runInitStr + '};', this.propertySet.lineno),
             this.methodSet,
             new yy.Lit(this.runtimeFn('defineClass') + this.className +  combineStr + ')', ch[3].lineno),
         ];
@@ -940,13 +943,21 @@ yy.PropertyNode = Class(yy.Node, {
 
         ch[0].children = 'this.' + this.name;
         if (classHasInitializer) {
-            str = ' = ';
+            if (this.hasDefaultValue) {
+                str = ' = ';
+            }
+            else {
+                str = ';';
+            }
         }
         else {
             str = ' = ' + this.name;
             if (this.hasDefaultValue) {
                 str += ' === undefined ? ';
                 ch.splice(3, 0, new yy.Lit(': ' + this.name, ch[2].lineno))
+            }
+            else {
+                str += ';';
             }
         }
 

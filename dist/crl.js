@@ -38,17 +38,25 @@ var
 hasProp = Object.prototype.hasOwnProperty,
 slice   = Array.prototype.slice;
 
-function copyObj(from, to) {
+function copyObj (from, to, strict) {
     var name;
     for (name in from) {
-        if (hasProp.call(from, name)) {
+        if (strict && hasProp.call(from, name)) {
+            to[name] = from[name];
+        }
+        else {
             to[name] = from[name];
         }
     }
+
+    return to;
+};
+
+if (typeof CRL !== 'undefined') {
+    return;
 }
 
-
-CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
+CRL = {
 
     idSeed      : 1,
     instancers  : [],
@@ -73,9 +81,9 @@ CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
         if (! instancer) {
             var instancerArgs = [];
             while (++i < argc) {
-                instancerArgs.push('a[' + i + ']');
+                instancerArgs.push('args[' + i + ']');
             }
-            this.instancers[argc] = instancer = new Function('c', 'a', 'return new c(' + instancerArgs.join(',') + ');');
+            this.instancers[argc] = instancer = new Function('cls', 'args', 'return new cls(' + instancerArgs.join(',') + ');');
         }
 
         if (typeof Class === 'function') {
@@ -85,21 +93,17 @@ CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
         throw Error('Runtime Error: trying to instanstiate no class');
     },
 
-    createAndConf: function(Class, conf) {
-        var
-        obj, name;
-
-        obj = new Class();
-        for (name in conf) {
-            if (hasProp.call(conf, name) && hasProp.call(obj, name)) {
-                obj[name] = conf[name];
-            }
+    applyConf: function(obj, conf) {
+        if (conf instanceof this.Conf) {
+            copyObj(conf.data, obj, true);
         }
-        return obj;
     },
 
     defineClass: function(Class, supers) {
-        var superIds, len, i, _super;
+        var
+        len, i, _super,
+        superIds,
+        newProto = {};
 
         if (supers) {
             superIds = {};
@@ -112,23 +116,17 @@ CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
                 }
                 superIds[_super.$classId] = null;
                 copyObj(superIds, _super.$superIds || {});
-
-                if (typeof _super.$setupPrototype === 'function') {
-                    _super.$setupPrototype.call(Class);
-                }
-                else {
-                    copyObj(_super.prototype, Class.prototype);
-                }
+                copyObj(_super.prototype, newProto);
             }
         }
+        
+        copyObj(Class.prototype, newProto);
 
-        if (typeof Class.$setupPrototype === 'function') {
-            Class.$setupPrototype.call(Class);
-        }
-
+        newProto.constructor = Class;
+        
         Class.$classId  = this.idSeed++;
         Class.$superIds = superIds;
-        Class.prototype.constructor = Class;
+        Class.prototype = newProto;
     },
 
 
@@ -204,6 +202,11 @@ CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
             throw 'Trying to assert type with not valid class';
         }
     }
+};
+
+
+CRL.Conf = function(obj) {
+    this.data = obj || {};
 };
 
 }).call(this);

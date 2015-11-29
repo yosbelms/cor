@@ -50,9 +50,9 @@ CRL = {
         if (! instancer) {
             var instancerArgs = [];
             while (++i < argc) {
-                instancerArgs.push('a[' + i + ']');
+                instancerArgs.push('args[' + i + ']');
             }
-            this.instancers[argc] = instancer = new Function('c', 'a', 'return new c(' + instancerArgs.join(',') + ');');
+            this.instancers[argc] = instancer = new Function('cls', 'args', 'return new cls(' + instancerArgs.join(',') + ');');
         }
 
         if (typeof Class === 'function') {
@@ -69,7 +69,10 @@ CRL = {
     },
 
     defineClass: function(Class, supers) {
-        var superIds, len, i, _super;
+        var
+        len, i, _super,
+        superIds,
+        newProto = {};
 
         if (supers) {
             superIds = {};
@@ -82,17 +85,17 @@ CRL = {
                 }
                 superIds[_super.$classId] = null;
                 copyObj(superIds, _super.$superIds || {});
-                copyObj(_super.prototype, Class.prototype);
+                copyObj(_super.prototype, newProto);
             }
         }
+        
+        copyObj(Class.prototype, newProto);
 
-        if (typeof Class.$setupPrototype === 'function') {
-            Class.$setupPrototype.call(Class);
-        }
-
+        newProto.constructor = Class;
+        
         Class.$classId  = this.idSeed++;
         Class.$superIds = superIds;
-        Class.prototype.constructor = Class;
+        Class.prototype = newProto;
     },
 
 

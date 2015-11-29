@@ -38,17 +38,25 @@ var
 hasProp = Object.prototype.hasOwnProperty,
 slice   = Array.prototype.slice;
 
-function copyObj(from, to) {
+function copyObj (from, to, strict) {
     var name;
     for (name in from) {
-        if (hasProp.call(from, name)) {
+        if (strict && hasProp.call(from, name)) {
+            to[name] = from[name];
+        }
+        else {
             to[name] = from[name];
         }
     }
+
+    return to;
+};
+
+if (typeof CRL !== 'undefined') {
+    return;
 }
 
-
-CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
+CRL = {
 
     idSeed      : 1,
     instancers  : [],
@@ -73,9 +81,9 @@ CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
         if (! instancer) {
             var instancerArgs = [];
             while (++i < argc) {
-                instancerArgs.push('a[' + i + ']');
+                instancerArgs.push('args[' + i + ']');
             }
-            this.instancers[argc] = instancer = new Function('c', 'a', 'return new c(' + instancerArgs.join(',') + ');');
+            this.instancers[argc] = instancer = new Function('cls', 'args', 'return new cls(' + instancerArgs.join(',') + ');');
         }
 
         if (typeof Class === 'function') {
@@ -85,21 +93,17 @@ CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
         throw Error('Runtime Error: trying to instanstiate no class');
     },
 
-    createAndConf: function(Class, conf) {
-        var
-        obj, name;
-
-        obj = new Class();
-        for (name in conf) {
-            if (hasProp.call(conf, name) && hasProp.call(obj, name)) {
-                obj[name] = conf[name];
-            }
+    applyConf: function(obj, conf) {
+        if (conf instanceof this.Conf) {
+            copyObj(conf.data, obj, true);
         }
-        return obj;
     },
 
     defineClass: function(Class, supers) {
-        var superIds, len, i, _super;
+        var
+        len, i, _super,
+        superIds,
+        newProto = {};
 
         if (supers) {
             superIds = {};
@@ -112,23 +116,17 @@ CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
                 }
                 superIds[_super.$classId] = null;
                 copyObj(superIds, _super.$superIds || {});
-
-                if (typeof _super.$setupPrototype === 'function') {
-                    _super.$setupPrototype.call(Class);
-                }
-                else {
-                    copyObj(_super.prototype, Class.prototype);
-                }
+                copyObj(_super.prototype, newProto);
             }
         }
+        
+        copyObj(Class.prototype, newProto);
 
-        if (typeof Class.$setupPrototype === 'function') {
-            Class.$setupPrototype.call(Class);
-        }
-
+        newProto.constructor = Class;
+        
         Class.$classId  = this.idSeed++;
         Class.$superIds = superIds;
-        Class.prototype.constructor = Class;
+        Class.prototype = newProto;
     },
 
 
@@ -204,6 +202,11 @@ CRL = (typeof CRL !== 'undefined' && Object(CRL) === CRL) ? CRL : {
             throw 'Trying to assert type with not valid class';
         }
     }
+};
+
+
+CRL.Conf = function(obj) {
+    this.data = obj || {};
 };
 
 }).call(this);
@@ -2154,9 +2157,8 @@ yy.ObjectConstructorNode = Class(yy.Node, {
         if (constrArgs) {
             if (constrArgs.keyed) {
                 if (className) {
-                    prefix = this.runtimeFn('createAndConf');
-                    ch.splice(2, 0, new yy.Lit(',', ch[2].children[0].lineno))
-                    ch.push(3, 0,   new yy.Lit(')', ch[3].children[2].lineno))
+                    ch.splice(2, 0, new yy.Lit('(new ' + this.runtimePrefix + 'Conf(', ch[2].children[0].lineno))
+                    ch.push(3, 0,   new yy.Lit('))', ch[3].children[2].lineno))
                 }
                 else {
                     prefix = '';
@@ -2408,6 +2410,10 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
 
     superClassNames: null,
 
+    initializerNode: null,
+
+    initializerName: 'init',
+
     initNode: function() {
         this.base('initNode', arguments);
         var
@@ -2460,9 +2466,12 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
                 this.error('Redeclaring "' + member.name + '" in a class body', member.nameLineno);
             }
             if (member instanceof yy.MethodNode) {
+                if (member.name === this.initializerName) {
+                    this.initializerNode = member;
+                }
                 methods.push(members.splice(i, 1)[0]);
-                i--;
                 methodFound = true;
+                i--;
             }
             else if (methodFound === true) {
                 this.error('Declareing property "' + member.name + '" after method declaration', member.nameLineno);
@@ -2498,22 +2507,32 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         this.base('compile', arguments);
         var i, len,
         ch = this.children,
-        superInitStr  = '',
-        combineStr    = '';
+        superInitStr = '',
+        combineStr   = '',
+        applyConfStr = this.runtimeFn('applyConf') + 'this, arguments[0]);(typeof this.init===\'function\')&&',
+        prepareInitStr = 'this.$mutex=this.$mutex?this.$mutex+1:1;',
+        runInitStr = 'if(this.$mutex===1){' + applyConfStr + 'this.init.apply(this, arguments);delete this.$mutex;}else{this.$mutex--}',
+        argsStr      = '';
 
         if (this.superClassNames.length > 0) {
              combineStr = ', [' + this.superClassNames.join(', ') + ']';
         }
 
-        for (i = 0, len = this.superClassNames.length; i < len; i++) {
-            superInitStr += this.superClassNames[i] + '.call(this);';
+        if (!this.initializerNode) {
+            argsStr = this.propertiesNames.join(', ');
+        }
+
+        if (!this.initializerNode) {
+            for (i = 0, len = this.superClassNames.length; i < len; i++) {
+                superInitStr += this.superClassNames[i] + '.call(this);';
+            }    
         }
 
         this.children = [
             new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
-            new yy.Lit('('+ this.propertiesNames.join(', ') +'){' , ch[1].lineno),
+            new yy.Lit('('+ argsStr +'){' + prepareInitStr + superInitStr , ch[1].lineno),
             this.propertySet,
-            new yy.Lit(superInitStr + '};', this.propertySet.lineno),
+            new yy.Lit(runInitStr + '};', this.propertySet.lineno),
             this.methodSet,
             new yy.Lit(this.runtimeFn('defineClass') + this.className +  combineStr + ')', ch[3].lineno),
         ];
@@ -2550,17 +2569,28 @@ yy.PropertyNode = Class(yy.Node, {
 
     compile: function() {
         var
+        str = '',
         ch  = this.children,
-        str;
+        classHasInitializer = !!this.parent.parent.initializerNode;
 
-        ch[0].children = '(this.' + this.name + ' === undefined) && (this.' + this.name;
-        str = ' = ' + this.name;
-        if (this.hasDefaultValue) {
-            str += ' === undefined ? ';
-            ch.splice(3, 0, new yy.Lit(': ' + this.name + ')', ch[2].lineno))
+        ch[0].children = 'this.' + this.name;
+        if (classHasInitializer) {
+            if (this.hasDefaultValue) {
+                str = ' = ';
+            }
+            else {
+                str = ';';
+            }
         }
         else {
-            str += ');';
+            str = ' = ' + this.name;
+            if (this.hasDefaultValue) {
+                str += ' === undefined ? ';
+                ch.splice(3, 0, new yy.Lit(': ' + this.name, ch[2].lineno))
+            }
+            else {
+                str += ';';
+            }
         }
 
         ch[1].children = str;
@@ -2569,20 +2599,8 @@ yy.PropertyNode = Class(yy.Node, {
 
 yy.MethodSetNode = Class(yy.Node,{
 
-    type: 'MethodSetNode',
-
-    compile: function() {
-        var
-        ch = this.children,
-        cname = this.parent.className,
-        fnName = '$setupPrototype';
-
-        if (ch.length > 0) {
-            ch.splice(0, 0, new yy.Lit(cname + '.' + fnName + ' = function (){', getLesserLineNumber(ch[0])));
-            ch.push(new yy.Lit('};', this.lineno));
-        }
-    }
-
+    type: 'MethodSetNode'
+    
 })
 
 yy.MethodNode = Class(yy.Node, {
@@ -2601,7 +2619,8 @@ yy.MethodNode = Class(yy.Node, {
     },
 
     compile: function() {
-        this.children[0].children[0].children = 'this.prototype.' + this.name + ' = function ';
+        var className = this.parent.parent.className;
+        this.children[0].children[0].children = className + '.prototype.' + this.name + ' = function ';
         this.children[0].context.addLocalVar('me', 'this');
     }
 })
