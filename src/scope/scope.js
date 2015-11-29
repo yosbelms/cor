@@ -877,9 +877,9 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         ch = this.children,
         superInitStr = '',
         combineStr   = '',
-        applyConfStr = this.runtimeFn('applyConf') + 'this, arguments[0]);(typeof this.init===\'function\')&&',
+        applyConfStr = 'var $isConfig=' + this.runtimeFn('applyConf') + 'this, arguments[0]);(typeof this.init===\'function\')&&',
         prepareInitStr = 'this.$mutex=this.$mutex?this.$mutex+1:1;',
-        runInitStr = 'if(this.$mutex===1){' + applyConfStr + 'this.init.apply(this, arguments);delete this.$mutex;}else{this.$mutex--}',
+        runInitStr = 'if(this.$mutex===1){' + applyConfStr + 'this.init.apply(this, $isConfig?null:arguments);delete this.$mutex;}else{this.$mutex--}',
         argsStr      = '';
 
         if (this.superClassNames.length > 0) {

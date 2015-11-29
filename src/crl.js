@@ -65,7 +65,9 @@ CRL = {
     applyConf: function(obj, conf) {
         if (conf instanceof this.Conf) {
             copyObj(conf.data, obj, true);
+            return true;
         }
+        return false;
     },
 
     defineClass: function(Class, supers) {
@@ -92,7 +94,7 @@ CRL = {
         copyObj(Class.prototype, newProto);
 
         newProto.constructor = Class;
-        
+
         Class.$classId  = this.idSeed++;
         Class.$superIds = superIds;
         Class.prototype = newProto;
