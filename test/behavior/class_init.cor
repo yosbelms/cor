@@ -1,0 +1,92 @@
+class Emitter {
+    active = true
+
+    func init(){
+        me.isEmitter = true
+    }
+}
+
+class Person {
+    
+    hairColor = 'black'
+
+    func init(name, age) {
+        me.name = name + '-init'
+        me.age  = age  + '-init'
+    }
+}
+
+class Client : Person {
+    
+}
+
+
+class ClientA : Client {
+    func init(name, age) {
+        me.name = name
+        me.age  = age
+    }
+}
+
+class ClientB : Emitter, ClientA  {
+    
+}
+
+class ClientC : ClientA, Emitter {
+    func init() {
+        super(ClientA)
+        super(Emitter)
+    }
+}
+
+func init() {
+
+    describe('Class Initializer', func(){
+        
+        p  = @Person['peter', 10]
+        c  = @Client['gladys', 50]
+        ca = @ClientA['gleidys', 25]
+        cb = @ClientB['emanuel', 18]
+        cc = @ClientC['lliliam', 28]
+
+        it('Should replace default behavior', func() {
+            expect(p.name).toBe('peter-init')
+            expect(p.age).toBe('10-init')
+        })
+
+        it('Should keep default values', func() {
+            expect(p.hairColor).toBe('black')
+        })
+
+        it('Should has default inherited values', func() {
+            expect(c.name).toBe('gladys-init')
+            expect(c.hairColor).toBe('black')
+        })
+
+        it('Should be overridable', func() {
+
+            expect(ca.name).toBe('gleidys')
+            expect(ca.age).toBe(25)
+        })
+
+        it('Should be inherited by subclassing and called', func() {
+
+            expect(cb.name).toBe('emanuel')
+            expect(cb.age).toBe(18)
+            expect(cb.active).toBe(true)
+            expect(cb.hairColor).toBe('black')
+            expect(cb.isEmitter).toBeUndefined()
+        })
+
+
+        it('Should be called by "super" builtin', func() {
+
+            expect(cc.name).toBe('lliliam')
+            expect(cc.age).toBe(28)
+            expect(cc.active).toBe(true)
+            expect(cc.hairColor).toBe('black')
+            expect(cc.isEmitter).toBe(true)
+        })
+    })
+
+}

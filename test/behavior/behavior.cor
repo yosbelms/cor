@@ -1,4 +1,5 @@
 use '.classes'
+use '.class_init'
 use '.type_assert'
 use '.routes'
 use '.incdec'
