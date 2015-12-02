@@ -38,24 +38,6 @@ var
 hasProp = Object.prototype.hasOwnProperty,
 slice   = Array.prototype.slice;
 
-function copyObj (from, to, strict) {
-    var name;
-    if (strict) {
-        for (name in from) {
-            if (hasProp.call(from, name)) {
-                to[name] = from[name];
-            }
-        }
-    }
-    else {
-        for (name in from) {
-            to[name] = from[name];
-        }   
-    }
-
-    return to;
-};
-
 if (typeof CRL !== 'undefined') {
     return;
 }
@@ -72,6 +54,24 @@ CRL = {
         'Array'    : Array,
         'Object'   : Object,
         'Function' : Function
+    },
+
+    copyObj: function(from, to, strict) {
+        var name;
+        if (strict) {
+            for (name in from) {
+                if (hasProp.call(from, name)) {
+                    to[name] = from[name];
+                }
+            }
+        }
+        else {
+            for (name in from) {
+                to[name] = from[name];
+            }   
+        }
+
+        return to;
     },
 
     create: function(Class) {
@@ -99,7 +99,7 @@ CRL = {
     
     applyConf: function(obj, conf) {
         if (conf instanceof this.Conf) {
-            copyObj(conf.data, obj, true);
+            this.copyObj(conf.data, obj, true);
             return true;
         }
         return false;
@@ -121,12 +121,12 @@ CRL = {
                     _super.$classId = this.idSeed++;
                 }
                 superIds[_super.$classId] = null;
-                copyObj(superIds, _super.$superIds || {});
-                copyObj(_super.prototype, newProto);
+                this.copyObj(superIds, _super.$superIds || {});
+                this.copyObj(_super.prototype, newProto);
             }
         }
         
-        copyObj(Class.prototype, newProto);
+        this.copyObj(Class.prototype, newProto);
 
         newProto.constructor = Class;
 

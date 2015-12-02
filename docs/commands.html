@@ -20,8 +20,7 @@
             </a>
             <ul class="right">
                 <li class="inline"><a href="get_started.html">Get started</a></li>
-                <li class="inline"><a href="reference.html">Reference</a></li>
-                <li class="inline"><a href="commands.html">Commands</a></li>
+                <li class="inline"><a href="doc_index.html">Documentation</a></li>
                 <li class="inline"><a href="contributing.html">Contributing</a></li>
             </ul>
         </div>
@@ -58,7 +57,7 @@
 
 <h2 id="build">Build</h2>
 
-<p><code>build</code> command compiles packages and its dependencies, the resulting javascript code will be packed and written to a standalone <code>.js</code> file inside the specified package.</p>
+<p><code>build</code> command compiles packages and its dependencies, the resulting javascript code will be packed and written to a standalone <code>.js</code> file inside the specified package. CRL will be enbedded in the head of the resulting bundle.</p>
 
 <p>Usage:</p>
 
@@ -82,8 +81,8 @@
             <td>Specifies the path to the <code>.json</code> file to use as environment configuration.</td>
         </tr>
         <tr>
-            <td><code>-crl</code></td>
-            <td>If used will embed CRL(Cor Runtime Library) in the head of the compiling result.</td>
+            <td><code>-no-crl</code></td>
+            <td>If used will not embed CRL(Cor Runtime Library) in the head of the compiling result.</td>
         </tr>
         <tr>
             <td><code>-v</code></td>

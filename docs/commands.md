@@ -26,7 +26,7 @@ Prints documentation about `cor compile` command
 
 ## Build
 
-`build` command compiles packages and its dependencies, the resulting javascript code will be packed and written to a standalone `.js` file inside the specified package.
+`build` command compiles packages and its dependencies, the resulting javascript code will be packed and written to a standalone `.js` file inside the specified package. CRL will be enbedded in the head of the resulting bundle.
 
 Usage:
 ```
@@ -50,8 +50,8 @@ cor build <path> [build options]
             <td>Specifies the path to the <code>.json</code> file to use as environment configuration.</td>
         </tr>
         <tr>
-            <td><code>-crl</code></td>
-            <td>If used will embed CRL(Cor Runtime Library) in the head of the compiling result.</td>
+            <td><code>-no-crl</code></td>
+            <td>If used will not embed CRL(Cor Runtime Library) in the head of the compiling result.</td>
         </tr>
         <tr>
             <td><code>-v</code></td>
