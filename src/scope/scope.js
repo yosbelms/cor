@@ -877,15 +877,17 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
 
     compileWithInit: function() {
         var i, len,
-        ch = this.children;
+        combineStr = '',
+        ch        = this.children;
+
+        if (this.superClassNames.length > 0) {
+             combineStr = ', [' + this.superClassNames.join(', ') + ']';
+        }
 
         this.children = [
             new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
-            //new yy.Lit('()' , ch[1].lineno),
-            //this.propertySet,
-            //new yy.Lit('};', this.propertySet.lineno),
             this.methodSet,
-            new yy.Lit(this.runtimeFn('defineClass') + this.className +')', ch[3].lineno),
+            new yy.Lit(this.runtimeFn('defineClass') + this.className + combineStr +')', ch[3].lineno),
         ];
     },
 

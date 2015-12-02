@@ -40,13 +40,17 @@ slice   = Array.prototype.slice;
 
 function copyObj (from, to, strict) {
     var name;
-    for (name in from) {
-        if (strict && hasProp.call(from, name)) {
-            to[name] = from[name];
+    if (strict) {
+        for (name in from) {
+            if (hasProp.call(from, name)) {
+                to[name] = from[name];
+            }
         }
-        else {
+    }
+    else {
+        for (name in from) {
             to[name] = from[name];
-        }
+        }   
     }
 
     return to;
@@ -92,11 +96,13 @@ CRL = {
 
         throw Error('Runtime Error: trying to instanstiate no class');
     },
-
+    
     applyConf: function(obj, conf) {
         if (conf instanceof this.Conf) {
             copyObj(conf.data, obj, true);
+            return true;
         }
+        return false;
     },
 
     defineClass: function(Class, supers) {
@@ -123,7 +129,7 @@ CRL = {
         copyObj(Class.prototype, newProto);
 
         newProto.constructor = Class;
-        
+
         Class.$classId  = this.idSeed++;
         Class.$superIds = superIds;
         Class.prototype = newProto;
