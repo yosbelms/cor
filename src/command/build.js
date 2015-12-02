@@ -13,7 +13,7 @@ envFilename,
 cliInput,
 cliApp,
 loader    = cor.loader,
-embeddCrl = false,
+embeddCrl = true,
 cwd       = cor.path.cwd(),
 fs        = require('fs'),
 path      = require('path');
@@ -125,8 +125,8 @@ function build() {
         print = cliApp.print;
     }
 
-    if (cliInput.getOption('crl')) {
-        embeddCrl = true;
+    if (cliInput.getOption('no-crl')) {
+        embeddCrl = false;
     }
 
 	if (path) {
@@ -147,7 +147,7 @@ cmd.addArgument('path', 'path to the entry file or package to be compiled whith 
 
 cmd.addOption('o', 'name of the file to write the compiling result');
 cmd.addOption('env', 'path to the .json file which contains environment variables for cor.Loader');
-cmd.addOption('crl', 'embedd CRL(Cor Runtime Library) in the head of the compiling result');
+cmd.addOption('no-crl', 'specify tht CRL(Cor Runtime Library) should not be embedded in the head of the compiling result');
 cmd.addOption('v',   'print additional information during build proccess');
 
 cmd.setAction(function (input, app){
