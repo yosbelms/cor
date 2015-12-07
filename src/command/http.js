@@ -21,7 +21,7 @@ var mimes = {
 
     '.txt'   :   'text/plain',
     '.text'  :   'text/plain',
-    '.log'   :   'text/plain',
+    '.log'   :   'text/plain'
 };
 
 function mime(ext) {

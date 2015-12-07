@@ -110,7 +110,7 @@ cor.Loader.prototype.onLoaderReady = function() {
     outFilename = path.resolve(cwd, outFilename || this.entryModulePath)  + '.js';
     cliApp.print('\nWriting package to: ' + outFilename);
     fs.writeFileSync(outFilename, src);
-}
+};
 
 function build() {
     var
@@ -166,4 +166,4 @@ the name of the entry file concatenated with ".js" suffix.\
 Example: myappcor ->
 */
 
-}).call(this)
+}).call(this);

@@ -77,7 +77,7 @@ function Class(Base, classBody){
 function newClass() {
     return function() {
         (typeof this.init === 'function') && this.init.apply(this, arguments);
-    }
+    };
 }
 
 function newBaseMethod() {
@@ -90,7 +90,7 @@ function newBaseMethod() {
             return meth.apply(this, args);
         }
         throw "Can not find the base method '" + methodName + "'";
-    }
+    };
 }
 
 cor.Class = Class;
