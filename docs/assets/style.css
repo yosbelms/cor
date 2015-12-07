@@ -459,4 +459,13 @@ a.pg-btn-link:hover {
     .goto-top {
         display: none;
     }
+
+    .pg-source, .pg-output {
+        border-left: 3px solid #aaa;
+        border-right: 3px solid #aaa;
+        border-bottom: 2px dashed #aaa;
+        display: block;
+        width: 93%;
+
+    }
 }
