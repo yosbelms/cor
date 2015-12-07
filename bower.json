@@ -28,9 +28,12 @@
     ],
 
     "ignore"      : [
-        "/node_modules",
+        "bin"
+        "node_modules",
+        "src",
         "test",
         "make",
         "make.cmd"
+        "package.json"
     ]
 }
