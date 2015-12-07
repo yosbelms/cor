@@ -98,7 +98,7 @@ yy.parseError = function parseError (msg, hash) {
     msg += " at " + filename + ':' + hash.loc.first_line;
 
     throw msg;
-}
+};
 
 yy.generateRoute = function(route) {
     var
@@ -123,7 +123,7 @@ yy.generateRoute = function(route) {
     }
 
     return route.replace(/\\/g, '/').replace(/\/+/g, '/');
-}
+};
 
 function stringifyNode(node) {
     var
@@ -218,7 +218,7 @@ yy.Node = Class({
     compile: function() {
         // virtual
     }
-})
+});
 
 yy.Mock = Class(yy.Node, {
 
@@ -228,7 +228,7 @@ yy.Mock = Class(yy.Node, {
         this; arguments;
     }
 
-})
+});
 
 yy.List = Class(yy.Node, {
 
@@ -249,7 +249,7 @@ yy.List = Class(yy.Node, {
         this.children = slice.call(arguments).concat(this.children);
     }
 
-})
+});
 
 
 yy.SimpleStmtNode = Class(yy.Node, {
@@ -275,7 +275,7 @@ yy.SimpleStmtNode = Class(yy.Node, {
             }
         }
     }
-})
+});
 
 
 yy.ContextAwareNode = Class(yy.Node, {
@@ -293,7 +293,7 @@ yy.ContextAwareNode = Class(yy.Node, {
     compile: function() {
         this.yy.env.newContext(this.context);
     }
-})
+});
 
 yy.ModuleNode = Class(yy.ContextAwareNode, {
 
@@ -304,11 +304,14 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
     compile: function() {
         //console.log('compile module');
         this.base('compile', arguments);
-        var i, item, name, initialize,
-        nameLineno, isQualified, len,
-        names = {},
-        ls    = this.children[0],
-        len   = ls.children.length;
+        var i, item, name,
+        nameLineno,
+        isQualified,
+        initialize = '',
+        footer     = '',
+        names      = {},
+        ls         = this.children[0],
+        len        = ls.children.length;
 
         for (i = 0; i < len; i++) {
             item = ls.children[i];
@@ -347,9 +350,10 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
         }
 
         if (ls) {
-            initialize = initialize || '';
+            initialize += this.getExport();
+            footer      = initialize !== '' ? ';' + initialize : '';
             ls.children.unshift(new yy.Lit(this.context.compileVars(), 1));
-            ls.children.push(new yy.Lit(';' + initialize + this.getExport(), this.lineno));
+            ls.children.push(new yy.Lit(footer, this.lineno));
         }
     },
 
@@ -366,7 +370,7 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
         }
         return ret;
     }
-})
+});
 
 yy.Lit = yy.LiteralNode = Class(yy.Node, {
 
@@ -392,19 +396,19 @@ yy.Lit = yy.LiteralNode = Class(yy.Node, {
 
         return txt;
     }
-})
+});
 
 yy.SelectorExprNode = Class(yy.Node, {
     type: 'SelectorExprNode'
-})
+});
 
 yy.UnaryExprNode = Class(yy.Node, {
-    type: 'UnaryExprNode',
-})
+    type: 'UnaryExprNode'
+});
 
 yy.AssociationNode = Class(yy.Node, {
-    type: 'AssociationNode',
-})
+    type: 'AssociationNode'
+});
 
 yy.FunctionNode = Class(yy.ContextAwareNode, {
 
@@ -430,7 +434,7 @@ yy.FunctionNode = Class(yy.ContextAwareNode, {
         this.block.children[0].children = ' {' + this.context.compileVars();
         this.base('compile', arguments);
     }
-})
+});
 
 yy.SliceNode = Class(yy.Node, {
 
@@ -502,7 +506,7 @@ yy.SliceNode = Class(yy.Node, {
         }
     }
 
-})
+});
 
 yy.ObjectConstructorNode = Class(yy.Node, {
 
@@ -525,8 +529,8 @@ yy.ObjectConstructorNode = Class(yy.Node, {
         if (constrArgs) {
             if (constrArgs.keyed) {
                 if (className) {
-                    ch.splice(2, 0, new yy.Lit('(new ' + this.runtimePrefix + 'Conf(', ch[2].children[0].lineno))
-                    ch.push(3, 0,   new yy.Lit('))', ch[3].children[2].lineno))
+                    ch.splice(2, 0, new yy.Lit('(new ' + this.runtimePrefix + 'Conf(', ch[2].children[0].lineno));
+                    ch.push(3, 0,   new yy.Lit('))', ch[3].children[2].lineno));
                 }
                 else {
                     prefix = '';
@@ -540,13 +544,13 @@ yy.ObjectConstructorNode = Class(yy.Node, {
         }
         else {
             qn = ch[1];
-            ch.push(new yy.Lit('()', qn.children[qn.children.length - 1].lineno))
+            ch.push(new yy.Lit('()', qn.children[qn.children.length - 1].lineno));
         }
 
         ch[0] = new yy.Lit(prefix, ch[0].lineno);
     }
 
-})
+});
 
 yy.ObjectConstructorArgsNode = Class(yy.Node, {
 
@@ -590,7 +594,7 @@ yy.ObjectConstructorArgsNode = Class(yy.Node, {
             this.children[2].children = ')';
         }
     }
-})
+});
 
 yy.TypeAssertNode = Class(yy.Node, {
 
@@ -617,7 +621,7 @@ yy.TypeAssertNode = Class(yy.Node, {
 
         this.children.push(new yy.Lit(')', ch[4].lineno));
     }
-})
+});
 
 yy.AssignmentNode = Class(yy.Node, {
 
@@ -634,7 +638,7 @@ yy.AssignmentNode = Class(yy.Node, {
             ch[0].markAsUsedVar();
         }
     }
-})
+});
 
 yy.VarNode = Class(yy.Node, {
 
@@ -656,7 +660,7 @@ yy.VarNode = Class(yy.Node, {
         this.context.addLocalVar(this.name);
     }
 
-})
+});
 
 yy.Str = yy.StringNode = Class(yy.Lit, {
 
@@ -678,7 +682,7 @@ yy.Str = yy.StringNode = Class(yy.Lit, {
 
         this.children = splitted;
     }
-})
+});
 
 yy.UseNode = Class(yy.Node, {
 
@@ -710,7 +714,6 @@ yy.UseNode = Class(yy.Node, {
 
     compile: function() {
         var
-        path,
         ch     = this.children,
         route  = this.route,
         alias  = this.alias,
@@ -724,8 +727,8 @@ yy.UseNode = Class(yy.Node, {
 
         if (alias) {
             if (! this.aliasNode) {
-                this.aliasNode = new yy.Lit(alias, ch[0].lineno)
-                this.aliasNode.loc = ch[0].loc
+                this.aliasNode = new yy.Lit(alias, ch[0].lineno);
+                this.aliasNode.loc = ch[0].loc;
             }
             this.aliasNode.children += ' = ';
         }
@@ -735,11 +738,11 @@ yy.UseNode = Class(yy.Node, {
             this.aliasNode,
             ch[0],
             this.targetNode,
-            new yy.Lit(')' + suffix + ';', ch[1].lineno),
+            new yy.Lit(')' + suffix + ';', ch[1].lineno)
         ];
     }
    
-})
+});
 
 yy.MeNode = Class(yy.Lit, {
 
@@ -768,7 +771,7 @@ yy.MeNode = Class(yy.Lit, {
         }
 
     }
-})
+});
 
 yy.ClassNode = Class(yy.ContextAwareNode, {
 
@@ -812,8 +815,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         }
         var
         str,
-        node = this.children[2].children[1],
-        ch   = node.children;
+        node = this.children[2].children[1];
 
         str = stringifyNode(node);
 
@@ -887,7 +889,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         this.children = [
             new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
             this.methodSet,
-            new yy.Lit(this.runtimeFn('defClass') + this.className + combineStr +')', ch[3].lineno),
+            new yy.Lit(this.runtimeFn('defClass') + this.className + combineStr +')', ch[3].lineno)
         ];
     },
 
@@ -917,7 +919,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
             this.propertySet,
             new yy.Lit(runInitStr + '};', this.propertySet.lineno),
             this.methodSet,
-            new yy.Lit(this.runtimeFn('defClass') + this.className +  combineStr + ')', ch[3].lineno),
+            new yy.Lit(this.runtimeFn('defClass') + this.className +  combineStr + ')', ch[3].lineno)
         ];
     
     },
@@ -932,14 +934,14 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         }
     }        
 
-})
+});
 
 
 yy.PropertySetNode = Class(yy.Node, {
 
     type: 'PropertySetNode'
 
-})
+});
 
 
 yy.PropertyNode = Class(yy.Node, {
@@ -964,14 +966,13 @@ yy.PropertyNode = Class(yy.Node, {
     compile: function() {
         var
         str = '',
-        ch  = this.children,
-        classHasInitializer = !!this.parent.parent.initializerNode;
+        ch  = this.children;
 
         ch[0].children = 'this.' + this.name;
         
         if (this.hasDefaultValue) {
             str = '=(' + this.name + '===undefined||' + this.name + '===null||$isConf)?';
-            ch.splice(3, 0, new yy.Lit(':' + this.name, ch[2].lineno))
+            ch.splice(3, 0, new yy.Lit(':' + this.name, ch[2].lineno));
         }
         else {
             str = '=' + this.name + ';';
@@ -979,13 +980,11 @@ yy.PropertyNode = Class(yy.Node, {
 
         ch[1].children = str;
     }
-})
+});
 
 yy.MethodSetNode = Class(yy.Node,{
-
-    type: 'MethodSetNode'
-    
-})
+    type: 'MethodSetNode'    
+});
 
 yy.MethodNode = Class(yy.Node, {
 
@@ -1021,7 +1020,7 @@ yy.MethodNode = Class(yy.Node, {
             this.children[0].context.addLocalVar('me', 'this');    
         }
     }
-})
+});
 
 yy.CallNode = Class(yy.Node, {
 
@@ -1089,7 +1088,7 @@ yy.CallNode = Class(yy.Node, {
 
     }
 
-})
+});
 
 yy.IfNode = Class(yy.Node, {
 
@@ -1103,7 +1102,7 @@ yy.IfNode = Class(yy.Node, {
         ch.splice(3, 0, new yy.Lit(') ', ch[2].lineno));
     }
 
-})
+});
 
 yy.ElseNode = Class(yy.Node, {
 
@@ -1120,7 +1119,7 @@ yy.ElseNode = Class(yy.Node, {
 
     }
 
-})
+});
 
 
 yy.SwitchNode = Class(yy.Node, {
@@ -1139,7 +1138,7 @@ yy.SwitchNode = Class(yy.Node, {
         ch.splice(3, 0, new yy.Lit(') ', ch[2].lineno));
     }
 
-})
+});
 
 yy.CaseNode = Class(yy.Node, {
 
@@ -1155,7 +1154,7 @@ yy.CaseNode = Class(yy.Node, {
         //if is not "default"
         if (ch[3]) {
             ls = ch[3].children[0].children;
-            ls.push(new yy.Lit(' break; ', ls[ls.length - 1].lineno))
+            ls.push(new yy.Lit(' break; ', ls[ls.length - 1].lineno));
         }
     },
 
@@ -1171,7 +1170,7 @@ yy.CaseNode = Class(yy.Node, {
         }
     }
 
-})
+});
 
 yy.ForNode = Class(yy.Node, {
 
@@ -1192,7 +1191,7 @@ yy.ForNode = Class(yy.Node, {
         ch.splice(ch.length - 1, 0, new yy.Lit(') ', getLesserLineNumber(ch[ch.length - 1])));
     }
 
-})
+});
 
 
 // God save me.
@@ -1230,7 +1229,7 @@ yy.ForInNode = Class(yy.Node, {
             ch[1].markAsLocalVar();
             ch.splice(1, 2, new yy.Lit(str1, ch[2].lineno));
             ch.splice(3, 0, new yy.Lit(str2, ch[2].lineno));
-            ch[4].children.splice(1, 0, new yy.Lit(str3, ch[4].children[0].lineno))
+            ch[4].children.splice(1, 0, new yy.Lit(str3, ch[4].children[0].lineno));
 
         }
         else {
@@ -1260,11 +1259,11 @@ yy.ForInNode = Class(yy.Node, {
             ch[3].markAsLocalVar();
             ch.splice(1, 4, new yy.Lit(str1, ch[4].lineno));
             ch.splice(3, 0, new yy.Lit(str2, ch[2].lineno));
-            ch[4].children.splice(1, 0, new yy.Lit(str3, ch[4].children[0].lineno))
+            ch[4].children.splice(1, 0, new yy.Lit(str3, ch[4].children[0].lineno));
         }
     }
 
-})
+});
 
 yy.TryNode = Class(yy.Node, {
 
@@ -1275,11 +1274,11 @@ yy.TryNode = Class(yy.Node, {
         ch = this.children;
 
         if (!ch[2]) {
-            this.children.push(new yy.Lit('catch($error){}', this.lineno))
+            this.children.push(new yy.Lit('catch($error){}', this.lineno));
         }
     }
 
-})
+});
 
 yy.CatchNode = Class(yy.Node, {
 
@@ -1294,7 +1293,7 @@ yy.CatchNode = Class(yy.Node, {
         }
     }
 
-})
+});
 
 
 })(typeof cor === 'undefined' ? {} : cor);
