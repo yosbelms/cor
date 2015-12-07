@@ -53,11 +53,11 @@ LineMap = Class({
             column      : generatedColumn,
             sourceLine  : sourceLine,
             sourceColumn: sourceColumn
-        }
+        };
 
         return this.segments;
     }
-})
+});
 
 var
 SourceMap = Class({
