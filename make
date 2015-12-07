@@ -155,7 +155,7 @@ target.docs = function() {
         outFile   = path.basename(files[i], '.md') + '.html';
         html = converter.makeHtml(cat(files[i]));
         
-        if (files[i] === 'docs/reference.md') {
+        if (files[i] === 'docs/documentation.md') {
             html = generateTableOfContents(html) + html;
         }
 

@@ -230,7 +230,7 @@ CRL.Conf = function(obj) {
     cor.isNode    = isNode;
 
 
-    cor.version = '0.0.2';
+    cor.version = '0.1.0';
 
     cor.compile = function(src, filename) {
         var
