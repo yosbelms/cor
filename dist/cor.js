@@ -38,175 +38,170 @@ var
 hasProp = Object.prototype.hasOwnProperty,
 slice   = Array.prototype.slice;
 
-if (typeof CRL !== 'undefined') {
-    return;
-}
+CRL = (typeof CRL === 'undefined' ? {} : CRL);
 
-CRL = {
+CRL.idSeed      = 1;
+CRL.instancers  = [];
+CRL.nativeTypes = {
+    'String'   : String,
+    'Number'   : Number,
+    'Boolean'  : Boolean,
+    'RegExp'   : RegExp,
+    'Array'    : Array,
+    'Object'   : Object,
+    'Function' : Function
+};
 
-    idSeed      : 1,
-    instancers  : [],
-    nativeTypes : {
-        'String'   : String,
-        'Number'   : Number,
-        'Boolean'  : Boolean,
-        'RegExp'   : RegExp,
-        'Array'    : Array,
-        'Object'   : Object,
-        'Function' : Function
-    },
-
-    copyObj: function(from, to, strict) {
-        var name;
-        if (strict) {
-            for (name in from) {
-                if (hasProp.call(from, name)) {
-                    to[name] = from[name];
-                }
-            }
-        }
-        else {
-            for (name in from) {
+CRL.copyObj = function(from, to, strict) {
+    var name;
+    if (strict) {
+        for (name in from) {
+            if (hasProp.call(from, name)) {
                 to[name] = from[name];
-            }   
-        }
-
-        return to;
-    },
-
-    create: function(Class) {
-        var
-        instancerArgs,        
-        args      = slice.call(arguments, 1),
-        argc      = args.length,
-        i         = -1,
-        instancer = this.instancers[argc];
-
-        if (! instancer) {
-            var instancerArgs = [];
-            while (++i < argc) {
-                instancerArgs.push('args[' + i + ']');
             }
-            this.instancers[argc] = instancer = new Function('cls', 'args', 'return new cls(' + instancerArgs.join(',') + ');');
         }
+    }
+    else {
+        for (name in from) {
+            to[name] = from[name];
+        }   
+    }
 
-        if (typeof Class === 'function') {
-            return instancer(Class, args);
+    return to;
+};
+
+CRL.create = function(Class) {
+    var
+    instancerArgs,        
+    args      = slice.call(arguments, 1),
+    argc      = args.length,
+    i         = -1,
+    instancer = this.instancers[argc];
+
+    if (! instancer) {
+        var instancerArgs = [];
+        while (++i < argc) {
+            instancerArgs.push('args[' + i + ']');
         }
+        this.instancers[argc] = instancer = new Function('cls', 'args', 'return new cls(' + instancerArgs.join(',') + ');');
+    }
 
-        throw Error('Runtime Error: trying to instanstiate no class');
-    },
+    if (typeof Class === 'function') {
+        return instancer(Class, args);
+    }
+
+    throw Error('Runtime Error: trying to instanstiate no class');
+};
+
+CRL.applyConf = function(obj, conf) {
+    if (conf instanceof this.Conf) {
+        this.copyObj(conf.data, obj, true);
+        return true;
+    }
+    return false;
+};
+
+CRL.defClass = function(Class, supers) {
+    var
+    len, i, _super,
+    superIds,
+    newProto = {};
+
+    if (supers) {
+        superIds = {};
+        len      = supers.length;
+
+        for (i = 0; i < len; i++) {
+            _super = supers[i];
+            if (!_super.$classId) {
+                _super.$classId = this.idSeed++;
+            }
+            superIds[_super.$classId] = null;
+            this.copyObj(superIds, _super.$superIds || {});
+            this.copyObj(_super.prototype, newProto);
+        }
+    }
     
-    applyConf: function(obj, conf) {
-        if (conf instanceof this.Conf) {
-            this.copyObj(conf.data, obj, true);
-            return true;
+    this.copyObj(Class.prototype, newProto);
+
+    newProto.constructor = Class;
+
+    Class.$classId  = this.idSeed++;
+    Class.$superIds = superIds;
+    Class.prototype = newProto;
+};
+
+
+CRL.keys = function(obj) {
+    var keys, i, len;
+
+    if (obj instanceof Array) {            
+        i    = -1;
+        len  = obj.length;
+        keys = [];
+
+        while (++i < len) {
+            keys.push(i);
         }
-        return false;
-    },
-
-    defineClass: function(Class, supers) {
-        var
-        len, i, _super,
-        superIds,
-        newProto = {};
-
-        if (supers) {
-            superIds = {};
-            len      = supers.length;
-
-            for (i = 0; i < len; i++) {
-                _super = supers[i];
-                if (_super.$classId) {
-                    _super.$classId = this.idSeed++;
-                }
-                superIds[_super.$classId] = null;
-                this.copyObj(superIds, _super.$superIds || {});
-                this.copyObj(_super.prototype, newProto);
-            }
-        }
-        
-        this.copyObj(Class.prototype, newProto);
-
-        newProto.constructor = Class;
-
-        Class.$classId  = this.idSeed++;
-        Class.$superIds = superIds;
-        Class.prototype = newProto;
-    },
-
-
-    keys: function(obj) {
-        var keys, i, len;
-
-        if (obj instanceof Array) {            
-            i    = -1;
-            len  = obj.length;
-            keys = [];
-
-            while (++i < len) {
-                keys.push(i);
-            }
+    }
+    else {
+        if (typeof Object.keys === 'function') {
+            keys = Object.keys(obj);
         }
         else {
-            if (typeof Object.keys === 'function') {
-                keys = Object.keys(obj);
-            }
-            else {
-                for (i in obj) {
-                    if (hasProp.call(obj, i)) {
-                        keys.push(i);
-                    }
+            for (i in obj) {
+                if (hasProp.call(obj, i)) {
+                    keys.push(i);
                 }
             }
         }
+    }
 
-        return keys;
-    },
+    return keys;
+};
 
-    assertType: function(obj, Class) {
-        var
-        ret, classId,
-        superIds, type,
-        objectClass;
+CRL.assertType = function(obj, Class) {
+    var
+    classId,
+    superIds, type,
+    objectClass;
 
-        // it is a Class?
-        if (typeof Class === 'function') {
+    // it is a Class?
+    if (typeof Class === 'function') {
 
-            // object is defined
-            if (typeof obj !== 'undefined') {
-                classId     = Class.$classId;
-                objectClass = obj.constructor;
+        // object is defined
+        if (typeof obj !== 'undefined') {
+            classId     = Class.$classId;
+            objectClass = obj.constructor;
 
-                //is a cor class
-                if (classId && objectClass) {
-                    superIds = objectClass.$superIds;
-                    if (typeof objectClass.$classId !== 'undefined') {
-                        // if the type is it's own or is of a combined class
-                        if (objectClass.$classId === classId || hasProp.call(superIds, classId)) {
-                            return Class;
-                        }    
-                    }
-                }
-
-                // it is for non cor classes
-                else if (obj instanceof Class) {
-                    return obj.constructor;
-                }
-
-                // otherwise find the native type according to "Object.prototype.toString"
-                else {
-                    type = Object.prototype.toString.call(obj);
-                    type = type.substring(8, type.length - 1);
-                    if(hasProp.call(this.nativeTypes, type) && this.nativeTypes[type] === Class) {
+            //is a cor class
+            if (classId && objectClass) {
+                superIds = objectClass.$superIds || {};
+                if (typeof objectClass.$classId !== 'undefined') {
+                    // if the type is it's own or is of a combined class
+                    if (objectClass.$classId === classId || hasProp.call(superIds, classId)) {
                         return Class;
-                    }
+                    }    
+                }
+            }
+
+            // it is for non cor classes
+            else if (obj instanceof Class) {
+                return obj.constructor;
+            }
+
+            // otherwise find the native type according to "Object.prototype.toString"
+            else {
+                type = Object.prototype.toString.call(obj);
+                type = type.substring(8, type.length - 1);
+                if(hasProp.call(this.nativeTypes, type) && this.nativeTypes[type] === Class) {
+                    return Class;
                 }
             }
         }
-        else {
-            throw 'Trying to assert type with not valid class';
-        }
+    }
+    else {
+        throw 'Trying to assert type with not valid class';
     }
 };
 
@@ -215,12 +210,58 @@ CRL.Conf = function(obj) {
     this.data = obj || {};
 };
 
-}).call(this);
+})();
 
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(){
+    cor = (typeof cor === 'undefined' ? {} : cor);
+
+    var    
+    isBrowser   = typeof window !== 'undefined' &&
+                  typeof window.document !== 'undefined',
+    isNode      = ! isBrowser &&
+                  typeof global !== 'undefined' &&
+                  typeof process !== 'undefined';
+
+    if (isBrowser) {
+        global = window;
+    }
+
+    cor.isBrowser = isBrowser;
+    cor.isNode    = isNode;
+
+
+    cor.version = '0.0.2';
+
+    cor.compile = function(src, filename) {
+        var
+        comp = new cor.Compiler(src),
+        ast  = comp.parse(),
+        js   = comp.compile(ast);
+
+        return js;
+    };
+
+    cor.run = function(src, require, module, exports) {
+        exports = exports || {};
+        require = require || function(){};
+        module  = module  || {exports: exports};
+
+        var
+        PROG,
+        js = this.compile(src);
+
+        eval('var PROG=function(require,module,exports){var PROG;' + js + '};');
+        PROG(require, module, exports);
+
+        return module.exports;
+    };
+
+})();
+
+(function(cor){
 
 /*
-A library to provide some OO principles across
+A library to provide some OO features across
 Cor source code
 
 
@@ -296,7 +337,7 @@ function Class(Base, classBody){
 function newClass() {
     return function() {
         (typeof this.init === 'function') && this.init.apply(this, arguments);
-    }
+    };
 }
 
 function newBaseMethod() {
@@ -309,56 +350,12 @@ function newBaseMethod() {
             return meth.apply(this, args);
         }
         throw "Can not find the base method '" + methodName + "'";
-    }
+    };
 }
 
 cor.Class = Class;
 
-}).call(this);
-
-(function(){ typeof cor === 'undefined' && (cor = {});;
-    var
-    isBrowser   = typeof window !== 'undefined' &&
-                  typeof window.document !== 'undefined',
-    isNode      = ! isBrowser &&
-                  typeof global !== 'undefined' &&
-                  typeof process !== 'undefined';
-
-    if (isBrowser) {
-        global = window;
-    }
-
-    cor.isBrowser = isBrowser;
-    cor.isNode    = isNode;
-
-
-    cor.version = '0.0.2';
-
-    cor.compile = function(src, filename) {
-        var
-        comp = new cor.Compiler(src),
-        ast  = comp.parse()
-        js   = comp.compile(ast);
-
-        return js;
-    },
-
-    cor.run = function(src, require, module, exports) {
-        exports = exports || {};
-        require = require || function(){};
-        module  = module  || {exports: exports};
-
-        var
-        PROG,
-        js = this.compile(src);
-
-        eval('(var PROG=function(require,module,exports){var PROG;' + js + '})');
-        PROG(require, module, exports);
-
-        return module.exports;
-    }
-
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);
 
 /* parser generated by jison 0.4.15 */
 /*
@@ -1447,7 +1444,7 @@ Parser.prototype = parser;parser.Parser = Parser;
 return new Parser;
 })();
 cor.Parser = CorParser.Parser; delete CorParser;
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(cor){
 
 var
 Class   = cor.Class,
@@ -1546,7 +1543,7 @@ yy.Context = Class({
         this.isCompiled = true;
         return (stack.length > 0) ? 'var ' + stack.join(', ') + '; ': '';
     }
-})
+});
 
 yy.Environment = Class({
 
@@ -1623,20 +1620,20 @@ yy.Environment = Class({
     },
 
     generateVar: function(str) {
-        return '$' + (str || 'var') + '$' + (this.varSeed++);
+        return '__' + (str || 'var') + (this.varSeed++);
     },
 
     error: function(e) {
         this.errors.push(e);
         throw e;
     }
-})
+});
 
 cor.yy = yy;
 
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);
 
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(cor){
 
 var EcmaReservedKeywords = [
     // Ecma-262 Keyword
@@ -1736,7 +1733,7 @@ yy.parseError = function parseError (msg, hash) {
     msg += " at " + filename + ':' + hash.loc.first_line;
 
     throw msg;
-}
+};
 
 yy.generateRoute = function(route) {
     var
@@ -1761,7 +1758,7 @@ yy.generateRoute = function(route) {
     }
 
     return route.replace(/\\/g, '/').replace(/\/+/g, '/');
-}
+};
 
 function stringifyNode(node) {
     var
@@ -1856,7 +1853,7 @@ yy.Node = Class({
     compile: function() {
         // virtual
     }
-})
+});
 
 yy.Mock = Class(yy.Node, {
 
@@ -1866,7 +1863,7 @@ yy.Mock = Class(yy.Node, {
         this; arguments;
     }
 
-})
+});
 
 yy.List = Class(yy.Node, {
 
@@ -1887,7 +1884,7 @@ yy.List = Class(yy.Node, {
         this.children = slice.call(arguments).concat(this.children);
     }
 
-})
+});
 
 
 yy.SimpleStmtNode = Class(yy.Node, {
@@ -1913,7 +1910,7 @@ yy.SimpleStmtNode = Class(yy.Node, {
             }
         }
     }
-})
+});
 
 
 yy.ContextAwareNode = Class(yy.Node, {
@@ -1931,7 +1928,7 @@ yy.ContextAwareNode = Class(yy.Node, {
     compile: function() {
         this.yy.env.newContext(this.context);
     }
-})
+});
 
 yy.ModuleNode = Class(yy.ContextAwareNode, {
 
@@ -1942,11 +1939,14 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
     compile: function() {
         //console.log('compile module');
         this.base('compile', arguments);
-        var i, item, name, initialize,
-        nameLineno, isQualified, len,
-        names = {},
-        ls    = this.children[0],
-        len   = ls.children.length;
+        var i, item, name,
+        nameLineno,
+        isQualified,
+        initialize = '',
+        footer     = '',
+        names      = {},
+        ls         = this.children[0],
+        len        = ls.children.length;
 
         for (i = 0; i < len; i++) {
             item = ls.children[i];
@@ -1985,9 +1985,10 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
         }
 
         if (ls) {
-            initialize = initialize || '';
+            initialize += this.getExport();
+            footer      = initialize !== '' ? ';' + initialize : '';
             ls.children.unshift(new yy.Lit(this.context.compileVars(), 1));
-            ls.children.push(new yy.Lit(';' + initialize + this.getExport(), this.lineno));
+            ls.children.push(new yy.Lit(footer, this.lineno));
         }
     },
 
@@ -2004,7 +2005,7 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
         }
         return ret;
     }
-})
+});
 
 yy.Lit = yy.LiteralNode = Class(yy.Node, {
 
@@ -2030,19 +2031,19 @@ yy.Lit = yy.LiteralNode = Class(yy.Node, {
 
         return txt;
     }
-})
+});
 
 yy.SelectorExprNode = Class(yy.Node, {
     type: 'SelectorExprNode'
-})
+});
 
 yy.UnaryExprNode = Class(yy.Node, {
-    type: 'UnaryExprNode',
-})
+    type: 'UnaryExprNode'
+});
 
 yy.AssociationNode = Class(yy.Node, {
-    type: 'AssociationNode',
-})
+    type: 'AssociationNode'
+});
 
 yy.FunctionNode = Class(yy.ContextAwareNode, {
 
@@ -2068,7 +2069,7 @@ yy.FunctionNode = Class(yy.ContextAwareNode, {
         this.block.children[0].children = ' {' + this.context.compileVars();
         this.base('compile', arguments);
     }
-})
+});
 
 yy.SliceNode = Class(yy.Node, {
 
@@ -2140,7 +2141,7 @@ yy.SliceNode = Class(yy.Node, {
         }
     }
 
-})
+});
 
 yy.ObjectConstructorNode = Class(yy.Node, {
 
@@ -2163,8 +2164,8 @@ yy.ObjectConstructorNode = Class(yy.Node, {
         if (constrArgs) {
             if (constrArgs.keyed) {
                 if (className) {
-                    ch.splice(2, 0, new yy.Lit('(new ' + this.runtimePrefix + 'Conf(', ch[2].children[0].lineno))
-                    ch.push(3, 0,   new yy.Lit('))', ch[3].children[2].lineno))
+                    ch.splice(2, 0, new yy.Lit('(new ' + this.runtimePrefix + 'Conf(', ch[2].children[0].lineno));
+                    ch.push(3, 0,   new yy.Lit('))', ch[3].children[2].lineno));
                 }
                 else {
                     prefix = '';
@@ -2178,13 +2179,13 @@ yy.ObjectConstructorNode = Class(yy.Node, {
         }
         else {
             qn = ch[1];
-            ch.push(new yy.Lit('()', qn.children[qn.children.length - 1].lineno))
+            ch.push(new yy.Lit('()', qn.children[qn.children.length - 1].lineno));
         }
 
         ch[0] = new yy.Lit(prefix, ch[0].lineno);
     }
 
-})
+});
 
 yy.ObjectConstructorArgsNode = Class(yy.Node, {
 
@@ -2228,7 +2229,7 @@ yy.ObjectConstructorArgsNode = Class(yy.Node, {
             this.children[2].children = ')';
         }
     }
-})
+});
 
 yy.TypeAssertNode = Class(yy.Node, {
 
@@ -2255,7 +2256,7 @@ yy.TypeAssertNode = Class(yy.Node, {
 
         this.children.push(new yy.Lit(')', ch[4].lineno));
     }
-})
+});
 
 yy.AssignmentNode = Class(yy.Node, {
 
@@ -2272,7 +2273,7 @@ yy.AssignmentNode = Class(yy.Node, {
             ch[0].markAsUsedVar();
         }
     }
-})
+});
 
 yy.VarNode = Class(yy.Node, {
 
@@ -2294,7 +2295,7 @@ yy.VarNode = Class(yy.Node, {
         this.context.addLocalVar(this.name);
     }
 
-})
+});
 
 yy.Str = yy.StringNode = Class(yy.Lit, {
 
@@ -2316,7 +2317,7 @@ yy.Str = yy.StringNode = Class(yy.Lit, {
 
         this.children = splitted;
     }
-})
+});
 
 yy.UseNode = Class(yy.Node, {
 
@@ -2348,7 +2349,6 @@ yy.UseNode = Class(yy.Node, {
 
     compile: function() {
         var
-        path,
         ch     = this.children,
         route  = this.route,
         alias  = this.alias,
@@ -2362,8 +2362,8 @@ yy.UseNode = Class(yy.Node, {
 
         if (alias) {
             if (! this.aliasNode) {
-                this.aliasNode = new yy.Lit(alias, ch[0].lineno)
-                this.aliasNode.loc = ch[0].loc
+                this.aliasNode = new yy.Lit(alias, ch[0].lineno);
+                this.aliasNode.loc = ch[0].loc;
             }
             this.aliasNode.children += ' = ';
         }
@@ -2373,11 +2373,11 @@ yy.UseNode = Class(yy.Node, {
             this.aliasNode,
             ch[0],
             this.targetNode,
-            new yy.Lit(')' + suffix + ';', ch[1].lineno),
+            new yy.Lit(')' + suffix + ';', ch[1].lineno)
         ];
     }
    
-})
+});
 
 yy.MeNode = Class(yy.Lit, {
 
@@ -2406,7 +2406,7 @@ yy.MeNode = Class(yy.Lit, {
         }
 
     }
-})
+});
 
 yy.ClassNode = Class(yy.ContextAwareNode, {
 
@@ -2450,8 +2450,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         }
         var
         str,
-        node = this.children[2].children[1],
-        ch   = node.children;
+        node = this.children[2].children[1];
 
         str = stringifyNode(node);
 
@@ -2525,7 +2524,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         this.children = [
             new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
             this.methodSet,
-            new yy.Lit(this.runtimeFn('defineClass') + this.className + combineStr +')', ch[3].lineno),
+            new yy.Lit(this.runtimeFn('defClass') + this.className + combineStr +')', ch[3].lineno)
         ];
     },
 
@@ -2555,7 +2554,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
             this.propertySet,
             new yy.Lit(runInitStr + '};', this.propertySet.lineno),
             this.methodSet,
-            new yy.Lit(this.runtimeFn('defineClass') + this.className +  combineStr + ')', ch[3].lineno),
+            new yy.Lit(this.runtimeFn('defClass') + this.className +  combineStr + ')', ch[3].lineno)
         ];
     
     },
@@ -2570,14 +2569,14 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         }
     }        
 
-})
+});
 
 
 yy.PropertySetNode = Class(yy.Node, {
 
     type: 'PropertySetNode'
 
-})
+});
 
 
 yy.PropertyNode = Class(yy.Node, {
@@ -2602,14 +2601,13 @@ yy.PropertyNode = Class(yy.Node, {
     compile: function() {
         var
         str = '',
-        ch  = this.children,
-        classHasInitializer = !!this.parent.parent.initializerNode;
+        ch  = this.children;
 
         ch[0].children = 'this.' + this.name;
         
         if (this.hasDefaultValue) {
             str = '=(' + this.name + '===undefined||' + this.name + '===null||$isConf)?';
-            ch.splice(3, 0, new yy.Lit(':' + this.name, ch[2].lineno))
+            ch.splice(3, 0, new yy.Lit(':' + this.name, ch[2].lineno));
         }
         else {
             str = '=' + this.name + ';';
@@ -2617,13 +2615,11 @@ yy.PropertyNode = Class(yy.Node, {
 
         ch[1].children = str;
     }
-})
+});
 
 yy.MethodSetNode = Class(yy.Node,{
-
-    type: 'MethodSetNode'
-    
-})
+    type: 'MethodSetNode'    
+});
 
 yy.MethodNode = Class(yy.Node, {
 
@@ -2659,7 +2655,7 @@ yy.MethodNode = Class(yy.Node, {
             this.children[0].context.addLocalVar('me', 'this');    
         }
     }
-})
+});
 
 yy.CallNode = Class(yy.Node, {
 
@@ -2727,7 +2723,7 @@ yy.CallNode = Class(yy.Node, {
 
     }
 
-})
+});
 
 yy.IfNode = Class(yy.Node, {
 
@@ -2741,7 +2737,7 @@ yy.IfNode = Class(yy.Node, {
         ch.splice(3, 0, new yy.Lit(') ', ch[2].lineno));
     }
 
-})
+});
 
 yy.ElseNode = Class(yy.Node, {
 
@@ -2758,7 +2754,7 @@ yy.ElseNode = Class(yy.Node, {
 
     }
 
-})
+});
 
 
 yy.SwitchNode = Class(yy.Node, {
@@ -2777,7 +2773,7 @@ yy.SwitchNode = Class(yy.Node, {
         ch.splice(3, 0, new yy.Lit(') ', ch[2].lineno));
     }
 
-})
+});
 
 yy.CaseNode = Class(yy.Node, {
 
@@ -2793,7 +2789,7 @@ yy.CaseNode = Class(yy.Node, {
         //if is not "default"
         if (ch[3]) {
             ls = ch[3].children[0].children;
-            ls.push(new yy.Lit(' break; ', ls[ls.length - 1].lineno))
+            ls.push(new yy.Lit(' break; ', ls[ls.length - 1].lineno));
         }
     },
 
@@ -2809,7 +2805,7 @@ yy.CaseNode = Class(yy.Node, {
         }
     }
 
-})
+});
 
 yy.ForNode = Class(yy.Node, {
 
@@ -2830,7 +2826,7 @@ yy.ForNode = Class(yy.Node, {
         ch.splice(ch.length - 1, 0, new yy.Lit(') ', getLesserLineNumber(ch[ch.length - 1])));
     }
 
-})
+});
 
 
 // God save me.
@@ -2868,7 +2864,7 @@ yy.ForInNode = Class(yy.Node, {
             ch[1].markAsLocalVar();
             ch.splice(1, 2, new yy.Lit(str1, ch[2].lineno));
             ch.splice(3, 0, new yy.Lit(str2, ch[2].lineno));
-            ch[4].children.splice(1, 0, new yy.Lit(str3, ch[4].children[0].lineno))
+            ch[4].children.splice(1, 0, new yy.Lit(str3, ch[4].children[0].lineno));
 
         }
         else {
@@ -2898,11 +2894,11 @@ yy.ForInNode = Class(yy.Node, {
             ch[3].markAsLocalVar();
             ch.splice(1, 4, new yy.Lit(str1, ch[4].lineno));
             ch.splice(3, 0, new yy.Lit(str2, ch[2].lineno));
-            ch[4].children.splice(1, 0, new yy.Lit(str3, ch[4].children[0].lineno))
+            ch[4].children.splice(1, 0, new yy.Lit(str3, ch[4].children[0].lineno));
         }
     }
 
-})
+});
 
 yy.TryNode = Class(yy.Node, {
 
@@ -2913,11 +2909,11 @@ yy.TryNode = Class(yy.Node, {
         ch = this.children;
 
         if (!ch[2]) {
-            this.children.push(new yy.Lit('catch($error){}', this.lineno))
+            this.children.push(new yy.Lit('catch($error){}', this.lineno));
         }
     }
 
-})
+});
 
 yy.CatchNode = Class(yy.Node, {
 
@@ -2932,12 +2928,12 @@ yy.CatchNode = Class(yy.Node, {
         }
     }
 
-})
+});
 
 
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);
 
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(cor){
 
 var yy = cor.yy;
 
@@ -3051,7 +3047,7 @@ var Compiler = cor.Class({
             }
         }
 
-        // visit recursively children
+        // visit children recursively
         if (ch instanceof Array) {
             for (i = 0; i < ch.length; i++) {
                 this.visitNode(ch[i]);
@@ -3068,9 +3064,9 @@ var Compiler = cor.Class({
 
 cor.Compiler = Compiler;
 
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);
 
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(cor){
 
 var
 Class                = cor.Class,
@@ -3125,11 +3121,11 @@ LineMap = Class({
             column      : generatedColumn,
             sourceLine  : sourceLine,
             sourceColumn: sourceColumn
-        }
+        };
 
         return this.segments;
     }
-})
+});
 
 var
 SourceMap = Class({
@@ -3232,9 +3228,9 @@ SourceMap = Class({
 
 cor.SourceMap = SourceMap;
 
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);
 
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(cor){
 
 var
 parseJson = typeof JSON !== 'undefined' ? JSON.parse : function parseJson(str) {
@@ -3242,7 +3238,7 @@ parseJson = typeof JSON !== 'undefined' ? JSON.parse : function parseJson(str) {
         throw 'Invalid characters in JSON';
     }
     return eval('(' + str + ')');
-}
+};
 
 var fakeProgram = {
     getExports: function() {
@@ -3331,7 +3327,7 @@ var path = {
     },
 
     isFile: function(path) {
-        return this.fileExts.indexOf(this.ext(path)) != -1;
+        return this.fileExts.indexOf(this.ext(path)) !== -1;
     },
 
     parse: function(path) {
@@ -3533,7 +3529,7 @@ var Loader = Class({
             }
             else {
                 xhr.onreadystatechange = function() {
-                    if (xhr.readyState == 4 ) {
+                    if (xhr.readyState === 4 ) {
                         if (everyThingOk()) {
                             onLoad(path, from, xhr.responseText);
                         }
@@ -3743,7 +3739,7 @@ var Program = Class({
                 PROG(this.environment.require, this.environment, this.environment.exports);
             }
             else {
-                this.loader.error('Error while attemp to execute ' + path)
+                this.loader.error('Error while attemp to execute ' + path);
             }
         }
 
@@ -3800,9 +3796,8 @@ cor.Loader  = Loader;
 cor.Program = Program;
 cor.path    = path;
 
-}).call(this);
-
-(function(){ typeof cor === 'undefined' && (cor = {});
+})(typeof cor === 'undefined' ? {} : cor);
+(function(cor){
 
 var
 loader   = cor.loader = new cor.Loader(),
@@ -3853,9 +3848,9 @@ if (cor.isBrowser) {
     }    
 }
 
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);
 
-(function(){ typeof cor === 'undefined' && (cor = {});
+(function(cor){
 
 var
 loader = cor.loader;
@@ -3889,7 +3884,7 @@ loader.addPlugin({
         replace(this.rComments, '').
         replace(this.rRequire, function collectRequired(s, m){
             matches.push(m);
-        })
+        });
 
         return matches;
     },
@@ -3930,7 +3925,7 @@ loader.addPlugin({
             srcPath = cor.yy.generateRoute(m);
 
             matches.push(srcPath);
-        })
+        });
 
         return matches;
     },
@@ -3970,4 +3965,4 @@ loader.addPlugin({
 
 });
 
-}).call(this);
+})(typeof cor === 'undefined' ? {} : cor);
