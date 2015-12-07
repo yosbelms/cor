@@ -17,7 +17,7 @@ cor.Loader.prototype.readFile = function(path, from, onLoad, onError) {
             onLoad(path, from, data);
         }
     });
-}
+};
 
 
 require('./plugins.js');

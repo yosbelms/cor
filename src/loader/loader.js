@@ -6,7 +6,7 @@ parseJson = typeof JSON !== 'undefined' ? JSON.parse : function parseJson(str) {
         throw 'Invalid characters in JSON';
     }
     return eval('(' + str + ')');
-}
+};
 
 var fakeProgram = {
     getExports: function() {
@@ -95,7 +95,7 @@ var path = {
     },
 
     isFile: function(path) {
-        return this.fileExts.indexOf(this.ext(path)) != -1;
+        return this.fileExts.indexOf(this.ext(path)) !== -1;
     },
 
     parse: function(path) {
@@ -297,7 +297,7 @@ var Loader = Class({
             }
             else {
                 xhr.onreadystatechange = function() {
-                    if (xhr.readyState == 4 ) {
+                    if (xhr.readyState === 4 ) {
                         if (everyThingOk()) {
                             onLoad(path, from, xhr.responseText);
                         }
@@ -507,7 +507,7 @@ var Program = Class({
                 PROG(this.environment.require, this.environment, this.environment.exports);
             }
             else {
-                this.loader.error('Error while attemp to execute ' + path)
+                this.loader.error('Error while attemp to execute ' + path);
             }
         }
 

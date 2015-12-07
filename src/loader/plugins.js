@@ -32,7 +32,7 @@ loader.addPlugin({
         replace(this.rComments, '').
         replace(this.rRequire, function collectRequired(s, m){
             matches.push(m);
-        })
+        });
 
         return matches;
     },
@@ -73,7 +73,7 @@ loader.addPlugin({
             srcPath = cor.yy.generateRoute(m);
 
             matches.push(srcPath);
-        })
+        });
 
         return matches;
     },

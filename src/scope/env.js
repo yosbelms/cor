@@ -97,7 +97,7 @@ yy.Context = Class({
         this.isCompiled = true;
         return (stack.length > 0) ? 'var ' + stack.join(', ') + '; ': '';
     }
-})
+});
 
 yy.Environment = Class({
 
@@ -174,14 +174,14 @@ yy.Environment = Class({
     },
 
     generateVar: function(str) {
-        return '$' + (str || 'var') + '$' + (this.varSeed++);
+        return '__' + (str || 'var') + (this.varSeed++);
     },
 
     error: function(e) {
         this.errors.push(e);
         throw e;
     }
-})
+});
 
 cor.yy = yy;
 
