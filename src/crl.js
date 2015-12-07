@@ -82,7 +82,7 @@ CRL.defClass = function(Class, supers) {
 
         for (i = 0; i < len; i++) {
             _super = supers[i];
-            if (_super.$classId) {
+            if (!_super.$classId) {
                 _super.$classId = this.idSeed++;
             }
             superIds[_super.$classId] = null;
@@ -131,7 +131,7 @@ CRL.keys = function(obj) {
 
 CRL.assertType = function(obj, Class) {
     var
-    ret, classId,
+    classId,
     superIds, type,
     objectClass;
 
@@ -145,7 +145,7 @@ CRL.assertType = function(obj, Class) {
 
             //is a cor class
             if (classId && objectClass) {
-                superIds = objectClass.$superIds;
+                superIds = objectClass.$superIds || {};
                 if (typeof objectClass.$classId !== 'undefined') {
                     // if the type is it's own or is of a combined class
                     if (objectClass.$classId === classId || hasProp.call(superIds, classId)) {

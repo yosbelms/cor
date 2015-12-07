@@ -21,11 +21,11 @@
     cor.compile = function(src, filename) {
         var
         comp = new cor.Compiler(src),
-        ast  = comp.parse()
+        ast  = comp.parse(),
         js   = comp.compile(ast);
 
         return js;
-    },
+    };
 
     cor.run = function(src, require, module, exports) {
         exports = exports || {};
@@ -36,10 +36,10 @@
         PROG,
         js = this.compile(src);
 
-        eval('(var PROG=function(require,module,exports){var PROG;' + js + '})');
+        eval('var PROG=function(require,module,exports){var PROG;' + js + '};');
         PROG(require, module, exports);
 
         return module.exports;
-    }
+    };
 
 })();
