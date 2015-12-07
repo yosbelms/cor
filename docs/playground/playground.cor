@@ -1,0 +1,117 @@
+---
+The playground of Cor
+Author: Yosbel Marín
+---
+
+ElSource  = nil
+ElOutput  = nil
+ElBtnRun  = nil
+ElBtnLink = nil
+ElSelect  = nil
+
+
+---
+Find an element is the DOM tree and returns it
+
+Usage:
+    button = pick('my-button')
+---
+func pick(id) {
+    return document.getElementById(id)
+}
+
+
+---
+Add an event listener to a dom element,
+regarding if in DOM standard or IE event model
+
+Usage:
+    when(button, 'click', func(){
+        alert('You has clicked a button')
+    })
+---
+func when(el, evtName, fn) {
+    if el.addEventListener {
+        el.addEventListener(evtName, fn, false)
+    } else {
+        el.attachEvent('on' + evtName, fn, false)
+    }
+}
+
+
+---
+Compiles source code in the editor and show the compiling
+result to the output element which is the right panel
+---
+func compile() {
+    try {
+        corSource      = ElSource.value
+        ElBtnLink.setAttribute('href', '#link:' + encodeURIComponent(corSource))
+        ElOutput.value = cor.compile(corSource)
+    } catch e {
+        ElOutput.value = e.toString()
+    }
+}
+
+
+---
+Get value of the "sample select" element using it to pick
+a script element in the DOM. The innerText of the script
+element is loaded in the editor
+---
+func select() {
+    name   = ElSelect.options[ElSelect.selectedIndex].getAttribute('name')
+    playEl = pick(name)
+
+    if playEl {
+        ElSource.value = playEl.innerText
+    } else {
+        ElSource.value = ''
+    }
+}
+
+
+---
+Get source code in the editor, compiles and run it in the
+browser scope
+---
+func run() {
+    try {
+        cor.run(ElSource.value)
+    } catch e {
+        ElOutput.value = e.toString()
+        throw e
+    }
+}
+
+
+---
+Initializes the module, by referencing alements and setup
+the listeners
+---
+func init() {
+    
+    ElSource  = pick('source')
+    ElOutput  = pick('output')
+    ElBtnRun  = pick('btn-run')
+    ElBtnLink = pick('btn-link')
+    ElSelect  = pick('sample-select')
+
+    when(ElSource, 'keyup',  compile)
+
+    when(ElBtnRun, 'click',  run)
+
+    when(ElSelect, 'change', func() {
+        select()
+        compile()
+    })
+    
+    hash  = window.location.hash    
+    rHash = @RegExp['^#link:']
+    
+    if rHash.test(hash) {
+        ElSource.value = decodeURIComponent(hash.replace(rHash, ''))
+    }
+    select()
+    compile()       
+}

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+require('../src/cor.js');
 require('../src/class.js');
 require('../src/cli.js');
 

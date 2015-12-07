@@ -8,9 +8,9 @@ Cor is a language designed with web development in mind. Programs are constructe
 ## Key Concepts
 
 * **Symplicity:** Cor has a very simple and clear syntax which leverages Go, C# and Python languages enforcing developers to write maintainable code.
-* **Embrace the Web:** Cor highlights the best parts of the web and it keeps that you love, it is friend of javascript's good parts.
-* **Scalability of Maintenance:** Software is not just written and forgotten, it must be maintained. Cor empower you to write scalable software by providing structures such as packages, modules and classes.
-* **Development Experience:** Cor brings coding/run/test development flow. It is possible thanks to an asynchronous pluggable loader which compiles sources in the fly, offering the best possible development experience thanks to self-contained source-maps. However, it provides CLI tools to compile and build sources.
+* **Embrace the Web:** Cor is a different language to build applications for the browser, it addresses javascript limitations by highlighting it's best parts and adding another amazing ones.
+* **Organization:** Software is not just written and forgotten, it must be maintained. Cor empower you to write scalable software by providing structures such as packages, modules and classes.
+* **Fast Development:** Cor brings coding/run/test development flow. It is possible thanks to an asynchronous pluggable loader which compiles sources in the fly, offering faster possible development experience thanks to self-contained source-maps. However, it provides CLI tools to compile and build sources.
 
 ## Semicolon Insertion
 
@@ -80,7 +80,7 @@ func init() {
     insane = false
 }
 ```
-`init` function changes the value of `crazy` variable defined in outer scope.
+`init` function changes the value of `insane` variable defined in outer scope.
 
 ```
 insane = true

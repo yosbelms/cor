@@ -1,6 +1,6 @@
 # Contributing
 
-You can contribute to Cor project forking it on GitHub and submitting a pull request with a feature or bug fix. GitHub accounts can be created [here](https://github.com/join). For contribution follow below instructions.
+You can contribute to Cor project by forking it on GitHub and submitting a pull request with a feature or bug fix. GitHub accounts can be created [here](https://github.com/join). For contribution follow below instructions.
 
 * All pull requests should be made to the `master` branch.
 

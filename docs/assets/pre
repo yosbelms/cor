@@ -20,8 +20,8 @@
             </a>
             <ul class="right">
                 <li class="inline"><a href="get_started.html">Get started</a></li>
-                <li class="inline"><a href="documentation.html">Documentation</a></li>
                 <li class="inline"><a href="playground/index.html">Playground</a></li>
+				<li class="inline"><a href="documentation.html">Documentation</a></li>
                 <li class="inline"><a href="contributing.html">Contributing</a></li>
             </ul>
         </div>

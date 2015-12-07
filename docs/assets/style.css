@@ -339,6 +339,85 @@ a.toclink:hover {
     color: #204d74;
 }
 
+/* PLAYGROUND */
+.pg-content {
+    padding: 0px;
+    display: block;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.pg-editor {
+    padding: 0px;
+    padding-top: 10px;
+    display: block;
+    height: 400px;
+    margin: 0px;
+}
+
+.pg-source, .pg-output {
+    display: inline;
+    border: 0;
+    float: left;
+    left: 0px;
+    right: 0px;
+    width: 47%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 15px 8px 8px 15px;
+    background-color: #eee;
+    color: #333;
+    outline: none;
+    font-family: Monaco, Consolas, "Lucida Console", monospace;
+    font-size: 13px;
+    white-space: pre;
+    word-wrap: normal;
+    overflow-x: auto;
+}
+
+.pg-source {
+    resize: none;
+    border-left: 3px solid #aaa;
+}
+
+.pg-output {
+    border-left: 1px dashed #ddd;
+}
+
+.pg-toolbar {
+    /*float: right;*/
+    margin-left: 10px;
+    border-left: 1px dashed #ccc;
+    padding: 7px 7px 7px 10px;
+    display: inline;
+}
+
+.pg-btn-run, .pg-btn-link {
+    color: #fff;
+    padding: 5px 16px;
+    background-color: #449d44;
+    border-radius: 3px;
+}
+
+a.pg-btn-run {
+    background-color: #5cb85c;
+}
+
+a.pg-btn-run:hover {
+    background-color: #449d44;
+}
+
+a.pg-btn-link {
+    background-color: #5bc0de;
+}
+
+a.pg-btn-link:hover {
+    background-color: #31b0d5;
+}
+
+
+/* RESPONSIVE */
+
 @media (max-width: 800px) {
     h1, h2, h3, h4 {
         text-align: center;

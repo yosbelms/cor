@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="../assets/style.css">
+        <link rel="shortcut icon" href="../assets/favicon.ico" />
+        <script type="text/javascript" src="../../dist/cor.js"></script>
+        <script data-entry="./playground.cor"></script>
+        <title>Playground</title>
+    </head>
+    <body>
+    <span id="top"></span>
+
+    <nav class="navbar" role="navigation">
+        <div class="nav content">
+            <a href="../../index.html">
+                <p class="brand"><strong>Cor</strong></p>
+            </a>
+            <ul class="right">
+                <li class="inline"><a href="../get_started.html">Get started</a></li>
+                <li class="inline"><a href="index.html">Playground</a></li>
+                <li class="inline"><a href="../documentation.html">Documentation</a></li>
+                <li class="inline"><a href="../contributing.html">Contributing</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="body pg-content">
+    
+    <p><h1 style="display: inline;">Playground </h1><small>it is a living example, you can check the source code <a href="https://github.com/yosbelms/cor/blob/master/docs/playgorund">here</a></small></p>
+    Start with
+    <select id="sample-select">
+        <option name="play-hello">Hello !</option>
+        <option name="play-fib">Fibonacci</option>
+        <option name="play-list">Linked list</option>
+        <option name="play-class">Classes</option>
+        <option name="play-hoopy">Hoopy</option>
+    </select>
+
+    <div class="pg-toolbar">
+        <a class="pg-btn-run"  href="void:0" id="btn-run">Run</a>
+        <a class="pg-btn-link" href="void:0" id="btn-link">Link</a>
+    </div>
+    
+    <ul class="pg-editor">
+        <li class="inline">
+            <textarea class="pg-source" id="source" spellcheck="false"></textarea>
+        </li>
+        <li class="inline">
+            <textarea class="pg-output" id="output" spellcheck="false"></textarea>
+        </li>
+    </ul>
+
+<script id="play-hello" type="text/cor">
+func init() {
+    alert('Hello World !')
+}
+</script>
+
+<script id="play-fib" type="text/cor">// fib() returns a function which generates
+// succesive fibonacci numbers
+
+func fib(n) {
+    a = 0;
+    b = 1
+    return func() {
+        f = a + b
+        a = b
+        return b = f
+    }
+}
+
+func init() {
+    gen = fib()
+    res = []
+    for f = gen() {
+        if f > 1000 { break }
+        res.push(f)
+    }
+    alert(res)
+}
+</script>
+
+<script id="play-list" type="text/cor">// simple linked list
+
+class Node {
+    data
+    next
+}
+
+class List {
+    head
+}
+
+func iterate(list) {
+    node = list.head
+    return func() {
+        ret = node
+        if node { node = node.next }
+        return ret
+    }
+}
+
+func size(ls) {
+    iter  = iterate(ls)
+    count = 0
+    for i = iter() { count++ }
+    return count
+}
+
+func fromArray(arr) {
+    ls = current = @List
+    for item in arr {
+        node = @Node[item]
+        switch current.constructor {
+            case List : current.head = node
+            case Node : current.next = node
+        }
+        current = node
+    }
+    return ls
+}
+
+func toArray(ls) {
+    iter = iterate(ls)
+    ret  = []
+    for i = iter() { ret.push(i.data) }
+    return ret
+}
+
+
+func init() {
+    ls = fromArray(['horse', 'snake', 'cat'])
+    alert('size:  ' + size(ls) + '\ndata: ' + toArray(ls))
+}
+</script>
+
+<script id="play-class" type="text/cor">// Shows inheritance and literal object contructions
+
+idSeed = 0
+func genId() {
+    idSeed++
+    return 'id-' + idSeed
+}
+
+class Model {
+    id = genId()
+    func toJSON() {
+        return @[id: me.id]
+    }
+}
+
+class Todo : Model {
+    desc    
+    func toJSON() {
+        obj      = super(Model)
+        obj.desc = me.desc
+        obj.type = 'Todo'
+        return obj
+    }
+}
+
+
+func init() {
+    ls = [
+        @Todo['Buy a battery'],
+        @Todo['Clean the fan'],
+        @Todo[''],
+    ]
+    alert(JSON.stringify(ls, 0, 4))
+}
+</script>
+
+<script id="play-hoopy" type="text/cor">// move [Link] button to the right
+// and put it back after a second
+
+class Hoopy {
+    elem = document.getElementById('btn-link')
+    func hoop() { me.elem.style.marginLeft = '50px' }
+    func hap()  { me.elem.style.marginLeft = '0px' }
+}
+
+func init() {
+    hoopy = @Hoopy
+    hoopy.hoop()
+    setTimeout(func(){ hoopy.hap() }, 1000)
+}
+</script>
+
+    </div>
+
+    <!--clicky stub-->
+    <a title="Google Analytics Alternative" href="http://clicky.com/100894043" style="display: none;"><img alt="Google Analytics Alternative" src="//static.getclicky.com/media/links/badge.gif" border="0" /></a>
+    <script type="text/javascript">
+    var clicky_site_ids = clicky_site_ids || [];
+    clicky_site_ids.push(100894043);
+    (function() {
+      var s = document.createElement('script');
+      s.type = 'text/javascript';
+      s.async = true;
+      s.src = '//static.getclicky.com/js';
+      ( document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0] ).appendChild( s );
+    })();
+    </script>
+    <noscript><p><img alt="Clicky" width="1" height="1" src="//in.getclicky.com/100894043ns.gif" /></p></noscript>
+    
+    </body>
+</html>
