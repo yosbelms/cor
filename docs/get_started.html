@@ -32,20 +32,37 @@
 
 <h1 id="getstarted">Get started</h1>
 
-<p>Cor is an open source language that compiles to javascript, it is designed for application-scale development. You can install it from NPM and use the CLI tools with <a href="http://nodejs.org">Node.js</a>.</p>
+<p>Cor is built for scalable applications development. Its package system leads to organization and the syntax enforces teams to write mantainable code.</p>
 
 <h2 id="download">Download</h2>
 
-<p>Cor can be used as either through HTML script tag or CLI. The Cor compiler can run in any javascript environment however is primarily devised to run in the browser. Available releases can be downloaded <a class="button-inline" href="https://github.com/yosbelms/cor/releases">here</a>.</p>
+<p>Cor can be downloaded in several ways depending on different needs. The Cor compiler can run in any javascript environment however is primarily devised to run in the browser.</p>
 
-<p>It can be also downloaded with <a href="http://bower.io">Bower</a>:</p>
+<h2 id="fromgithub">From GitHub</h2>
+
+<p>Available releases can be downloaded <a class="button-inline" href="https://github.com/yosbelms/cor/releases">here</a>.</p>
+
+<p>Once downloaded, decompress the bundle (.zip or .tar) and the main scritp can be located at <code>cor/dis/cor.js</code></p>
+
+<h2 id="withbower">With Bower</h2>
+
+<p>If you prefer <a href="http://bower.io">Bower</a> as package manager make sure to have <a href="http://nodejs.org">Node.js</a> and <a href="http://bower.io">Bower</a> installed.</p>
+
+<p>To install <a href="http://bower.io">Bower</a> run:</p>
+
+<pre><code>npm install -g bower
+</code></pre>
+
+<p>Once installed you can run:</p>
 
 <pre><code>bower install cor-lang
 </code></pre>
 
-<p>The CLI tool is available as a <a href="http://nodejs.org">Node.js</a> utility. For commands reference see <a href="documentation.html#commands">Commands</a>.</p>
+<p>Distribution script can be found at <code>bower_components/cor/dist/cor.js</code></p>
 
-<p>From NPM:</p>
+<h2 id="withnpm">With NPM</h2>
+
+<p>The CLI tools are available as a <a href="http://nodejs.org">Node.js</a> utility. To install Cor from NPM run:</p>
 
 <pre><code>npm install -g cor-lang
 </code></pre>
@@ -55,7 +72,7 @@
 <pre><code>npm install -g yosbelms/cor
 </code></pre>
 
-<p>Once installed using NPM you should have access to <code>cor</code> command which can compile and build sources. For cli usage run <code>cor help</code> command. The files containing source code should have <code>.cor</code> extension. However, Cor read files through <code>Cor Loader</code>, a component that can be extended to add support for any kind of processors such as Markdown, Handlebars, YAML... and every else.</p>
+<p>Once installed using NPM you should have access to <code>cor</code> command which can compile and build sources. For cli usage run <code>cor help</code> command. The files containing source code should have <code>.cor</code> extension. However, Cor read files through <code>Cor Loader</code>, a component that can be extended to add support for any kind of processors such as Markdown, Handlebars, YAML... and every else. For commands reference see <a href="documentation.html#commands">Commands</a>.</p>
 
 <p>Examples:</p>
 
@@ -76,6 +93,8 @@
 <p>Output file (<code>app.js</code>) is now ready to be used in a web page through <code>&lt;srcipt src="app.js"&gt;&lt;/script&gt;</code> tag. See <a href="documentation.html#commands">commands</a> for reference.</p>
 
 <h2 id="helloworldtutorial">Hello World tutorial</h2>
+
+<p>Cor dynamically load files using XHTTPRequest object. So, application source must be behind a web server (Apache HTTP Server, Nginx, or that you like). The CLI tools of Cor which provides a static HTTP server through <code>http</code> command also can be used with the same purpose.</p>
 
 <ul>
 <li><strong>Step 1.</strong> Make the following file tree structure:</li>
@@ -106,7 +125,7 @@
 </code></pre>
 
 <ul>
-<li><strong>Step 4.</strong> Run <code>cor http</code> inside <code>hello</code> folder and open <code>http://127.0.0.1:9000/index.html</code> in a browser, you should see a <code>Hello World</code> alert.</li>
+<li><strong>Step 4.</strong> Start the HTTP server and open <code>http://localhost:port/index.html</code>. Otherwise, if you installed Cor CLI tool form NPM run <code>cor http</code> inside <code>hello</code> folder and open <code>http://localhost:9000/index.html</code> in the browser, you should see a <code>Hello World</code> alert.</li>
 </ul>
 
 <p>See the <a href="documentation.html">documentation</a> for further information about the language.</p>        <div class="full-rule"></div>
