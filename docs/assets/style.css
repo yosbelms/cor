@@ -381,7 +381,9 @@ a.toclink:hover {
 }
 
 .pg-output {
-    border-left: 1px dashed #ddd;
+    resize: none;
+    border-left: 3px dotted #aaa;
+    border-right: 3px solid #aaa;
 }
 
 .pg-toolbar {
@@ -463,9 +465,11 @@ a.pg-btn-link:hover {
     .pg-source, .pg-output {
         border-left: 3px solid #aaa;
         border-right: 3px solid #aaa;
-        border-bottom: 2px dashed #aaa;
         display: block;
         width: 93%;
-
+    }
+    
+    .pg-source {
+        border-bottom: 3px dotted #aaa;
     }
 }
