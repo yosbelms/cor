@@ -11,8 +11,6 @@
 
 Cor is a compact language that compiles to javascript. It is designed to build and maintain large client-side applications.
 
-> Note: Cor is still work in progress. Make sure to star the project if you are interested!
-
 ## Installation
 
 From NPM:

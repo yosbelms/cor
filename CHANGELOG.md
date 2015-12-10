@@ -1,4 +1,11 @@
-# 0.1.0 intercept
+# 0.1.4 
+
+* fix bug in the lexer (cor.l), it no longer recognize "(digit)(char)" as a valid identifier
+* fix `bower.json` malformation
+* add `make release` command
+* update docs
+
+# 0.1.0
 
 * Remove -crl option in `build` command. Support CRL embedding by default and add -no-crl option
 * Refactor CRL
@@ -18,7 +25,7 @@
 * Moving the forum to http://ost.io/@yosbelms/cor
 * Modified README.md
 
-# 0.0.2 autoatack
+# 0.0.2
 
 Shipping : 
 * Compiler
