@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
-path = require('path');
+path     = require('path');
 showdown = require('./docs/assets/showdown.min.js');
 require('shelljs/make');
 
+// writes an array of files join it and writes
+// the result to a targetFile
 function writeToDist(files, targetFile) {
     var
     header  = '/*\n' + cat('LICENSE') + '*/\n',
@@ -12,6 +14,8 @@ function writeToDist(files, targetFile) {
     (header + content).to(targetFile + '.js');
 }
 
+// find the firts <h1> tag an uses its content
+// to set <title> tag inside page body
 function setPageTitle(html) {
     var parsed, title = '';
 
@@ -23,7 +27,8 @@ function setPageTitle(html) {
     return html.replace(/<title>([\w\s]+)?<\/title>/, '<title>' + title + '</title>');
 }
 
-
+// takes HTML source as input, regarding h1, h2, h3... tags
+// it generates a "table of contents"
 function generateTableOfContents(html) {
     var toc = '<h1>Table of Content</h1>';
 
@@ -42,6 +47,10 @@ function generateTableOfContents(html) {
     return toc;
 }
 
+
+// clean and build the project including the parser,
+// distribution packages and documentation
+// usage: make
 target.all = function() {
     target.clean();
     target.parser();
@@ -49,37 +58,52 @@ target.all = function() {
     target.docs();
 }
 
+// runs all clean tasks
+// usage: make clean
 target.clean = function() {
     target.cleandist();
     target.cleandocs();
     target.cleantest();
 }
 
+// clean `dist` directory
+// usage: make cleandist
 target.cleandist = function() {
     echo(' + cleaning dist');
     rm('-rf', 'dist');
 }
 
+// removes all .html files inside
+// `docs` directory
+// usage: make cleandocs
 target.cleandocs = function() {
     echo(' + cleaning doc');
     rm('-rf', 'docs/*.html');
 }
 
+// clean `dist` directory
+// usage: make cleandist
 target.cleantest = function() {
     echo(' + cleaning test');
     rm('-rf', 'test/test*.js');
 }
 
+// to run test from nodejs
+// usage: make test
+// still unused
 target.test = function() {
     require('./test/run_node.js');
 }
 
+// generates the parser using Jison(jison.org) library
+// usage: make parser
+// for debugging: make parser -- debug
 target.parser = function(debug) {
     echo(' + generating parser');
     var
     gen, parserSrc,
     opts    = {
-        debug: debug || false,
+        debug: debug == 'debug' || false,
         type: 'lalr',
         moduleName: 'CorParser',
         moduleType: 'js'
@@ -92,16 +116,17 @@ target.parser = function(debug) {
     lexer   = lex.parse(fs.readFileSync('./src/bnf/cor.l', 'utf8'));
 
     grammar.lex = lexer;
-
-    //console.log(grammar);
     gen         = new jison.Generator(grammar, opts);
     parserSrc   = gen.generate(opts);
-    parserSrc += '\ncor.Parser = CorParser.Parser; delete CorParser;';
+    parserSrc   += '\ncor.Parser = CorParser.Parser; delete CorParser;';
 
     fs.writeFileSync('./src/parser.js', parserSrc);
 }
 
-target.dist = function(args) {
+// build and create distribution packages
+// and writes to ./dist/*
+// usage: make dist
+target.dist = function() {
     target.cleandist();
     echo(' + creating distribution packages');
 
@@ -124,19 +149,12 @@ target.dist = function(args) {
         mkdir('dist');
     }
 
-    // for browsers
-    if (args && args[0] === 'shim') {
-        echo('  + adding ES5 shims');
-        files.unshift(
-            'vendor/es5-shim/es5-shim.js',
-            'vendor/es5-shim/es5-sham.js'
-        );
-    }
-
     writeToDist(files, 'dist/cor');
     writeToDist('src/crl.js', 'dist/crl');
 }
 
+// generate project documentation
+// usage: make docs
 target.docs = function() {
 
     target.cleandocs();
