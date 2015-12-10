@@ -10,7 +10,7 @@
     "repository"  : {
         "type": "git",
         "url" : "git://github.com/yosbelms/cor.git"
-    }
+    },
 
     "keywords"    : [
         "language",
@@ -28,7 +28,7 @@
     ],
 
     "ignore"      : [
-        "bin"
+        "bin",
         "node_modules",
         "src",
         "test",
