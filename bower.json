@@ -35,6 +35,7 @@
         "test",
         "make",
         "make.cmd",
-        "package.json"
+        "package.json",
+        "RELEASING.md"
     ]
 }
