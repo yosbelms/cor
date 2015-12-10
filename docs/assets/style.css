@@ -46,6 +46,7 @@ a {
     float: left;
     display: inline;
     margin-left: 3px;
+    font-size: 15px;
 }
 
 .navbar a {
@@ -56,10 +57,11 @@ a {
 .nav > ul {
     list-style: none;
     padding-left: 0px;
+    font-size: 14px;
 }
 
 .nav li {
-    margin-left: 10px;
+    margin-left: 18px;
 }
 
 .nav li a {
@@ -223,7 +225,9 @@ td {
 }
 
 .grid .col h3 {
-    font-size: 23px
+    font-size: 23px;
+    border: 0px;
+    padding: 0px;
 }
 
 .grid .col p {
