@@ -30,7 +30,7 @@ true\b|false\b              return 'BOOLEAN'
 "throw"                     return 'THROW'
 
 0x[\da-fA-F]+|^\d*\.?\d+(?:[eE][+-]?\d+)?\b   return 'NUMBER'
-[\$\w\x7f-\uffff]+                            return 'IDENT'
+[\$_a-zA-Z\x7f-\uffff]+[\$\w\x7f-\uffff]*     return 'IDENT'
 
 "{"                         return '{'
 "}"                         return '}'
