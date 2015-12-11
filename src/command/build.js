@@ -16,7 +16,8 @@ loader    = cor.loader,
 embeddCrl = true,
 cwd       = cor.path.cwd(),
 fs        = require('fs'),
-path      = require('path');
+path      = require('path'),
+pkgJson   = require('../../package.json');
 
 function print() {
     //empty
@@ -27,9 +28,9 @@ function getHeadStub() {
     dt   = new Date(),
     stub = '';
 
-    stub += '// Packed by Cor v' + cor.version + '\n\n';
+    stub += '// Packed by Cor ' + pkgJson.version + '\n\n';
     stub += '// Date(m-d-y): ' + [dt.getMonth() + 1, dt.getDate(), dt.getFullYear()].join('-') + '\n';
-    stub += '// Build: ' + dt.getTime() + '\n';
+    stub += '// Build-Id: ' + dt.getTime() + '\n';
 
     return stub;
 }

@@ -15,9 +15,6 @@
     cor.isBrowser = isBrowser;
     cor.isNode    = isNode;
 
-
-    cor.version = '0.1.0';
-
     cor.compile = function(src, filename) {
         var
         comp = new cor.Compiler(src),

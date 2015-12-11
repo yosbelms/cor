@@ -49,7 +49,6 @@ function generateTableOfContents(html) {
     return toc;
 }
 
-
 // clean and build the project including the parser,
 // distribution packages and documentation
 // usage: make
@@ -203,16 +202,15 @@ target.release = function() {
 
     var
     out = exec('git branch --no-color', {silent: true}).output,
-    currentBranch = /\*\s+([\w\.]+)/.exec(out)[1];
+    version = /\*\s+([\w\.]+)/.exec(out)[1];
 
-    if (currentBranch == packageJson.version) {
-        echo('+ releasing ' + currentBranch);
-        exec('git tag v' + currentBranch)
+    if (version == packageJson.version) {
+        echo('+ releasing ' + version);
+        exec('git tag v' + version)
         exec('git push origin master --tags')
-        //exec('npm publish .')
+        exec('npm publish .')
     }
     else {
         echo('+ current branch does not match with the "version" in package.json');
-    }
-    
+    }    
 }
