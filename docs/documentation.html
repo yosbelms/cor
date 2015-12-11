@@ -30,7 +30,7 @@
 
     <div class="body content">
 
-<h1>Table of Content</h1><a class="toclink toclink-2" href="#keyconcepts">Key Concepts</a><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#functions">Functions</a><a class="toclink toclink-2" href="#comments">Comments</a><a class="toclink toclink-2" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-2" href="#objects">Objects</a><a class="toclink toclink-2" href="#literalconstructors">Literal Constructors</a><a class="toclink toclink-2" href="#classes">Classes</a><a class="toclink toclink-3" href="#combination">Combination</a><a class="toclink toclink-3" href="#superbuiltinfunction">Super (Builtin Function)</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#packages">Packages</a><a class="toclink toclink-2" href="#usestatement">Use statement</a><a class="toclink toclink-2" href="#strings">Strings</a><a class="toclink toclink-2" href="#numbers">Numbers</a><a class="toclink toclink-2" href="#operators">Operators</a><a class="toclink toclink-2" href="#arrays">Arrays</a><a class="toclink toclink-2" href="#slices">Slices</a><a class="toclink toclink-2" href="#typeassertions">Type Assertions</a><a class="toclink toclink-2" href="#forinloops">For-In Loops</a><a class="toclink toclink-2" href="#forloops">For Loops</a><a class="toclink toclink-2" href="#loopcontrolstatements">Loop Control statements</a><a class="toclink toclink-2" href="#ifconditionals">If Conditionals</a><a class="toclink toclink-2" href="#switchconditionals">Switch Conditionals</a><a class="toclink toclink-2" href="#exceptionsexperimental">Exceptions (*Experimental)</a><a class="toclink toclink-2" href="#incdecstatement">Inc-Dec statement</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#loader">Loader</a><a class="toclink toclink-2" href="#crlcorruntimelibrary">CRL (Cor Runtime Library)</a><h1 id="documentation">Documentation</h1>
+<h1>Table of Content</h1><a class="toclink toclink-2" href="#keyconcepts">Key Concepts</a><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#functions">Functions</a><a class="toclink toclink-2" href="#comments">Comments</a><a class="toclink toclink-2" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-2" href="#objects">Objects</a><a class="toclink toclink-2" href="#literalconstructors">Literal Constructors</a><a class="toclink toclink-2" href="#classes">Classes</a><a class="toclink toclink-3" href="#initialization">Initialization</a><a class="toclink toclink-3" href="#combination">Combination</a><a class="toclink toclink-3" href="#superbuiltinfunction">Super (Builtin Function)</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#packages">Packages</a><a class="toclink toclink-2" href="#usestatement">Use statement</a><a class="toclink toclink-2" href="#strings">Strings</a><a class="toclink toclink-2" href="#numbers">Numbers</a><a class="toclink toclink-2" href="#operators">Operators</a><a class="toclink toclink-2" href="#arrays">Arrays</a><a class="toclink toclink-2" href="#slices">Slices</a><a class="toclink toclink-2" href="#typeassertions">Type Assertions</a><a class="toclink toclink-2" href="#forinloops">For-In Loops</a><a class="toclink toclink-2" href="#forloops">For Loops</a><a class="toclink toclink-2" href="#loopcontrolstatements">Loop Control statements</a><a class="toclink toclink-2" href="#ifconditionals">If Conditionals</a><a class="toclink toclink-2" href="#switchconditionals">Switch Conditionals</a><a class="toclink toclink-2" href="#exceptionsexperimental">Exceptions (*Experimental)</a><a class="toclink toclink-2" href="#incdecstatement">Inc-Dec statement</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#loader">Loader</a><a class="toclink toclink-2" href="#crlcorruntimelibrary">CRL (Cor Runtime Library)</a><h1 id="documentation">Documentation</h1>
 
 <p>This is a reference manual for the Cor programming language. It will guide you inside all language aspects and concepts, including experimental features to be added in future releases.</p>
 
@@ -187,7 +187,7 @@ console.log(client['age'])
 
 <h2 id="classes">Classes</h2>
 
-<p>A class is a "blueprint" for objects; it may be defined using syntax such as the following. It is a feature borrowed from Object Oriented(OO) languages, which does not mean Cor is OO:</p>
+<p>A class is a "blueprint" for objects; it may be defined using syntax such as the following. However Cor is aimed to modules not to classes:</p>
 
 <pre><code>class Client {
     name
@@ -231,6 +231,43 @@ client = @Client[
     ]
 ]
 </code></pre>
+
+<h3 id="initialization">Initialization</h3>
+
+<p>There is two types to define a class initialization. The first type is by declaring properties:</p>
+
+<pre><code>class Animal {
+    name
+    movement
+
+    // methods...
+}
+
+
+// a = @Animal['snake', 'slithering']
+// a = @Animal[
+//      name:     'snake',
+//      movement: 'slithering',
+//  ]
+</code></pre>
+
+<p>The second one is by declaring <code>init</code> method, if used must be the first member of the class. You must use this way if you are inheriting from a class from a javascript library which relays in <code>constructor</code>. Using this approach does not mean there is a <code>init</code> method, so that if you call <code>super</code> builtin function, it will call the constructor of the class passed as first parameter, see <a href="#superbuiltinfunction">Super (Builtin Function)</a>.</p>
+
+<p>Example:</p>
+
+<pre><code>class Animal : Model {
+    func init(name) {
+        me.name = name
+        super(Model)
+    }
+
+    // methods...
+}
+
+// a = @Animal['snake', 'slithering']
+</code></pre>
+
+<p>Constructing it with a key-value literal constructor will pass an object intance of <code>CRL.Conf</code> as the first parmeter.</p>
 
 <h3 id="combination">Combination</h3>
 

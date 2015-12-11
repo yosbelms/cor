@@ -156,7 +156,7 @@ aaron = @Client['Aaron', 20]
 
 ## Classes
 
-A class is a "blueprint" for objects; it may be defined using syntax such as the following. It is a feature borrowed from Object Oriented(OO) languages, which does not mean Cor is OO:
+A class is a "blueprint" for objects; it may be defined using syntax such as the following. However Cor is aimed to modules not to classes:
 ```
 class Client {
     name
@@ -200,6 +200,42 @@ client = @Client[
 ]
 ```
 
+
+### Initialization
+
+There is two types to define a class initialization. The first type is by declaring properties:
+```
+class Animal {
+    name
+    movement
+    
+    // methods...
+}
+
+
+// a = @Animal['snake', 'slithering']
+// a = @Animal[
+//      name:     'snake',
+//      movement: 'slithering',
+//  ]
+```
+
+The second one is by declaring `init` method, if used must be the first member of the class. You must use this way if you are inheriting from a class from a javascript library which relays in `constructor`. Using this approach does not mean there is a `init` method, so that if you call `super` builtin function, it will call the constructor of the class passed as first parameter, see [Super (Builtin Function)](#superbuiltinfunction).
+
+Example:
+```
+class Animal : Model {
+    func init(name) {
+        me.name = name
+        super(Model)
+    }
+    
+    // methods...
+}
+
+// a = @Animal['snake', 'slithering']
+```
+Constructing it with a key-value literal constructor will pass an object intance of `CRL.Conf` as the first parmeter.
 
 ### Combination
 
