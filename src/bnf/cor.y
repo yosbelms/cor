@@ -38,7 +38,7 @@ Source
 /* Global Statements */
 
 ClassStmt
-    : CLASS IDENT CombineStmt? ClassBlock {
+    : CLASS IDENT ExtendsStmt? ClassBlock {
             $$= new yy.ClassNode(
                 new yy.Lit($1, @1),
                 new yy.Lit($2, @2),
@@ -47,8 +47,8 @@ ClassStmt
         }
     ;
 
-CombineStmt
-    : ':' QualifiedIdentList { $$= new yy.Node(new yy.Lit($1, @1), $2) }
+ExtendsStmt
+    : ':' QualifiedIdent { $$= new yy.Node(new yy.Lit($1, @1), $2) }
     ;
 
 ClassBlock
@@ -418,11 +418,6 @@ ObjectConstructorArgs
     : '[' ']'                                    { $$= new yy.ObjectConstructorArgsNode(new yy.Lit($1, @1), null, new yy.Lit($2, @2)) }
     | '[' SimpleElementList ']'                  { $$= new yy.ObjectConstructorArgsNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3)) }
     | '[' KeyedElementList ']'                   { $$= new yy.ObjectConstructorArgsNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3), true) }
-    ;
-
-QualifiedIdentList
-    : QualifiedIdent                        { $$= new yy.List($1) }
-    | QualifiedIdentList ',' QualifiedIdent { $1.add(new yy.Lit($2, @2), $3) }
     ;
 
 QualifiedIdent

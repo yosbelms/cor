@@ -779,7 +779,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
 
     className: null,
 
-    superClassNames: null,
+    superClassName: null,
 
     initializerNode: null,
 
@@ -792,7 +792,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         cname = ch[1].children;
 
         this.className       = cname;
-        this.superClassNames = this.getSuperClassNames();
+        this.superClassName = this.getSuperClassName();
         this.block           = ch[3];
         this.propertiesNames = [];
 
@@ -809,17 +809,11 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         this.yy.env.context().addLocalVar(this.className);
     },
 
-    getSuperClassNames: function() {
+    getSuperClassName: function() {
         if (! this.children[2]) {
-            return [];
+            return null;
         }
-        var
-        str,
-        node = this.children[2].children[1];
-
-        str = stringifyNode(node);
-
-        return str.split(',');
+        return stringifyNode(this.children[2].children[1]);
     },
 
     setupSets: function(block) {
@@ -879,17 +873,17 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
 
     compileWithInit: function() {
         var i, len,
-        combineStr = '',
+        extendsStr = '',
         ch        = this.children;
 
-        if (this.superClassNames.length > 0) {
-             combineStr = ', [' + this.superClassNames.join(', ') + ']';
+        if (this.superClassName) {
+             extendsStr = ', ' + this.superClassName;
         }
 
         this.children = [
             new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
             this.methodSet,
-            new yy.Lit(this.runtimeFn('defClass') + this.className + combineStr +')', ch[3].lineno)
+            new yy.Lit(this.runtimeFn('defClass') + this.className + extendsStr +')', ch[3].lineno)
         ];
     },
 
@@ -897,21 +891,21 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         var i, len,
         ch = this.children,
         superInitStr   = '',
-        combineStr     = '',
+        extendsStr     = '',
         applyConfStr   = this.runtimeFn('applyConf') + 'this, arguments[0]);',
         prepareInitStr = 'var $isConf=arguments[0] instanceof CRL.Conf;this.$mutex=this.$mutex?this.$mutex+1:1;',
         runInitStr     = 'if(this.$mutex===1){' + applyConfStr + 'delete this.$mutex;}else{this.$mutex--}',
         argsStr        = '';
 
-        if (this.superClassNames.length > 0) {
-             combineStr = ', [' + this.superClassNames.join(', ') + ']';
+        if (this.superClassName) {
+             extendsStr = ', ' + this.superClassName;
         }
 
         argsStr = this.propertiesNames.join(', ');
     
-        for (i = 0, len = this.superClassNames.length; i < len; i++) {
-            superInitStr += this.superClassNames[i] + '.call(this);';
-        }        
+        for (i = 0, len = this.superClassName.length; i < len; i++) {
+            superInitStr += this.superClassName[i] + '.call(this);';
+        }
 
         this.children = [
             new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
@@ -919,7 +913,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
             this.propertySet,
             new yy.Lit(runInitStr + '};', this.propertySet.lineno),
             this.methodSet,
-            new yy.Lit(this.runtimeFn('defClass') + this.className +  combineStr + ')', ch[3].lineno)
+            new yy.Lit(this.runtimeFn('defClass') + this.className +  extendsStr + ')', ch[3].lineno)
         ];
     
     },
