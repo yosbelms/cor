@@ -1,6 +1,6 @@
 # Making a new relase
 
-    This document is for Cor developers and contributors.
+> This document is for Cor developers and contributors.
 
 ## Before each release
 
@@ -18,7 +18,7 @@
 
 ### Coarse grained
 
-    It should be used in case CICD server is no configured to do so
+> It should be used in case CICD server is no configured to deploy
 
 * Create a new branch with the version name `git checkout -b <version>`
 * Run `make release`
@@ -28,12 +28,12 @@
 
 ### Asisted by CICD servers
 
-    Make sure the CICD server authenticates automatically in GitHub and NPM
+> Make sure the CICD server authenticates automatically in GitHub and NPM
 
 * Create a new branch with the version name `git checkout -b <version>`
 * `git push origin <version>`
 
     The CICD server should be able to execute `make release` command which publish the new version in NPM and will make a new tag named v<version>, eg. v1.3.0
-* if every thing is ok, the you can savely delete version branch
+* if every thing were fine, then you can savely delete version branch
     `git branch -D v<version>`
 
