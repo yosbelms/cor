@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
-path     = require('path');
-showdown = require('./docs/assets/showdown.min.js');
+path        = require('path');
+showdown    = require('./docs/assets/showdown.min.js');
+packageJson = require('./package.json');
+
 require('shelljs/make');
 
 // writes an array of files join it and writes
@@ -183,4 +185,34 @@ target.docs = function() {
 
         echo('   ' + outPath);
     }
+}
+
+// make a release, publishing a new tag
+// usage: make release
+target.release = function() {
+
+    if (!which('git')) {
+        echo('this command requires "git" to be installed')
+        exit(1)
+    }
+
+    if (!which('npm')) {
+        echo('this command requires "npm" to be installed')
+        exit(1)
+    }
+
+    var
+    out = exec('git branch --no-color', {silent: true}).output,
+    currentBranch = /\*\s+([\w\.]+)/.exec(out)[1];
+
+    if (currentBranch == packageJson.version) {
+        echo('+ releasing ' + currentBranch);
+        exec('git tag v' + currentBranch)
+        exec('git push origin master --tags')
+        //exec('npm publish .')
+    }
+    else {
+        echo('+ current branch does not match with the "version" in package.json');
+    }
+    
 }
