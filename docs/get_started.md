@@ -62,7 +62,7 @@ Output file (`app.js`) is now ready to be used in a web page through `<srcipt sr
 
 ## Hello World tutorial
 
-While developing with Cor you must put your application files behind a web server (Apache HTTP Server, Nginx, or that you like). You can use the CLI tools of Cor which provides a static HTTP server through `http` command.
+Cor dynamically load files using XHTTPRequest object. So, application source must be behind a web server (Apache HTTP Server, Nginx, or that you like). The CLI tools of Cor which provides a static HTTP server through `http` command also can be used with the same purpose.
 
 * **Step 1.** Make the following file tree structure:
 ```
