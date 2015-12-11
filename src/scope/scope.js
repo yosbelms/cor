@@ -883,7 +883,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         this.children = [
             new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
             this.methodSet,
-            new yy.Lit(this.runtimeFn('defClass') + this.className + extendsStr +')', ch[3].lineno)
+            new yy.Lit(this.runtimeFn('extend') + this.className + extendsStr +')', ch[3].lineno)
         ];
     },
 
@@ -913,7 +913,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
             this.propertySet,
             new yy.Lit(runInitStr + '};', this.propertySet.lineno),
             this.methodSet,
-            new yy.Lit(this.runtimeFn('defClass') + this.className +  extendsStr + ')', ch[3].lineno)
+            new yy.Lit(this.runtimeFn('extend') + this.className +  extendsStr + ')', ch[3].lineno)
         ];
     
     },
@@ -965,7 +965,7 @@ yy.PropertyNode = Class(yy.Node, {
         ch[0].children = 'this.' + this.name;
         
         if (this.hasDefaultValue) {
-            str = '=(' + this.name + '===undefined||' + this.name + '===null||$isConf)?';
+            str = '=(' + this.name + '==(void 0)||' + this.name + '==null||$isConf)?';
             ch.splice(3, 0, new yy.Lit(':' + this.name, ch[2].lineno));
         }
         else {

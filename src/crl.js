@@ -70,35 +70,16 @@ CRL.applyConf = function(obj, conf) {
     return false;
 };
 
-CRL.defClass = function(Class, supers) {
-    var
-    len, i, _super,
-    superIds,
-    newProto = {};
+CRL.extend = function(Cls, baseCls) {
+    CRL.copyObj(baseCls, Cls, true);
 
-    if (supers) {
-        superIds = {};
-        len      = supers.length;
-
-        for (i = 0; i < len; i++) {
-            _super = supers[i];
-            if (!_super.$classId) {
-                _super.$classId = this.idSeed++;
-            }
-            superIds[_super.$classId] = null;
-            this.copyObj(superIds, _super.$superIds || {});
-            this.copyObj(_super.prototype, newProto);
-        }
+    function Proto() {
+        this.constructor = Cls;
     }
-    
-    this.copyObj(Class.prototype, newProto);
 
-    newProto.constructor = Class;
-
-    Class.$classId  = this.idSeed++;
-    Class.$superIds = superIds;
-    Class.prototype = newProto;
-};
+    Proto.prototype = baseCls.prototype;
+    Cls.prototype   = new Proto();
+}
 
 
 CRL.keys = function(obj) {
