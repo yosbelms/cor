@@ -1,20 +1,37 @@
 # Get started
 
-Cor is an open source language that compiles to javascript, it is designed for application-scale development. You can install it from NPM and use the CLI tools with [Node.js](http://nodejs.org).
+Cor is built for scalable applications development. Its package system leads to organization and the syntax enforces teams to write mantainable code.
 
 ## Download
 
-Cor can be used as either through HTML script tag or CLI. The Cor compiler can run in any javascript environment however is primarily devised to run in the browser. Available releases can be downloaded <a class="button-inline" href="https://github.com/yosbelms/cor/releases">here</a>.
+Cor can be downloaded in several ways depending on different needs. The Cor compiler can run in any javascript environment however is primarily devised to run in the browser.
 
-It can be also downloaded with [Bower](http://bower.io):
+## From GitHub
+
+Available releases can be downloaded <a class="button-inline" href="https://github.com/yosbelms/cor/releases">here</a>.
+
+Once downloaded, decompress the bundle (.zip or .tar) and the main scritp can be located at `cor/dis/cor.js`
+
+## With Bower
+If you prefer [Bower](http://bower.io) as package manager make sure to have [Node.js](http://nodejs.org) and [Bower](http://bower.io) installed.
+
+To install [Bower](http://bower.io) run:
+
+```
+npm install -g bower
+```
+
+Once installed you can run:
 
 ```
 bower install cor-lang
 ```
 
-The CLI tool is available as a [Node.js](http://nodejs.org) utility. For commands reference see [Commands](documentation.html#commands).
+Distribution script can be found at `bower_components/cor/dist/cor.js`
 
-From NPM:
+## With NPM
+
+The CLI tools are available as a [Node.js](http://nodejs.org) utility. To install Cor from NPM run:
 
 ```
 npm install -g cor-lang
@@ -26,7 +43,7 @@ Directly from git repository:
 npm install -g yosbelms/cor
 ```
 
-Once installed using NPM you should have access to `cor` command which can compile and build sources. For cli usage run `cor help` command. The files containing source code should have `.cor` extension. However, Cor read files through `Cor Loader`, a component that can be extended to add support for any kind of processors such as Markdown, Handlebars, YAML... and every else.
+Once installed using NPM you should have access to `cor` command which can compile and build sources. For cli usage run `cor help` command. The files containing source code should have `.cor` extension. However, Cor read files through `Cor Loader`, a component that can be extended to add support for any kind of processors such as Markdown, Handlebars, YAML... and every else. For commands reference see [Commands](documentation.html#commands).
 
 Examples:
 
@@ -44,6 +61,8 @@ Output file (`app.js`) is now ready to be used in a web page through `<srcipt sr
 
 
 ## Hello World tutorial
+
+While developing with Cor you must put your application files behind a web server (Apache HTTP Server, Nginx, or that you like). You can use the CLI tools of Cor which provides a static HTTP server through `http` command.
 
 * **Step 1.** Make the following file tree structure:
 ```
@@ -67,6 +86,6 @@ func init() {
 </html>
 ```
 
-* **Step 4.** Run `cor http` inside `hello` folder and open `http://127.0.0.1:9000/index.html` in a browser, you should see a `Hello World` alert.
+* **Step 4.** Start the HTTP server and open `http://localhost:port/index.html`. Otherwise, if you installed Cor CLI tool form NPM run `cor http` inside `hello` folder and open `http://localhost:9000/index.html` in the browser, you should see a `Hello World` alert.
 
 See the [documentation](documentation.html) for further information about the language.
