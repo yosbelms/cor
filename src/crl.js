@@ -48,7 +48,7 @@ CRL.create = function(Class) {
     instancer = this.instancers[argc];
 
     if (! instancer) {
-        var instancerArgs = [];
+        instancerArgs = [];
         while (++i < argc) {
             instancerArgs.push('args[' + i + ']');
         }
@@ -60,14 +60,6 @@ CRL.create = function(Class) {
     }
 
     throw Error('Runtime Error: trying to instanstiate no class');
-};
-
-CRL.applyConf = function(obj, conf) {
-    if (conf instanceof this.Conf) {
-        this.copyObj(conf.data, obj, true);
-        return true;
-    }
-    return false;
 };
 
 CRL.extend = function(Cls, baseCls) {
@@ -111,53 +103,33 @@ CRL.keys = function(obj) {
 };
 
 CRL.assertType = function(obj, Class) {
-    var
-    classId,
-    superIds, type,
-    objectClass;
+    var type;
 
-    // it is a Class?
-    if (typeof Class === 'function') {
-
-        // object is defined
+    // Class is a Class?
+    if (typeof Class === 'function') {        
+        // object is defined?
         if (typeof obj !== 'undefined') {
-            classId     = Class.$classId;
-            objectClass = obj.constructor;
-
-            //is a cor class
-            if (classId && objectClass) {
-                superIds = objectClass.$superIds || {};
-                if (typeof objectClass.$classId !== 'undefined') {
-                    // if the type is it's own or is of a combined class
-                    if (objectClass.$classId === classId || hasProp.call(superIds, classId)) {
-                        return Class;
-                    }    
-                }
+            if (obj instanceof Class) {
+                return true;
             }
-
-            // it is for non cor classes
-            else if (obj instanceof Class) {
-                return obj.constructor;
-            }
-
             // otherwise find the native type according to "Object.prototype.toString"
             else {
                 type = Object.prototype.toString.call(obj);
                 type = type.substring(8, type.length - 1);
                 if(hasProp.call(this.nativeTypes, type) && this.nativeTypes[type] === Class) {
-                    return Class;
+                    return true;
                 }
             }
         }
+        else {
+            throw 'Trying to assert undefined object';
+        }
     }
     else {
-        throw 'Trying to assert type with not valid class';
+        throw 'Trying to assert undefined class';
     }
-};
 
-
-CRL.Conf = function(obj) {
-    this.data = obj || {};
+    return false;
 };
 
 })();
