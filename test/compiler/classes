@@ -1,5 +1,4 @@
 
-class Empty  {}
 
 class WithProps  {
     prop1
@@ -28,7 +27,7 @@ class Client : Person {
 }
 
 
-class VIPClient : Client, Empty {
+class VIPClient : Client {
     func vip() {
 
     }
