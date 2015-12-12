@@ -89,7 +89,7 @@ PropertyDecl
     ;
 
 FunctionStmt
-    : FUNC IDENT '(' FunctionArgs? ')' Block {
+    : FUNC IDENT '(' FunctionArgs? ')' Block? {
             $$= new yy.FunctionNode(
                 new yy.Lit($1, @1),
                 new yy.Lit($2, @2),
