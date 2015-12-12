@@ -527,10 +527,10 @@ yy.ObjectConstructorNode = Class(yy.Node, {
         className  = this.className;
 
         if (constrArgs) {
-            if (constrArgs.keyed) {
+            if (constrArgs.keyValue) {
                 if (className) {
-                    ch.splice(2, 0, new yy.Lit('(new ' + this.runtimePrefix + 'Conf(', ch[2].children[0].lineno));
-                    ch.push(3, 0,   new yy.Lit('))', ch[3].children[2].lineno));
+                    ch.splice(2, 0, new yy.Lit('(', ch[2].children[0].lineno));
+                    ch.push(3, 0,   new yy.Lit(')', ch[3].children[2].lineno));
                 }
                 else {
                     prefix = '';
@@ -559,8 +559,8 @@ yy.ObjectConstructorArgsNode = Class(yy.Node, {
     initNode: function() {
         var ch = this.children;
 
-        if (ch[3]) { // keyed
-            this.keyed = true;
+        if (ch[3]) { // key-value
+            this.keyValue = true;
             this.checkKeyNames(ch[1]);
         }
     },
@@ -585,9 +585,10 @@ yy.ObjectConstructorArgsNode = Class(yy.Node, {
     },
 
     compile: function() {
-        if (this.keyed) {
+        if (this.keyValue) {
             this.children[0].children = '{';
             this.children[2].children = '}';
+            this.children.splice(2, 0, new yy.Lit(', _conf: true', this.children[2].lineno))
         }
         else {
             this.children[0].children = '(';
@@ -873,11 +874,13 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
 
     compileWithInit: function() {
         var i, len,
-        extendsStr = '',
-        ch        = this.children;
+        extendsStr   = '',
+        //superInitStr = '',
+        ch           = this.children;
 
         if (this.superClassName) {
              extendsStr = ', ' + this.superClassName;
+             //superInitStr = this.superClassName + '.apply(this, arguments);';
         }
 
         this.children = [
@@ -887,24 +890,19 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         ];
     },
 
-    compileWithNoInit: function() {
+    compileWithoutInit: function() {
         var i, len,
         ch = this.children,
         superInitStr   = '',
         extendsStr     = '',
-        applyConfStr   = this.runtimeFn('applyConf') + 'this, arguments[0]);',
-        prepareInitStr = 'var $isConf=arguments[0] instanceof CRL.Conf;this.$mutex=this.$mutex?this.$mutex+1:1;',
-        runInitStr     = 'if(this.$mutex===1){' + applyConfStr + 'delete this.$mutex;}else{this.$mutex--}',
-        argsStr        = '';
+        applyConfStr   = '',
+        prepareInitStr = 'var _conf; _conf=(_conf=arguments[0] && _conf._conf)? _conf: {}; ',
+        runInitStr     = '' + applyConfStr + '',
+        argsStr        = this.propertiesNames.join(', ');
 
         if (this.superClassName) {
-             extendsStr = ', ' + this.superClassName;
-        }
-
-        argsStr = this.propertiesNames.join(', ');
-    
-        for (i = 0, len = this.superClassName.length; i < len; i++) {
-            superInitStr += this.superClassName[i] + '.call(this);';
+             extendsStr   = ', ' + this.superClassName;
+             superInitStr = this.superClassName + '.apply(this, arguments);';
         }
 
         this.children = [
@@ -924,7 +922,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
             this.compileWithInit();
         }
         else {
-            this.compileWithNoInit();
+            this.compileWithoutInit();
         }
     }        
 
