@@ -129,6 +129,10 @@ table {
     margin-top: 10px;
 }
 
+td.cmd-arg {
+    width: 70px;
+}
+
 td {
     padding: 5px 15px 5px 0;
     vertical-align: top;
