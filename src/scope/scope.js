@@ -282,6 +282,26 @@ yy.List = Class(yy.Node, {
 
 });
 
+yy.ValueList = Class(yy.List, {
+
+    type: 'ValueList',
+
+    compile: function() {
+        var ch, i = this.children.length;
+        while (--i) {
+            ch = this.children[i];
+            if (!ch || ch.children === ',') {
+                this.children.pop();
+            }
+            else {
+                break;
+            }
+        }
+        
+    }
+
+});
+
 
 yy.SimpleStmtNode = Class(yy.Node, {
 
@@ -456,7 +476,7 @@ yy.FunctionNode = Class(yy.ContextAwareNode, {
         if (ch[1]) {
             this.name = ch[1].children;
             this.nameLineno = ch[1].lineno;
-        }
+        }        
         if (!this.children[5]) {
             this.children[5] = new yy.Node(
                 new yy.Lit('{', ch[4].lineno),
@@ -1134,7 +1154,11 @@ yy.CallNode = Class(yy.Node, {
             this.error("can not call 'super' builtin function outside of method scope", ch[3].lineno);
         }
 
-        cls = ctx.ownerNode.parent.parent.parent
+        cls = ctx.ownerNode.parent.parent.parent;
+        
+        if (!cls.superClassName) {
+            this.error("callign 'super' inside a class which does not inherit", ch[3].lineno);
+        }
 
         if (ctx.ownerNode.parent.isInitializer) {
             methodName = 'constructor';    
