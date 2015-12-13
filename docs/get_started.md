@@ -27,7 +27,11 @@ Once installed you can run:
 bower install cor-lang
 ```
 
-Distribution script can be found at `bower_components/cor/dist/cor.js`
+You can include the distribution script located at `bower_components/cor/dist/cor.js`
+```
+<scritp type="text/javascript" src="bower_components/cor/dist/cor.js">
+```
+
 
 ## With NPM
 
@@ -45,19 +49,31 @@ npm install -g yosbelms/cor
 
 Once installed using NPM you should have access to `cor` command which can compile and build sources. For cli usage run `cor help` command. The files containing source code should have `.cor` extension. However, Cor read files through `Cor Loader`, a component that can be extended to add support for any kind of processors such as Markdown, Handlebars, YAML... and every else. For commands reference see [Commands](documentation.html#commands).
 
+The `build` command will compile and pack source code and its dependences to one file, `compile` command will just compile the provided source code contained in a directory or file.
+
 Examples:
 
-* Compiles and builds `app.cor` file and its dependences, the resulting file should be located at `app.cor.js` file:
 ```
 cor build app.cor
 ```
+Compiles and builds `app.cor` file and its dependences, the resulting file should be located at `app.cor.js` file.
 
-* Compiles and builds `app` package and its dependences writing the result to `./app/app.js` file:
 ```
 cor build ./app -o=app.js
 ```
+Compiles and builds `app` package and its dependences writing the result to `./app/app.js` file. Output file (`app.js`) is now ready to be used in a web page through `<srcipt src="app.js"></script>` tag. See [commands](documentation.html#commands) for reference.
 
-Output file (`app.js`) is now ready to be used in a web page through `<srcipt src="app.js"></script>` tag. See [commands](documentation.html#commands) for reference.
+If you are planning to use it with [Node.js](http://nodejs.org) you should use `compile` command instead.
+```
+cor compile <directory> -o <output-directory>
+```
+Unlike `build` command `compile` does not include `CRL` in the compiled scripts, you must manually add it by `CommonJS` `require` function.
+
+Example:
+```
+require('cor-lang/dist/crl.js');
+app = require('./app/app.js');
+```
 
 
 ## Hello World tutorial
