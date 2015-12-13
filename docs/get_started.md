@@ -8,7 +8,7 @@ Cor can be downloaded in several ways depending on different needs. The Cor comp
 
 ## From GitHub
 
-Available releases can be downloaded <a class="button-inline" href="https://github.com/yosbelms/cor/releases">here</a>.
+Available releases can be downloaded [here](https://github.com/yosbelms/cor/releases).
 
 Once downloaded, decompress the bundle (.zip or .tar) and the main scritp can be located at `cor/dis/cor.js`
 
