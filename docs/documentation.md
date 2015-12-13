@@ -1,6 +1,6 @@
 # Documentation
 
-This is a reference manual for the Cor programming language. It will guide you inside all language aspects and concepts, including experimental features to be added in future releases.
+This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases.
 
 Cor is a language designed with web development in mind. Programs are constructed from packages and modules, whose properties allow management of dependencies.
 

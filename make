@@ -26,7 +26,7 @@ function setPageTitle(html) {
         title = parsed[2] || '';
     }
 
-    return html.replace(/<title>([\w\s]+)?<\/title>/, '<title>' + title + '</title>');
+    return html.replace(/<title>([\w\s]+)?<\/title>/, '<title>Cor - ' + title + '</title>');
 }
 
 // takes HTML source as input, regarding h1, h2, h3... tags
