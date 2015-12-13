@@ -499,8 +499,8 @@ Value
     ;
 
 ValueList
-    : Value               { $$= new yy.List($1) }
-    | ValueList ',' Value { $1.add(new yy.Lit($2, @2), $3) }
+    : Value                { $$= new yy.ValueList($1) }
+    | ValueList ',' Value? { $1.add(new yy.Lit($2, @2), $3) }
     ;
 
 %%
