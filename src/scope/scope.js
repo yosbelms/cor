@@ -1066,7 +1066,8 @@ yy.MethodNode = Class(yy.Node, {
             
             preorder(this, function(node) {
                 if (node instanceof yy.CallNode && node.name == 'super') {
-                    callSuper = true
+                    callSuper = true;
+                    return false;
                 }
             })
 
