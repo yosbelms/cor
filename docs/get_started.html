@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" type="text/css" href="assets/style.css">
         <link rel="shortcut icon" href="assets/favicon.ico" />
-        <title>Get started</title>
+        <title>Cor - Get started</title>
     </head>
     <body>
 	<span id="top"></span>
@@ -20,9 +20,8 @@
             </a>
             <ul class="right">
                 <li class="inline"><a href="get_started.html">Get started</a></li>
-                <li class="inline"><a href="playground/index.html">Playground</a></li>
-				<li class="inline"><a href="documentation.html">Documentation</a></li>
-                <li class="inline"><a href="contributing.html">Contributing</a></li>
+                <li class="inline"><a href="documentation.html">Documentation</a></li>
+				<li class="inline"><a href="playground/index.html">Playground</a></li>
 				<li class="inline"><a href="../test/index.html">Run tests</a></li>
             </ul>
         </div>
@@ -40,9 +39,7 @@
 
 <h2 id="fromgithub">From GitHub</h2>
 
-<p>Available releases can be downloaded <a class="button-inline" href="https://github.com/yosbelms/cor/releases">here</a>.</p>
-
-<p>Once downloaded, decompress the bundle (.zip or .tar) and the main scritp can be located at <code>cor/dis/cor.js</code></p>
+<p>Available releases can be downloaded <a href="https://github.com/yosbelms/cor/releases">here</a>. Once downloaded, decompress the bundle (.zip or .tar). The main script can be found at <code>cor/dis/cor.js</code></p>
 
 <h2 id="withbower">With Bower</h2>
 
@@ -53,12 +50,15 @@
 <pre><code>npm install -g bower
 </code></pre>
 
-<p>Once installed you can run:</p>
+<p>Once installed run:</p>
 
 <pre><code>bower install cor-lang
 </code></pre>
 
-<p>Distribution script can be found at <code>bower_components/cor/dist/cor.js</code></p>
+<p>You can include the distribution script located at <code>bower_components/cor/dist/cor.js</code></p>
+
+<pre><code>&lt;scritp type="text/javascript" src="bower_components/cor/dist/cor.js"&gt;
+</code></pre>
 
 <h2 id="withnpm">With NPM</h2>
 
@@ -74,27 +74,36 @@
 
 <p>Once installed using NPM you should have access to <code>cor</code> command which can compile and build sources. For cli usage run <code>cor help</code> command. The files containing source code should have <code>.cor</code> extension. However, Cor read files through <code>Cor Loader</code>, a component that can be extended to add support for any kind of processors such as Markdown, Handlebars, YAML... and every else. For commands reference see <a href="documentation.html#commands">Commands</a>.</p>
 
-<p>Examples:</p>
+<p>The <code>build</code> command will compile and pack source code and its dependences to one file, <code>compile</code> command will just compile the provided source code contained in a directory or file.</p>
 
-<ul>
-<li>Compiles and builds <code>app.cor</code> file and its dependences, the resulting file should be located at <code>app.cor.js</code> file:</li>
-</ul>
+<p>Examples:</p>
 
 <pre><code>cor build app.cor
 </code></pre>
 
-<ul>
-<li>Compiles and builds <code>app</code> package and its dependences writing the result to <code>./app/app.js</code> file:</li>
-</ul>
+<p>Compiles and builds <code>app.cor</code> file and its dependences, the resulting file should be located at <code>app.cor.js</code> file.</p>
 
 <pre><code>cor build ./app -o=app.js
 </code></pre>
 
-<p>Output file (<code>app.js</code>) is now ready to be used in a web page through <code>&lt;srcipt src="app.js"&gt;&lt;/script&gt;</code> tag. See <a href="documentation.html#commands">commands</a> for reference.</p>
+<p>Compiles and builds <code>app</code> package and its dependences writing the result to <code>./app/app.js</code> file. Output file (<code>app.js</code>) is now ready to be used in a web page through <code>&lt;srcipt src="app.js"&gt;&lt;/script&gt;</code> tag. See <a href="documentation.html#commands">commands</a> for reference.</p>
+
+<p>If you want to use Cor with <a href="http://nodejs.org">Node.js</a> you should use <code>compile</code> command instead.</p>
+
+<pre><code>cor compile &lt;directory&gt; -o=&lt;output-directory&gt;
+</code></pre>
+
+<p>Unlike <code>build</code> command <code>compile</code> does not include <code>CRL</code> in the compiled scripts, you must manually add it by <code>require</code> function.</p>
+
+<p>Example:</p>
+
+<pre><code>require('cor-lang/dist/crl.js');
+app = require('./app/app.js');
+</code></pre>
 
 <h2 id="helloworldtutorial">Hello World tutorial</h2>
 
-<p>Cor dynamically load files using XHTTPRequest object. So, application source must be behind a web server (Apache HTTP Server, Nginx, or that you like). The CLI tools of Cor which provides a static HTTP server through <code>http</code> command also can be used with the same purpose.</p>
+<p>Cor dynamically load files using XHTTPRequest object. So that, application source must be behind a web server (Apache HTTP Server, Nginx, or that you like). The Cor CLI tools provides a static HTTP server through <code>http</code> command also can be used with the same purpose.</p>
 
 <ul>
 <li><strong>Step 1.</strong> Make the following file tree structure:</li>

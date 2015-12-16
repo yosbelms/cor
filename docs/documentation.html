@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" type="text/css" href="assets/style.css">
         <link rel="shortcut icon" href="assets/favicon.ico" />
-        <title>Documentation</title>
+        <title>Cor - Documentation</title>
     </head>
     <body>
 	<span id="top"></span>
@@ -20,9 +20,8 @@
             </a>
             <ul class="right">
                 <li class="inline"><a href="get_started.html">Get started</a></li>
-                <li class="inline"><a href="playground/index.html">Playground</a></li>
-				<li class="inline"><a href="documentation.html">Documentation</a></li>
-                <li class="inline"><a href="contributing.html">Contributing</a></li>
+                <li class="inline"><a href="documentation.html">Documentation</a></li>
+				<li class="inline"><a href="playground/index.html">Playground</a></li>
 				<li class="inline"><a href="../test/index.html">Run tests</a></li>
             </ul>
         </div>
@@ -30,9 +29,9 @@
 
     <div class="body content">
 
-<h1>Table of Content</h1><a class="toclink toclink-2" href="#keyconcepts">Key Concepts</a><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#functions">Functions</a><a class="toclink toclink-2" href="#comments">Comments</a><a class="toclink toclink-2" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-2" href="#objects">Objects</a><a class="toclink toclink-2" href="#literalconstructors">Literal Constructors</a><a class="toclink toclink-2" href="#classes">Classes</a><a class="toclink toclink-3" href="#initialization">Initialization</a><a class="toclink toclink-3" href="#combination">Combination</a><a class="toclink toclink-3" href="#superbuiltinfunction">Super (Builtin Function)</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#packages">Packages</a><a class="toclink toclink-2" href="#usestatement">Use statement</a><a class="toclink toclink-2" href="#strings">Strings</a><a class="toclink toclink-2" href="#numbers">Numbers</a><a class="toclink toclink-2" href="#operators">Operators</a><a class="toclink toclink-2" href="#arrays">Arrays</a><a class="toclink toclink-2" href="#slices">Slices</a><a class="toclink toclink-2" href="#typeassertions">Type Assertions</a><a class="toclink toclink-2" href="#forinloops">For-In Loops</a><a class="toclink toclink-2" href="#forloops">For Loops</a><a class="toclink toclink-2" href="#loopcontrolstatements">Loop Control statements</a><a class="toclink toclink-2" href="#ifconditionals">If Conditionals</a><a class="toclink toclink-2" href="#switchconditionals">Switch Conditionals</a><a class="toclink toclink-2" href="#exceptionsexperimental">Exceptions (*Experimental)</a><a class="toclink toclink-2" href="#incdecstatement">Inc-Dec statement</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#loader">Loader</a><a class="toclink toclink-2" href="#crlcorruntimelibrary">CRL (Cor Runtime Library)</a><h1 id="documentation">Documentation</h1>
+<h1>Table of Content</h1><a class="toclink toclink-2" href="#keyconcepts">Key Concepts</a><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#functions">Functions</a><a class="toclink toclink-2" href="#comments">Comments</a><a class="toclink toclink-2" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-2" href="#objects">Objects</a><a class="toclink toclink-2" href="#literalconstructors">Literal Constructors</a><a class="toclink toclink-2" href="#classes">Classes</a><a class="toclink toclink-3" href="#initialization">Initialization</a><a class="toclink toclink-3" href="#inheritance">Inheritance</a><a class="toclink toclink-3" href="#superbuiltinfunction">Super (Builtin Function)</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#packages">Packages</a><a class="toclink toclink-2" href="#usestatement">Use statement</a><a class="toclink toclink-2" href="#strings">Strings</a><a class="toclink toclink-2" href="#numbers">Numbers</a><a class="toclink toclink-2" href="#operators">Operators</a><a class="toclink toclink-2" href="#arrays">Arrays</a><a class="toclink toclink-2" href="#slices">Slices</a><a class="toclink toclink-2" href="#typeassertions">Type Assertions</a><a class="toclink toclink-2" href="#forinloops">For-In Loops</a><a class="toclink toclink-2" href="#forloops">For Loops</a><a class="toclink toclink-2" href="#loopcontrolstatements">Loop Control statements</a><a class="toclink toclink-2" href="#ifconditionals">If Conditionals</a><a class="toclink toclink-2" href="#switchconditionals">Switch Conditionals</a><a class="toclink toclink-2" href="#exceptionsexperimental">Exceptions (*Experimental)</a><a class="toclink toclink-2" href="#incdecstatement">Inc-Dec statement</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#loader">Loader</a><a class="toclink toclink-2" href="#crlcorruntimelibrary">CRL (Cor Runtime Library)</a><h1 id="documentation">Documentation</h1>
 
-<p>This is a reference manual for the Cor programming language. It will guide you inside all language aspects and concepts, including experimental features to be added in future releases.</p>
+<p>This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases.</p>
 
 <p>Cor is a language designed with web development in mind. Programs are constructed from packages and modules, whose properties allow management of dependencies.</p>
 
@@ -234,7 +233,7 @@ client = @Client[
 
 <h3 id="initialization">Initialization</h3>
 
-<p>There is two types to define a class initialization. The first type is by declaring properties:</p>
+<p>There is two types to define a class initialization. The first type is by declaring a property set before any method declaration:</p>
 
 <pre><code>class Animal {
     name
@@ -251,7 +250,7 @@ client = @Client[
 //  ]
 </code></pre>
 
-<p>The second one is by declaring <code>init</code> method, if used must be the first member of the class. You must use this way if you are inheriting from a class from a javascript library which relays in <code>constructor</code>. Using this approach does not mean there is a <code>init</code> method, so that if you call <code>super</code> builtin function, it will call the constructor of the class passed as first parameter, see <a href="#superbuiltinfunction">Super (Builtin Function)</a>.</p>
+<p>The second one is by declaring <code>init</code> method, if used, it must be the first member of the class. You must use this way if you are inheriting from a class from a javascript library which relays in <code>constructor</code>. Using this approach does not mean there is a <code>init</code> method, so that if you call <code>super</code> builtin function, it will call the constructor of the super class, see <a href="#superbuiltinfunction">Super (Builtin Function)</a>.</p>
 
 <p>Example:</p>
 
@@ -269,52 +268,42 @@ client = @Client[
 
 <p>Constructing it with a key-value literal constructor will pass an object intance of <code>CRL.Conf</code> as the first parmeter.</p>
 
-<h3 id="combination">Combination</h3>
+<h3 id="inheritance">Inheritance</h3>
 
-<p>Often you need a class with members similar to members of an existing class. Cor supports a sort of inheritance by combining class’s members. Classes may be combined using <code>:</code> operator. It is a good practice to define a generic class and adapt it for different purposes by combining different class definitions.</p>
+<p>Cor supports single inheritance by using <code>:</code> operator. It embraces javascript prototype chain, so it is safe to use it along with any javascript libraries.</p>
 
 <p>Example:</p>
 
 <pre><code>class Shape {
-    color
+    func getArea() {
+        //...
+    }
 }
 
 class Triangle : Shape {
-    points = []
+    func getArea() {
+        //custom area
+    }
 }
 </code></pre>
 
-<p>In above example <code>Triangle</code> class are the result of combining <code>Shape</code> members with <code>Triangle</code> definition.</p>
-
-<p>Cor can combine multiple classes as well</p>
-
-<pre><code>class MySQL : db.SQL, Observable {
-
-}
-</code></pre>
+<p>In above example <code>Triangle</code> class inherits from <code>Shape</code>.</p>
 
 <h3 id="superbuiltinfunction">Super (Builtin Function)</h3>
 
-<p><code>super</code> builtin function calls a method of a class passed as parameter. It would call the method with equal name to the current method where <code>super</code> is in, even if the passed class is not combined.</p>
+<p><code>super</code> builtin function calls a method of the super class. It would call the method with equal name to the current method where <code>super</code> is located.</p>
 
 <p>Example:</p>
 
-<pre><code>class Sup {
-    func num() {
-        return 3
+<pre><code>class Employee {
+    func getSalary() {
+        return 3000
     }
 }
 
-class Sub : Sup {
-    func num() {
-        // calling num method of Sup class
-        return super(Sup) + 5
-    }
-}
-
-class Class {
-    func num() {
-        super(Sup)
+class Chairman : Employee {
+    func getSalary() {        
+        return super()*2
     }
 }
 </code></pre>
@@ -327,9 +316,9 @@ class Class {
     }
 }
 
-class Dialog : Window {
+class DialogBox : Window {
     func show() {
-        super(Window, 'center')
+        super('center')
     }
 }
 </code></pre>
@@ -649,22 +638,17 @@ slice = colors[1:]
 <pre><code>value.(Class)
 </code></pre>
 
-<p>The result of type assertion evaluation is <code>Class</code> if true else is nil. If <code>Class</code> is empty the results is the class which that value is instance of.</p>
+<p>The result of type assertion evaluation is a <code>Boolean</code> value.</p>
 
 <pre><code>obj = @Object
 
-cls = obj.()
+// obj.(Object) == true
 
-// cls == Object
-</code></pre>
+class Runner {}
 
-<p>Example to show type assertion usage:</p>
+rnr = @Runner
 
-<pre><code>switch obj.() {
-    case Object : alert('is object')
-    case Array  : alert('is array')
-    default     : alert('no object ain\'t array')
-}
+// rnr.(Runner) == true
 </code></pre>
 
 <h2 id="forinloops">For-In Loops</h2>
@@ -705,7 +689,7 @@ for index, value in obj {
 
 <h2 id="forloops">For Loops</h2>
 
-<p>For loops are more complex than For-In loops. It is similar to C For statement, but with higher flexibility. It has two syntaxes, the first is:</p>
+<p>For loops are more complex than For-In loops. It is similar to <code>C</code> For statement, but with higher flexibility. It has two syntaxes, the first is:</p>
 
 <pre><code>for start_expression; continuation_expression; statement_expression {
     statements
@@ -740,7 +724,7 @@ for ; i == len; i ++ {
 }
 </code></pre>
 
-<p>The second syntax is more compact than previous, it may replace <code>while</code> statements founded in many programming languages. The syntax is:</p>
+<p>The second syntax is more compact than previous, it replaces <code>while</code> statements founded in many programming languages. The syntax is:</p>
 
 <pre><code>for condition {
     statements
@@ -876,7 +860,7 @@ if (good == 'House') {
 
 <h2 id="exceptionsexperimental">Exceptions (*Experimental)</h2>
 
-<p>Cor has an exception model similar to that javascript. To allow the reusing of javascript libraries is one of the Cor principles due to that javascript is part of the web. So, <code>try/catch/finally</code> does not differ from javascript exception model. Syntax similar to the following may be used:</p>
+<p>Cor has an exception model similar to that javascript to guarantee interoperability between Cor and javascript. So, <code>try/catch/finally</code> syntax is very close javascript syntax. Syntax similar to the following may be used:</p>
 
 <pre><code>// just try
 try {
@@ -974,24 +958,24 @@ func init() {
     <tbody>
         <tr><td colspan="2">Arguments:</td></tr>
         <tr>
-            <td><code>path</code></td>
+            <td class="cmd-arg"><code>path</code></td>
             <td>Specifies the path to the entry file or package to compile.</td>
         </tr>
         <tr><td colspan="2">Options:</td></tr>
         <tr>
-            <td><code>-o</code></td>
+            <td class="cmd-arg"><code>-o</code></td>
             <td>Specifies the name of the file where the resulting javascript code will be written, if not specified the file name will be the base name of the entry file with <code>.js</code> suffix.</td>
         </tr>
         <tr>
-            <td><code>-env</code></td>
+            <td class="cmd-arg"><code>-env</code></td>
             <td>Specifies the path to the <code>.json</code> file to use as environment configuration.</td>
         </tr>
         <tr>
-            <td><code>-no-crl</code></td>
+            <td class="cmd-arg"><code>-no-crl</code></td>
             <td>If used will not embed CRL(Cor Runtime Library) in the head of the compiling result.</td>
         </tr>
         <tr>
-            <td><code>-v</code></td>
+            <td class="cmd-arg"><code>-v</code></td>
             <td>If used will print additional information during building process.</td>
         </tr>
     </tbody>
@@ -1027,16 +1011,16 @@ func init() {
     <tbody>
         <tr><td colspan="2">Arguments:</td></tr>
         <tr>
-            <td><code>path</code></td>
+            <td class="cmd-arg"><code>path</code></td>
             <td>Specifies the path to the package to compile.</td>
         </tr>
         <tr><td colspan="2">Options:</td></tr>
         <tr>
-            <td><code>-o</code></td>
+            <td class="cmd-arg"><code>-o</code></td>
             <td>Specifies the path to the directory where the compiled package will be written. The default name has the format: `compiled_{timestamp}`</td>
         </tr>
         <tr>
-            <td><code>-v</code></td>
+            <td class="cmd-arg"><code>-v</code></td>
             <td>Specifies if print or not file names as they are compiled.</td>
         </tr>
     </tbody>
@@ -1063,11 +1047,11 @@ func init() {
 <pre><code>cor http [http options]
 </code></pre>
 
-<table>
+<table class="command-args">
     <tbody>
         <tr><td colspan="2">Options:</td></tr>
         <tr>
-            <td><code>-port</code></td>
+            <td class="cmd-arg"><code>-port</code></td>
             <td>Specifies the port where the server will listen requests. Default is `9000`</td>
         </tr>
     </tbody>
