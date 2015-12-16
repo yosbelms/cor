@@ -8,9 +8,7 @@ Cor can be downloaded in several ways depending on different needs. The Cor comp
 
 ## From GitHub
 
-Available releases can be downloaded <a class="button-inline" href="https://github.com/yosbelms/cor/releases">here</a>.
-
-Once downloaded, decompress the bundle (.zip or .tar) and the main scritp can be located at `cor/dis/cor.js`
+Available releases can be downloaded [here](https://github.com/yosbelms/cor/releases). Once downloaded, decompress the bundle (.zip or .tar). The main script can be found at `cor/dis/cor.js`
 
 ## With Bower
 If you prefer [Bower](http://bower.io) as package manager make sure to have [Node.js](http://nodejs.org) and [Bower](http://bower.io) installed.
@@ -21,13 +19,17 @@ To install [Bower](http://bower.io) run:
 npm install -g bower
 ```
 
-Once installed you can run:
+Once installed run:
 
 ```
 bower install cor-lang
 ```
 
-Distribution script can be found at `bower_components/cor/dist/cor.js`
+You can include the distribution script located at `bower_components/cor/dist/cor.js`
+```
+<scritp type="text/javascript" src="bower_components/cor/dist/cor.js">
+```
+
 
 ## With NPM
 
@@ -45,24 +47,36 @@ npm install -g yosbelms/cor
 
 Once installed using NPM you should have access to `cor` command which can compile and build sources. For cli usage run `cor help` command. The files containing source code should have `.cor` extension. However, Cor read files through `Cor Loader`, a component that can be extended to add support for any kind of processors such as Markdown, Handlebars, YAML... and every else. For commands reference see [Commands](documentation.html#commands).
 
+The `build` command will compile and pack source code and its dependences to one file, `compile` command will just compile the provided source code contained in a directory or file.
+
 Examples:
 
-* Compiles and builds `app.cor` file and its dependences, the resulting file should be located at `app.cor.js` file:
 ```
 cor build app.cor
 ```
+Compiles and builds `app.cor` file and its dependences, the resulting file should be located at `app.cor.js` file.
 
-* Compiles and builds `app` package and its dependences writing the result to `./app/app.js` file:
 ```
 cor build ./app -o=app.js
 ```
+Compiles and builds `app` package and its dependences writing the result to `./app/app.js` file. Output file (`app.js`) is now ready to be used in a web page through `<srcipt src="app.js"></script>` tag. See [commands](documentation.html#commands) for reference.
 
-Output file (`app.js`) is now ready to be used in a web page through `<srcipt src="app.js"></script>` tag. See [commands](documentation.html#commands) for reference.
+If you want to use Cor with [Node.js](http://nodejs.org) you should use `compile` command instead.
+```
+cor compile <directory> -o=<output-directory>
+```
+Unlike `build` command `compile` does not include `CRL` in the compiled scripts, you must manually add it by `require` function.
+
+Example:
+```
+require('cor-lang/dist/crl.js');
+app = require('./app/app.js');
+```
 
 
 ## Hello World tutorial
 
-Cor dynamically load files using XHTTPRequest object. So, application source must be behind a web server (Apache HTTP Server, Nginx, or that you like). The CLI tools of Cor which provides a static HTTP server through `http` command also can be used with the same purpose.
+Cor dynamically load files using XHTTPRequest object. So that, application source must be behind a web server (Apache HTTP Server, Nginx, or that you like). The Cor CLI tools provides a static HTTP server through `http` command also can be used with the same purpose.
 
 * **Step 1.** Make the following file tree structure:
 ```

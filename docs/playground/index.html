@@ -8,7 +8,7 @@
         <link rel="shortcut icon" href="../assets/favicon.ico" />
         <script type="text/javascript" src="../../dist/cor.js"></script>
         <script data-entry="./playground.cor"></script>
-        <title>Playground</title>
+        <title>Cor - Playground</title>
     </head>
     <body>
     <span id="top"></span>
@@ -20,9 +20,8 @@
             </a>
             <ul class="right">
                 <li class="inline"><a href="../get_started.html">Get started</a></li>
-                <li class="inline"><a href="index.html">Playground</a></li>
                 <li class="inline"><a href="../documentation.html">Documentation</a></li>
-                <li class="inline"><a href="../contributing.html">Contributing</a></li>
+                <li class="inline"><a href="index.html">Playground</a></li>
                 <li class="inline"><a href="../../test/index.html">Run tests</a></li>
             </ul>
         </div>
@@ -37,7 +36,7 @@
         <option name="play-fib">Fibonacci</option>
         <option name="play-list">Linked list</option>
         <option name="play-class">Classes</option>
-        <option name="play-hoopy">Hoopy</option>
+        <option name="play-dom">DOM</option>
     </select>
 
     <div class="pg-toolbar">
@@ -138,7 +137,7 @@ func init() {
 }
 </script>
 
-<script id="play-class" type="text/cor">// Shows inheritance and literal object contructions
+<script id="play-class" type="text/cor">// Show inheritance and literal object contructions
 
 idSeed = 0
 func genId() {
@@ -156,7 +155,7 @@ class Model {
 class Todo : Model {
     desc    
     func toJSON() {
-        obj      = super(Model)
+        obj      = super()
         obj.desc = me.desc
         obj.type = 'Todo'
         return obj
@@ -174,19 +173,19 @@ func init() {
 }
 </script>
 
-<script id="play-hoopy" type="text/cor">// move [Run] and [Link] buttons to the right
+<script id="play-dom" type="text/cor">// move [Run] and [Link] buttons to the right
 // and put it back after a second
 
-class Hoopy {
-    elem = document.getElementById('btn-run')
-    func hoop() { me.elem.style.marginLeft = '50px' }
-    func hap()  { me.elem.style.marginLeft = '0px' }
+class View {
+    elem
+    func move() { me.elem.style.marginLeft = '50px' }
+    func restore()  { me.elem.style.marginLeft = '0px' }
 }
 
 func init() {
-    hoopy = @Hoopy
-    hoopy.hoop()
-    setTimeout(func(){ hoopy.hap() }, 1000)
+    view = @View[elem: document.getElementById('btn-run')]
+    view.move()
+    setTimeout(func(){ view.restore() }, 1000)
 }
 </script>
 

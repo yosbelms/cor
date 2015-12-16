@@ -38,7 +38,7 @@ Source
 /* Global Statements */
 
 ClassStmt
-    : CLASS IDENT CombineStmt? ClassBlock {
+    : CLASS IDENT ExtendsStmt? ClassBlock {
             $$= new yy.ClassNode(
                 new yy.Lit($1, @1),
                 new yy.Lit($2, @2),
@@ -47,8 +47,8 @@ ClassStmt
         }
     ;
 
-CombineStmt
-    : ':' QualifiedIdentList { $$= new yy.Node(new yy.Lit($1, @1), $2) }
+ExtendsStmt
+    : ':' QualifiedIdent { $$= new yy.Node(new yy.Lit($1, @1), $2) }
     ;
 
 ClassBlock
@@ -417,12 +417,7 @@ ObjectConstructor
 ObjectConstructorArgs
     : '[' ']'                                    { $$= new yy.ObjectConstructorArgsNode(new yy.Lit($1, @1), null, new yy.Lit($2, @2)) }
     | '[' SimpleElementList ']'                  { $$= new yy.ObjectConstructorArgsNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3)) }
-    | '[' KeyedElementList ']'                   { $$= new yy.ObjectConstructorArgsNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3), true) }
-    ;
-
-QualifiedIdentList
-    : QualifiedIdent                        { $$= new yy.List($1) }
-    | QualifiedIdentList ',' QualifiedIdent { $1.add(new yy.Lit($2, @2), $3) }
+    | '[' KeyValueElementList ']'                { $$= new yy.ObjectConstructorArgsNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3), true) }
     ;
 
 QualifiedIdent
@@ -430,9 +425,9 @@ QualifiedIdent
     | QualifiedIdent '.' IDENT                  { $1.add(new yy.Lit($2, @2), new yy.Lit($3, @3)) }
     ;
 
-KeyedElementList
-    : KeyedElement                       { $$= new yy.List($1) }
-    | KeyedElement ',' KeyedElementList? {
+KeyValueElementList
+    : KeyedElement                              { $$= new yy.List($1) }
+    | KeyedElement ',' KeyValueElementList?     {
             if ($3 instanceof yy.List)   {
                 $3.addFront($1, new yy.Lit($2, @2))
                 $$= $3
@@ -504,8 +499,8 @@ Value
     ;
 
 ValueList
-    : Value               { $$= new yy.List($1) }
-    | ValueList ',' Value { $1.add(new yy.Lit($2, @2), $3) }
+    : Value                { $$= new yy.ValueList($1) }
+    | ValueList ',' Value? { $1.add(new yy.Lit($2, @2), $3) }
     ;
 
 %%

@@ -5,15 +5,11 @@ func Client(name, age) {
 
 Client.prototype.manuallyInsertedInPrototype = 'foo'
 
-class Observable {
-
-}
-
 class DAO {
 
 }
 
-class AccountDAO : DAO, Observable {
+class AccountDAO : DAO {
 
 }
 
@@ -35,43 +31,8 @@ func init() {
                 expect(c.name).toBeUndefined()
                 expect(c.age).toBeUndefined()
             })
-        })    
-
-
-         describe('CRL.Conf', func(){
-            
-            it('Should work', func() {
-                c = @CRL.Conf
-
-                expect(c).toBeTruthy()
-                expect(c.data).toBeDefined()
-
-                cfg = @[a: 1]
-                c = @CRL.Conf[cfg]
-
-                expect(c.data).toBe(cfg)
-            })
-            
-        })        
-
-        describe('applyConf', func(){
-            
-            it('Should work', func() {                
-                obj = @[]
-                CRL.applyConf(obj, @CRL.Conf[@[name: 'john']])
-
-                expect(obj.name).toBe('john')
-            })
-
-            it('Should not work if second parameter is no a CRL.Conf instance', func() {
-                obj = @[name: 'peter']
-                CRL.applyConf(obj, @[name: 'john'])
-
-                expect(obj.name).toBe('peter')
-            })
-            
         })
-
+        
         describe('keys', func(){
             it('From Arrays should extract just numeric indexes', func() {
                 arr = ['mango', 'orange', 'guava']
@@ -101,12 +62,13 @@ func init() {
                 })
 
                 it('Should work for inheritance', func() {
+                    expect(CRL.assertType(account, AccountDAO)).toBeTruthy()
                     expect(CRL.assertType(account, DAO)).toBeTruthy()
-                    expect(CRL.assertType(account, Observable)).toBeTruthy()
                 })
 
                 it('Should work even passing native types', func() {
                     expect(CRL.assertType(account, Object)).toBeTruthy()
+                    expect(CRL.assertType('', String)).toBeTruthy()
                 })
 
             })

@@ -1,6 +1,6 @@
 # Documentation
 
-This is a reference manual for the Cor programming language. It will guide you inside all language aspects and concepts, including experimental features to be added in future releases.
+This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases.
 
 Cor is a language designed with web development in mind. Programs are constructed from packages and modules, whose properties allow management of dependencies.
 
@@ -203,7 +203,7 @@ client = @Client[
 
 ### Initialization
 
-There is two types to define a class initialization. The first type is by declaring properties:
+There is two types to define a class initialization. The first type is by declaring a property set before any method declaration:
 ```
 class Animal {
     name
@@ -220,7 +220,7 @@ class Animal {
 //  ]
 ```
 
-The second one is by declaring `init` method, if used must be the first member of the class. You must use this way if you are inheriting from a class from a javascript library which relays in `constructor`. Using this approach does not mean there is a `init` method, so that if you call `super` builtin function, it will call the constructor of the class passed as first parameter, see [Super (Builtin Function)](#superbuiltinfunction).
+The second one is by declaring `init` method, if used, it must be the first member of the class. You must use this way if you are inheriting from a class from a javascript library which relays in `constructor`. Using this approach does not mean there is a `init` method, so that if you call `super` builtin function, it will call the constructor of the super class, see [Super (Builtin Function)](#superbuiltinfunction).
 
 Example:
 ```
@@ -237,53 +237,43 @@ class Animal : Model {
 ```
 Constructing it with a key-value literal constructor will pass an object intance of `CRL.Conf` as the first parmeter.
 
-### Combination
+### Inheritance
 
-Often you need a class with members similar to members of an existing class. Cor supports a sort of inheritance by combining class’s members. Classes may be combined using `:` operator. It is a good practice to define a generic class and adapt it for different purposes by combining different class definitions.
+Cor supports single inheritance by using `:` operator. It embraces javascript prototype chain, so it is safe to use it along with any javascript libraries.
 
 Example:
 ```
 class Shape {
-    color
+    func getArea() {
+        //...
+    }
 }
 
 class Triangle : Shape {
-    points = []
+    func getArea() {
+        //custom area
+    }
 }
 ```
-In above example `Triangle` class are the result of combining `Shape` members with `Triangle` definition.
-
-Cor can combine multiple classes as well
-```
-class MySQL : db.SQL, Observable {
-
-}
-```
+In above example `Triangle` class inherits from `Shape`.
 
 
 ### Super (Builtin Function)
 
-`super` builtin function calls a method of a class passed as parameter. It would call the method with equal name to the current method where `super` is in, even if the passed class is not combined.
+`super` builtin function calls a method of the super class. It would call the method with equal name to the current method where `super` is located.
 
 Example:
 
 ```
-class Sup {
-    func num() {
-        return 3
+class Employee {
+    func getSalary() {
+        return 3000
     }
 }
 
-class Sub : Sup {
-    func num() {
-        // calling num method of Sup class
-        return super(Sup) + 5
-    }
-}
-
-class Class {
-    func num() {
-        super(Sup)
+class Chairman : Employee {
+    func getSalary() {        
+        return super()*2
     }
 }
 ```
@@ -296,9 +286,9 @@ class Window {
     }
 }
 
-class Dialog : Window {
+class DialogBox : Window {
     func show() {
-        super(Window, 'center')
+        super('center')
     }
 }
 ```
@@ -622,23 +612,20 @@ Type assertions checks if a value is an instance of a class. Having the followin
 ```
 value.(Class)
 ```
-The result of type assertion evaluation is `Class` if true else is nil. If `Class` is empty the results is the class which that value is instance of.
+The result of type assertion evaluation is a `Boolean` value.
 ```
 obj = @Object
 
-cls = obj.()
+// obj.(Object) == true
 
-// cls == Object
+class Runner {}
+
+rnr = @Runner
+
+// rnr.(Runner) == true
+
 ```
 
-Example to show type assertion usage:
-```
-switch obj.() {
-    case Object : alert('is object')
-    case Array  : alert('is array')
-    default     : alert('no object ain\'t array')
-}
-```
 
 ## For-In Loops
 
@@ -678,7 +665,7 @@ for index, value in obj {
 
 ## For Loops
 
-For loops are more complex than For-In loops. It is similar to C For statement, but with higher flexibility. It has two syntaxes, the first is:
+For loops are more complex than For-In loops. It is similar to `C` For statement, but with higher flexibility. It has two syntaxes, the first is:
 ```
 for start_expression; continuation_expression; statement_expression {
     statements
@@ -712,7 +699,7 @@ for ; i == len; i ++ {
 }
 ```
 
-The second syntax is more compact than previous, it may replace `while` statements founded in many programming languages. The syntax is:
+The second syntax is more compact than previous, it replaces `while` statements founded in many programming languages. The syntax is:
 ```
 for condition {
     statements
@@ -852,7 +839,8 @@ switch good {
 
 ## Exceptions (*Experimental)
 
-Cor has an exception model similar to that javascript. To allow the reusing of javascript libraries is one of the Cor principles due to that javascript is part of the web. So, `try/catch/finally` does not differ from javascript exception model. Syntax similar to the following may be used:
+
+Cor has an exception model similar to that javascript to guarantee interoperability between Cor and javascript. So, `try/catch/finally` syntax is very close javascript syntax. Syntax similar to the following may be used:
 ```
 // just try
 try {
@@ -950,24 +938,24 @@ cor build <path> [build options]
     <tbody>
         <tr><td colspan="2">Arguments:</td></tr>
         <tr>
-            <td><code>path</code></td>
+            <td class="cmd-arg"><code>path</code></td>
             <td>Specifies the path to the entry file or package to compile.</td>
         </tr>
         <tr><td colspan="2">Options:</td></tr>
         <tr>
-            <td><code>-o</code></td>
+            <td class="cmd-arg"><code>-o</code></td>
             <td>Specifies the name of the file where the resulting javascript code will be written, if not specified the file name will be the base name of the entry file with <code>.js</code> suffix.</td>
         </tr>
         <tr>
-            <td><code>-env</code></td>
+            <td class="cmd-arg"><code>-env</code></td>
             <td>Specifies the path to the <code>.json</code> file to use as environment configuration.</td>
         </tr>
         <tr>
-            <td><code>-no-crl</code></td>
+            <td class="cmd-arg"><code>-no-crl</code></td>
             <td>If used will not embed CRL(Cor Runtime Library) in the head of the compiling result.</td>
         </tr>
         <tr>
-            <td><code>-v</code></td>
+            <td class="cmd-arg"><code>-v</code></td>
             <td>If used will print additional information during building process.</td>
         </tr>
     </tbody>
@@ -1004,16 +992,16 @@ cor compile <path> [compile options]
     <tbody>
         <tr><td colspan="2">Arguments:</td></tr>
         <tr>
-            <td><code>path</code></td>
+            <td class="cmd-arg"><code>path</code></td>
             <td>Specifies the path to the package to compile.</td>
         </tr>
         <tr><td colspan="2">Options:</td></tr>
         <tr>
-            <td><code>-o</code></td>
+            <td class="cmd-arg"><code>-o</code></td>
             <td>Specifies the path to the directory where the compiled package will be written. The default name has the format: `compiled_{timestamp}`</td>
         </tr>
         <tr>
-            <td><code>-v</code></td>
+            <td class="cmd-arg"><code>-v</code></td>
             <td>Specifies if print or not file names as they are compiled.</td>
         </tr>
     </tbody>
@@ -1041,11 +1029,11 @@ Usage:
 cor http [http options]
 ```
 
-<table>
+<table class="command-args">
     <tbody>
         <tr><td colspan="2">Options:</td></tr>
         <tr>
-            <td><code>-port</code></td>
+            <td class="cmd-arg"><code>-port</code></td>
             <td>Specifies the port where the server will listen requests. Default is `9000`</td>
         </tr>
     </tbody>

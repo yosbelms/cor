@@ -41,7 +41,7 @@ func init() {
             expect(p.age).toBe(28)
         })
 
-        it('Shuld allow to set properties by a hashed constructor', func() {
+        it('Shuld allow to set properties by a key-value constructor', func() {
             p = @Person[name: 'yosbel', age: 28]
             expect(p.name).toBe('yosbel')
             expect(p.age).toBe(28)

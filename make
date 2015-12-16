@@ -26,7 +26,7 @@ function setPageTitle(html) {
         title = parsed[2] || '';
     }
 
-    return html.replace(/<title>([\w\s]+)?<\/title>/, '<title>' + title + '</title>');
+    return html.replace(/<title>([\w\s]+)?<\/title>/, '<title>Cor - ' + title + '</title>');
 }
 
 // takes HTML source as input, regarding h1, h2, h3... tags
@@ -163,9 +163,9 @@ target.docs = function() {
     var
     i, len, outFile, converter,
     html, outPath,
-    pre   = cat('docs/assets/pre'),
-    post  = cat('docs/assets/post'),
-    files = ls('docs/*.md');
+    prefix = cat('docs/assets/docs.prefix'),
+    suffix = cat('docs/assets/docs.suffix'),
+    files  = ls('docs/*.md');
 
     echo(' + generating doc');
 
@@ -178,7 +178,7 @@ target.docs = function() {
             html = generateTableOfContents(html) + html;
         }
 
-        html      = pre + html + post;
+        html      = prefix + html + suffix;
         outPath   = path.normalize('./docs/' + outFile);
         setPageTitle(html).to(outPath);
 

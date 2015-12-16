@@ -6,7 +6,7 @@
 body {
     font-family: Oxygen, "Helvetica Neue", Helvetica, Arial, sans-serif;
     margin: 0px;
-    background-color: #fafafa;
+    background-color: #fefefe;
     font-size: 15px;
 }
 
@@ -127,6 +127,10 @@ h2, h3 {
 
 table {
     margin-top: 10px;
+}
+
+td.cmd-arg {
+    width: 70px;
 }
 
 td {

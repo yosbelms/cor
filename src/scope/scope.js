@@ -125,6 +125,37 @@ yy.generateRoute = function(route) {
     return route.replace(/\\/g, '/').replace(/\/+/g, '/');
 };
 
+function preorder(node, fn) {
+    if (!(node instanceof yy.Node)) {
+        return;
+    }
+
+    var i,
+    ch  = node.children,
+    len = ch.length;
+
+    for (i = 0; i < len; i++) {
+        if (fn(ch[i]) === false) {
+            return;
+        }
+        preorder(ch[i], fn);
+    }
+}
+
+function flattenToLine(node, lineno) {
+    preorder(node, function(node) {
+        node.lineno = lineno;
+    })
+}
+
+
+function moveToLine(node, offset) {
+    preorder(node, function(node) {
+        node.lineno += offset;
+    })
+}
+
+
 function stringifyNode(node) {
     var
     i,
@@ -247,6 +278,26 @@ yy.List = Class(yy.Node, {
 
     addFront: function() {
         this.children = slice.call(arguments).concat(this.children);
+    }
+
+});
+
+yy.ValueList = Class(yy.List, {
+
+    type: 'ValueList',
+
+    compile: function() {
+        var ch, i = this.children.length;
+        while (--i) {
+            ch = this.children[i];
+            if (!ch || ch.children === ',') {
+                this.children.pop();
+            }
+            else {
+                break;
+            }
+        }
+        
     }
 
 });
@@ -425,7 +476,15 @@ yy.FunctionNode = Class(yy.ContextAwareNode, {
         if (ch[1]) {
             this.name = ch[1].children;
             this.nameLineno = ch[1].lineno;
+        }        
+        if (!this.children[5]) {
+            this.children[5] = new yy.Node(
+                new yy.Lit('{', ch[4].lineno),
+                new yy.List(),
+                new yy.Lit('}', ch[4].lineno)
+            );
         }
+
         this.block = this.children[5];
     },
 
@@ -512,6 +571,8 @@ yy.ObjectConstructorNode = Class(yy.Node, {
 
     type: 'ObjectConstructorNode',
 
+    isLiteral: false,
+
     initNode: function() {
         this.base('initNode', arguments);
         this.className       = this.children[1] ? this.children[1].children : null;
@@ -527,13 +588,14 @@ yy.ObjectConstructorNode = Class(yy.Node, {
         className  = this.className;
 
         if (constrArgs) {
-            if (constrArgs.keyed) {
+            if (constrArgs.keyValue) {
                 if (className) {
-                    ch.splice(2, 0, new yy.Lit('(new ' + this.runtimePrefix + 'Conf(', ch[2].children[0].lineno));
-                    ch.push(3, 0,   new yy.Lit('))', ch[3].children[2].lineno));
+                    ch.splice(2, 0, new yy.Lit('(', ch[2].children[0].lineno));
+                    ch.push(3, 0,   new yy.Lit(')', ch[3].children[2].lineno));
                 }
                 else {
                     prefix = '';
+                    this.isLiteral = true;
                 }
             }
             else {
@@ -559,8 +621,8 @@ yy.ObjectConstructorArgsNode = Class(yy.Node, {
     initNode: function() {
         var ch = this.children;
 
-        if (ch[3]) { // keyed
-            this.keyed = true;
+        if (ch[3]) { // key-value
+            this.keyValue = true;
             this.checkKeyNames(ch[1]);
         }
     },
@@ -585,9 +647,12 @@ yy.ObjectConstructorArgsNode = Class(yy.Node, {
     },
 
     compile: function() {
-        if (this.keyed) {
+        if (this.keyValue) {
             this.children[0].children = '{';
             this.children[2].children = '}';
+            if (!this.parent.isLiteral) {
+                this.children.splice(2, 0, new yy.Lit(', _conf: true', this.children[2].lineno))
+            }            
         }
         else {
             this.children[0].children = '(';
@@ -779,7 +844,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
 
     className: null,
 
-    superClassNames: null,
+    superClassName: null,
 
     initializerNode: null,
 
@@ -792,7 +857,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         cname = ch[1].children;
 
         this.className       = cname;
-        this.superClassNames = this.getSuperClassNames();
+        this.superClassName  = this.getSuperClassName();
         this.block           = ch[3];
         this.propertiesNames = [];
 
@@ -804,22 +869,20 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
 
         this.setupSets(this.block);
 
+        if (this.propertiesNames.length > 0) {
+            this.hasProperties = true;
+        }
+
         this.yy.env.registerClass(this);
 
         this.yy.env.context().addLocalVar(this.className);
     },
 
-    getSuperClassNames: function() {
+    getSuperClassName: function() {
         if (! this.children[2]) {
-            return [];
+            return null;
         }
-        var
-        str,
-        node = this.children[2].children[1];
-
-        str = stringifyNode(node);
-
-        return str.split(',');
+        return stringifyNode(this.children[2].children[1]);
     },
 
     setupSets: function(block) {
@@ -879,49 +942,60 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
 
     compileWithInit: function() {
         var i, len,
-        combineStr = '',
-        ch        = this.children;
+        extendsStr   = '',
+        ch           = this.children;
 
-        if (this.superClassNames.length > 0) {
-             combineStr = ', [' + this.superClassNames.join(', ') + ']';
+        if (this.superClassName) {
+             extendsStr = ', ' + this.superClassName;
         }
 
         this.children = [
             new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
-            this.methodSet,
-            new yy.Lit(this.runtimeFn('defClass') + this.className + combineStr +')', ch[3].lineno)
+            this.methodSet
         ];
+
+        if (this.superClassName) {
+            this.methodSet.children[0].children[1].children += this.runtimeFn('extend') + this.className + extendsStr +');';
+        }
     },
 
-    compileWithNoInit: function() {
+    compileWithoutInit: function() {
         var i, len,
         ch = this.children,
         superInitStr   = '',
-        combineStr     = '',
-        applyConfStr   = this.runtimeFn('applyConf') + 'this, arguments[0]);',
-        prepareInitStr = 'var $isConf=arguments[0] instanceof CRL.Conf;this.$mutex=this.$mutex?this.$mutex+1:1;',
-        runInitStr     = 'if(this.$mutex===1){' + applyConfStr + 'delete this.$mutex;}else{this.$mutex--}',
-        argsStr        = '';
+        extendsStr     = '',
+        applyConfStr   = '',
+        prepareInitStr = '',
+        runInitStr     = '' + applyConfStr + '',
+        argsStr        = this.propertiesNames.join(', ');
 
-        if (this.superClassNames.length > 0) {
-             combineStr = ', [' + this.superClassNames.join(', ') + ']';
-        }
 
-        argsStr = this.propertiesNames.join(', ');
-    
-        for (i = 0, len = this.superClassNames.length; i < len; i++) {
-            superInitStr += this.superClassNames[i] + '.call(this);';
+        if (this.hasProperties) {
+            prepareInitStr = 'var _conf;_conf=((_conf=arguments[0])&&_conf._conf)?_conf:null; '
         }        
+
+        if (this.superClassName) {
+            extendsStr   = ', ' + this.superClassName;            
+            if (this.hasProperties) {
+                superInitStr = this.superClassName + '.prototype.constructor.call(this, _conf);';
+            }
+            else {
+                superInitStr = this.superClassName + '.prototype.constructor.apply(this, arguments);';
+            }
+        }
 
         this.children = [
             new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
             new yy.Lit('('+ argsStr +'){' + prepareInitStr + superInitStr , ch[1].lineno),
             this.propertySet,
-            new yy.Lit(runInitStr + '};', this.propertySet.lineno),
-            this.methodSet,
-            new yy.Lit(this.runtimeFn('defClass') + this.className +  combineStr + ')', ch[3].lineno)
+            new yy.Lit(runInitStr + '};', this.propertySet.lineno)
         ];
-    
+
+        if (this.superClassName) {
+            this.children.push(new yy.Lit(this.runtimeFn('extend') + this.className + extendsStr +');', this.propertySet.lineno))
+        }
+
+        this.children.push(this.methodSet);
     },
 
     compile: function() {
@@ -930,7 +1004,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
             this.compileWithInit();
         }
         else {
-            this.compileWithNoInit();
+            this.compileWithoutInit();
         }
     }        
 
@@ -969,13 +1043,12 @@ yy.PropertyNode = Class(yy.Node, {
         ch  = this.children;
 
         ch[0].children = 'this.' + this.name;
+
+        str = '=(_conf&&_conf.hasOwnProperty(\'' + this.name + '\'))?_conf.' + this.name + ':' + this.name;
         
         if (this.hasDefaultValue) {
-            str = '=(' + this.name + '===undefined||' + this.name + '===null||$isConf)?';
+            str += '==void 0?';
             ch.splice(3, 0, new yy.Lit(':' + this.name, ch[2].lineno));
-        }
-        else {
-            str = '=' + this.name + ';';
         }
 
         ch[1].children = str;
@@ -1004,9 +1077,28 @@ yy.MethodNode = Class(yy.Node, {
     },
 
     compileInit: function() {
+        var
+        callSuper      = false,
+        superInitStr   = '',
+        superClassName = this.parent.parent.superClassName;
+
+        if (superClassName) {
+            
+            preorder(this, function(node) {
+                if (node instanceof yy.CallNode && node.name == 'super') {
+                    callSuper = true;
+                    return false;
+                }
+            })
+
+            if (!callSuper) {
+                superInitStr = superClassName + '.prototype.constructor.apply(this, arguments);';
+                this.children[0].block.children.splice(1, 0, new yy.Lit(superInitStr, this.children[0].block.children[0].lineno));
+            }
+        }
+
         this.isInitializer = true;
-        this.children[0].children.splice(0, 2);
-        this.children[0].block.children[0].children = '';
+        this.children[0].children.splice(0, 2);        
         this.children[0].context.addLocalVar('me', 'this');
     },
 
@@ -1026,17 +1118,23 @@ yy.CallNode = Class(yy.Node, {
 
     type: 'CallNode',
 
+    name: null,
+
     initNode: function() {
         this.base('initNode', arguments);
         this.context = this.yy.env.context();
+
+        if (this.children[0] instanceof yy.VarNode) {
+            this.name = this.children[0].name;
+        }
     },
 
     compile: function() {
         var
         ch = this.children, last, builtin;
 
-        if (ch[0] instanceof yy.VarNode) {
-            builtin = this[ch[0].name + 'Builtin'];
+        if (this.name) {
+            builtin = this[this.name + 'Builtin'];
             if (builtin) {
                 builtin.call(this);
             }
@@ -1047,43 +1145,37 @@ yy.CallNode = Class(yy.Node, {
 
     superBuiltin: function() {
         var
-        len, lineno,
-        methodName,
-        ch = this.children,
-        ls = ch[2],
-        stub = '',
-        ctx = this.yy.env.context();
+        methodName, cls,
+        ch   = this.children,
+        stub = '',        
+        ctx  = this.yy.env.context();
 
-        if (ctx.ownerNode.parent instanceof yy.MethodNode) {
-            methodName = ctx.ownerNode.parent.name;
-        }
-        else {
+        if (!(ctx.ownerNode.parent instanceof yy.MethodNode)) {
             this.error("can not call 'super' builtin function outside of method scope", ch[3].lineno);
         }
 
-        ch[0].children[0].children = '';
-        ch[1].children = '';
+        cls = ctx.ownerNode.parent.parent.parent;
+        
+        if (!cls.superClassName) {
+            this.error("callign 'super' inside a class which does not inherit", ch[3].lineno);
+        }
 
-        if (ls) {
-            len = ls.children.length;
+        if (ctx.ownerNode.parent.isInitializer) {
+            methodName = 'constructor';    
+        }
+        else {
+            methodName = ctx.ownerNode.parent.name;
+        }
 
-            if (ctx.ownerNode.parent.isInitializer) {
-                stub = '';
-            }
-            else {
-                stub = '.prototype.' + methodName;
-            }
-
-            if (len === 1) {
-                stub   += '.apply(me, arguments';
-                lineno = ls.children[0].lineno;
-            }
-            else if (len > 1) {
-                stub   += '.call(me, ';
-                lineno = ls.children[len - 1].lineno;
-            }
-
-            ls.children.splice(1, 1, new yy.Lit(stub, lineno));
+        if (ch[2]) {
+            stub += cls.superClassName + '.prototype.' + methodName + '.call';
+            this.children[1].children = '(me, ';
+            this.children.splice(0, 1, new yy.Lit(stub, ch[0].lineno));
+        }
+        else {
+            stub += cls.superClassName + '.prototype.' + methodName + '.apply';
+            this.children[1].children = '(me, arguments';
+            this.children.splice(0, 1, new yy.Lit(stub, ch[0].lineno));
         }
 
     }

@@ -21,15 +21,14 @@ class ClientA : Client {
 
 }
 
-class ClientB : Emitter, ClientA  {
+class ClientB : Emitter  {
     name
     age
 }
 
-class ClientC : ClientA, Emitter {
+class ClientC : ClientA {
     func init(name, age) {
-        super(ClientA, @CRL.Conf[@[name: name, age: age]])
-        super(Emitter, null)
+        super(@[name: name, age: age, _conf: true])
     }
 }
 
@@ -68,7 +67,6 @@ func init() {
             expect(cb.name).toBe('emanuel')
             expect(cb.age).toBe(18)
             expect(cb.active).toBe(true)
-            expect(cb.hairColor).toBe('black')
             expect(cb.isEmitter).toBe(true)
         })
 
@@ -77,9 +75,7 @@ func init() {
 
             expect(cc.name).toBe('lliliam')
             expect(cc.age).toBe(28)
-            expect(cc.active).toBe(true)
             expect(cc.hairColor).toBe('black')
-            expect(cc.isEmitter).toBe(true)
         })
     })
 
