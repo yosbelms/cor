@@ -1,7 +1,7 @@
 {
     "author"      : "Yosbel Marin",
     "name"        : "cor-lang",
-    "version"     : "0.1.4",
+    "version"     : "0.2.1",
     "license"     : "BSD",
     "description" : "The Language of the Web",
     "repository"  : "https://github.com/yosbelms/cor.git",
