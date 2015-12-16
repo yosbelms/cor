@@ -1,3 +1,17 @@
+# 0.2.1
+
+* add test covering the changes
+* fix bug, `super` no longer can be called from a class which does not inherits
+* change the way `super` is used
+* refactor the site
+* improve performance in yy.MethodNode
+* playground minor refactoring
+* remove multiple inheritance in favor of single inheritance, see issues #2 and #4
+    * refactor the parser grammar
+    * add CRL.extends
+    * remove CRL.defClass
+* update docs
+
 # 0.1.4 
 
 * fix bug in the lexer (cor.l), it no longer recognize "(digit)(char)" as a valid identifier
