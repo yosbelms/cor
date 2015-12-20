@@ -89,41 +89,78 @@ yy.parseError = function parseError (msg, hash) {
             case '\n': hash.text = 'NEW_LINE';       break;
             case ''  : hash.text = 'END_OF_PROGRAM'; break;
         }
-        msg = "unexpected " + hash.text;
+        msg = 'unexpected ' + hash.text;
     }
     else {
-        msg = "unexpected " + msg;
+        msg = 'unexpected ' + msg;
     }
 
-    msg += " at " + filename + ':' + hash.loc.first_line;
+    msg += ' at ' + filename + ':' + hash.loc.first_line;
 
     throw msg;
-};
+}
 
-yy.generateRoute = function(route) {
+
+/*
+There is three types of routes:
+
+- Inner    : begins with . example: `.models`
+- Delegate : routes which ends with extensions, example `filename.js`
+- Public   : is tested against `^[a-z_-]+$` regex
+
+Routes are tested in the same order as types above, if the route does not match to
+any of before types then it will be proccessed by `packagize` function which transform
+routes according to Cor package system.
+*/
+yy.generateRoute = function(route) {    
     var
-    parsed,
+    parsed, ext,
     rFileNameExt   = /([\s\S]+)*(^|\/)([\w\-]+)*(\.[\w\-]+)*$/,
     rCapitalLetter = /^[A-Z]/,
-    rLocalModule   = /^\.([\w-]+)$/;
-
-    // is a local module '.local_module'?
-    parsed = rLocalModule.exec(route);
-    if (parsed) {
-        return './' + parsed[1];
+    
+    rStatic  = /^(\.\.\/)|(\.\/)|(\/)/,
+    rInner   = /^\.([\w-]+)$/,
+    rPublic  = /^[a-z_-]+$/;
+    
+    // replace \ by /
+    function normalize(route) {
+        return route.replace(/\\/g, '/').replace(/\/+/g, '/');
     }
 
-    // is a valid route?
-    parsed = rFileNameExt.exec(route);
-    if (parsed) {
-        // if has no file extension and has no capital letter then is a package
-        if (! parsed[4] && ! rCapitalLetter.test(parsed[3])) {
-            return (parsed[1] || '') + parsed[2] + parsed[3] + '/' + parsed[3];
+    function packagize(route) {
+        var
+        parsed = rFileNameExt.exec(route);
+
+        if (parsed && !parsed[4] && !rCapitalLetter.test(parsed[3])) {
+            route = (parsed[1] || '') + parsed[2] + parsed[3] + '/' + parsed[3];
         }
+
+        return normalize(route);
     }
 
-    return route.replace(/\\/g, '/').replace(/\/+/g, '/');
-};
+    // Inner
+    parsed = rInner.exec(route);
+    if (parsed) {
+        return normalize('./' + parsed[1]);
+    }
+
+    // Public
+    if (rPublic.test(route)) {
+        return normalize(route);
+    }
+    
+    // Delegate
+    // parsed[4] is the file extension
+    // so if parsed[4]? then is delegate route
+    parsed = rFileNameExt.exec(route);
+    if (parsed[4]) {
+        return normalize(route);
+    }
+
+    // else process by applying Cor package system
+    return packagize(route);
+}
+
 
 function preorder(node, fn) {
     if (!(node instanceof yy.Node)) {
@@ -759,6 +796,8 @@ yy.UseNode = Class(yy.Node, {
 
     rClearName: /[^\w]/,
 
+    extractedAlias: '',
+
     initNode: function() {
         this.base('initNode', arguments);
 
@@ -767,24 +806,24 @@ yy.UseNode = Class(yy.Node, {
         this.aliasNode  = this.children[2];
         this.targetNode = this.children[1];
         this.route      = this.yy.generateRoute(this.targetNode.children.substring(1, this.targetNode.children.length - 1)); // trim quotes
-        this.alias      = this.aliasNode ? this.aliasNode.children : false;
-
-        if (!this.alias) {
-            parsed = this.rAlias.exec(this.route);
-            this.alias = (parsed[1] || '').replace(this.rClearName, '_');
+        this.alias      = this.aliasNode ? this.aliasNode.children : '';
+        
+        parsed = this.rAlias.exec(this.route);
+        if (parsed) {
+            this.extractedAlias = (parsed[1] || '').replace(this.rClearName, '_');    
         }
 
-        this.yy.env.context().addLocalVar(this.alias);
+        this.yy.env.context().addLocalVar(this.alias || this.extractedAlias);
     },
 
     compile: function() {
         var
         ch     = this.children,
         route  = this.route,
-        alias  = this.alias,
+        alias  = this.alias || this.extractedAlias,
         suffix = '';
 
-        if (this.rCapitalLetter.test(alias)) {
+        if (this.rCapitalLetter.test(this.extractedAlias)) {
             suffix = '.' + alias;
         }
 
@@ -946,7 +985,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         ch           = this.children;
 
         if (this.superClassName) {
-             extendsStr = ', ' + this.superClassName;
+            extendsStr = ', ' + this.superClassName;
         }
 
         this.children = [

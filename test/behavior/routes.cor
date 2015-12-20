@@ -2,10 +2,14 @@
 r = cor.yy.generateRoute
 
 func init() {
-    describe('Routes generation  for Use Statement should work for', func() {
+    describe('Routes generation for Use Statement should work for', func() {
 
-        it('Package type routes', func() {
-            expect(r('pkg')).toBe('pkg/pkg')
+        it('Global routes', func() {
+            expect(r('pkg')).toBe('pkg')
+            expect(r('pkg')).not.toBe('pkg/pkg')
+        })
+
+        it('Package type routes', func() {            
             expect(r('./pkg')).toBe('./pkg/pkg')
             expect(r('./pkg/sub_pkg')).toBe('./pkg/sub_pkg/sub_pkg')
         })
