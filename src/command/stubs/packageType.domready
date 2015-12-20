@@ -1,4 +1,5 @@
-
+    
+    // DOM Ready
     if (window && document) {
         if (document.readyState === 'complete') {
             run();

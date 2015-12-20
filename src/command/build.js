@@ -10,6 +10,7 @@ require('../loader/node.js');
 var
 outFilename,
 envFilename,
+packageType,
 cliInput,
 cliApp,
 loader    = cor.loader,
@@ -38,7 +39,7 @@ function getHeadStub() {
 
 cor.Loader.prototype.onLoaderReady = function() {
     var
-    name, i, len,
+    name, i, len, content,
     filename, temp, dep,
     rInvalidChars = /[^a-zA-Z_]/g,
     src           = '',
@@ -105,7 +106,17 @@ cor.Loader.prototype.onLoaderReady = function() {
         src += fs.readFileSync(__dirname + '/../crl.js', 'utf8');
     }
     src += fs.readFileSync(__dirname + '/stubs/build.prefix', 'utf8');
-    src += fs.readFileSync(__dirname + '/stubs/build.domready', 'utf8');
+
+    for (i = 0, len = packageType.length; i < len; i++) {
+        try {
+            content = fs.readFileSync(__dirname + '/stubs/packageType.' + packageType[i], 'utf8');
+        } catch(e) {
+            throw packageType[i] + ' not supported';
+        }
+
+        src += content.replace('{package_name}', path.basename(this.entryModulePath, path.extname(this.entryModulePath)));
+    }
+    
     src += '})([\n' +
           depsSrcList.join(',\n') +
           '\n],[\n' +
@@ -139,8 +150,7 @@ function build() {
             spath = path.split(cor.path.pathSep);
             spath.push(cor.path.pathSep + spath[spath.length - 1] + '.cor');
             path  = cor.path.sanitize(spath.join(cor.path.pathSep));
-        }
-
+        }        
 		loader.setEntry(path, envFilename);
 	}
 
@@ -151,6 +161,7 @@ cmd = new cor.CliCommand('build', 'compile packages and dependecies');
 cmd.addArgument('path', 'path to the entry file or package to be compiled whith it dependences', true);
 
 cmd.addOption('o', 'name of the file to write the compiling result');
+cmd.addOption('type', 'type of the resulting package (domready, commonjs, amd and global)');
 cmd.addOption('env', 'path to the .json file which contains environment variables for cor.Loader');
 cmd.addOption('no-crl', 'specify tht CRL(Cor Runtime Library) should not be embedded in the head of the compiling result');
 cmd.addOption('v',   'print additional information during build proccess');
@@ -160,6 +171,15 @@ cmd.setAction(function (input, app){
     cliApp   = app;
     envFilename = input.getOption('env');
     outFilename = input.getOption('o');
+    packageType = input.getOption('type');
+
+    if (!packageType) {
+        packageType = ['domready'];
+    }
+    else {
+        packageType = packageType.split(',');
+    }
+
     build();
 });
 
