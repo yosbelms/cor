@@ -823,6 +823,7 @@ yy.Str = yy.StringNode = Class(yy.Lit, {
 
     compile: function() {        
         var i, str,
+        newNode,
         lineno   = this.lineno,
         splitted = this.children.split(/\r\n|\n/),
         len      = splitted.length;
@@ -832,7 +833,14 @@ yy.Str = yy.StringNode = Class(yy.Lit, {
             if (i < len - 1) {
                 str += '\\';
             }
-            splitted[i] = new yy.Lit(str, lineno + i);
+            newNode = new yy.Lit(str, lineno + i);
+            
+            newNode.loc = {
+                first_line: lineno + i,
+                first_column: this.loc.first_column
+            };
+
+            splitted[i] = newNode;
         }
 
         this.children = splitted;
@@ -1037,7 +1045,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
     },
 
     compileWithInit: function() {
-        var i, len,
+        var i, len, newNode,
         extendsStr   = '',
         ch           = this.children;
 
@@ -1045,8 +1053,10 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
             extendsStr = ', ' + this.superClassName;
         }
 
+        newNode = new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno);
+        newNode.loc = ch[1].loc;
         this.children = [
-            new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
+            newNode,
             this.methodSet
         ];
 
@@ -1056,13 +1066,11 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
     },
 
     compileWithoutInit: function() {
-        var i, len,
+        var i, len, newNode,
         ch = this.children,
         superInitStr   = '',
         extendsStr     = '',
-        applyConfStr   = '',
         prepareInitStr = '',
-        runInitStr     = '' + applyConfStr + '',
         argsStr        = this.propertiesNames.join(', ');
 
 
@@ -1080,15 +1088,23 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
             }
         }
 
-        this.children = [
-            new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
-            new yy.Lit('('+ argsStr +'){' + prepareInitStr + superInitStr , ch[1].lineno),
-            this.propertySet,
-            new yy.Lit(runInitStr + '};', this.propertySet.lineno)
-        ];
+        this.children = [];
+
+        newNode = new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno);
+        newNode.loc = ch[1].loc;
+        this.children.push(newNode);
+
+        newNode = new yy.Lit('('+ argsStr +'){' + prepareInitStr + superInitStr, ch[1].lineno);
+        newNode.loc = ch[1].loc;
+        this.children.push(newNode);
+
+        this.children.push(this.propertySet);
+        this.children.push(new yy.Lit('};', this.propertySet.lineno));
 
         if (this.superClassName) {
-            this.children.push(new yy.Lit(this.runtimeFn('extend') + this.className + extendsStr +');', this.propertySet.lineno))
+            newNode = new yy.Lit(this.runtimeFn('extend') + this.className + extendsStr +');', this.propertySet.lineno);
+            newNode.loc = ch[2].loc;
+            this.children.push(newNode);
         }
 
         this.children.push(this.methodSet);
@@ -1242,6 +1258,7 @@ yy.CallNode = Class(yy.Node, {
     superBuiltin: function() {
         var
         methodName, cls,
+        newNode,
         ch   = this.children,
         stub = '',        
         ctx  = this.yy.env.context();
@@ -1266,12 +1283,16 @@ yy.CallNode = Class(yy.Node, {
         if (ch[2]) {
             stub += cls.superClassName + '.prototype.' + methodName + '.call';
             this.children[1].children = '(me, ';
-            this.children.splice(0, 1, new yy.Lit(stub, ch[0].lineno));
+            newNode = new yy.Lit(stub, ch[0].lineno);
+            newNode.loc = ch[0].loc;
+            this.children.splice(0, 1, newNode);
         }
         else {
             stub += cls.superClassName + '.prototype.' + methodName + '.apply';
             this.children[1].children = '(me, arguments';
-            this.children.splice(0, 1, new yy.Lit(stub, ch[0].lineno));
+            newNode = new yy.Lit(stub, ch[0].lineno);
+            newNode.loc = ch[0].loc;
+            this.children.splice(0, 1, newNode);
         }
 
     }
