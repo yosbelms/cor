@@ -179,7 +179,7 @@ var path = {
 ## cor.Loader
 
 This class is responsible to load the modules required anywhere
-in the source code. Also manage dependencies
+in the source code. It resolve module dependencies
 
 */
 var Loader = Class({
@@ -489,7 +489,7 @@ var Program = Class({
     },
 
     getExports: function() {
-        var path, PROG, env, js, src;
+        var path, prog, env, js;
 
         if (this.environment === null) {
 
@@ -497,14 +497,15 @@ var Program = Class({
             if (typeof js === 'string') {
                 js = {src: js};
             }
-            src = 'var PROG=function(require,module,exports){var PROG;\n' +
+            prog = (new Function('return function(require,module,exports){' +
                   (js.prefix  || '') +
                   (js.src     || '') + '}' +
-                  (js.suffix  || '');
-            eval(src);
-            if (typeof PROG === 'function') {
+                  (js.suffix  || '')
+            ))();
+
+            if (typeof prog === 'function') {
                 this.environment = this.newModule();
-                PROG(this.environment.require, this.environment, this.environment.exports);
+                prog(this.environment.require, this.environment, this.environment.exports);
             }
             else {
                 this.loader.error('Error while attemp to execute ' + path);
