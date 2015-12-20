@@ -1,1 +1,1 @@
-node %~dp0cor
+node %~dp0cor %*
