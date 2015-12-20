@@ -1,5 +1,6 @@
 require('../cor.js');
 require('../class.js');
+require('./path.js');
 require('./loader.js');
 
 var
