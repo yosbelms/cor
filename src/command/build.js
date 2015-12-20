@@ -40,12 +40,14 @@ cor.Loader.prototype.onLoaderReady = function() {
     var
     name, i, len,
     filename, temp, dep,
+    rInvalidChars = /[^a-zA-Z_]/g,
     src           = '',
     depsSrcList   = [],
     fileNameTable = {},
     dependences   = [],
     programs      = [],
-    filenames     = [];
+    filenames     = [],
+    moduleName    = '';
 
     print('\nCompiling:\n');
 
@@ -59,8 +61,10 @@ cor.Loader.prototype.onLoaderReady = function() {
 
         dependences.push(this.moduleCache[name].dependences);
 
+        moduleName = path.basename(filename).replace(rInvalidChars, '_');
+        
         programs.push(
-            'function(require, module, exports){\n' +
+            'function ' + moduleName + '(require, module, exports){\n' +
              this.moduleCache[name].toJs().src  +
             '\n}'
         );
@@ -96,13 +100,13 @@ cor.Loader.prototype.onLoaderReady = function() {
         }
     }
 
-
     src += getHeadStub();
     if (embeddCrl) {
         src += fs.readFileSync(__dirname + '/../crl.js', 'utf8');
     }
-    src += fs.readFileSync(__dirname + '/build_stub', 'utf8');
-    src += '[\n' +
+    src += fs.readFileSync(__dirname + '/stubs/build.prefix', 'utf8');
+    src += fs.readFileSync(__dirname + '/stubs/build.domready', 'utf8');
+    src += '})([\n' +
           depsSrcList.join(',\n') +
           '\n],[\n' +
           programs.join(',') +

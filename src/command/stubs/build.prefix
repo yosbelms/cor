@@ -1,0 +1,26 @@
+(function(depsTable, programs) {
+    var
+    modules = [],
+    len     = programs.length,
+    i       = -1;
+
+    while (++i < len) {        
+        modules[i] = newModule(i);
+    }
+
+    function newModule(index) {
+        var module = {exports : null};
+
+        function require(filename) {
+            return modules[depsTable[index][filename]]();
+        }
+
+        return function Module() {
+            if (! module.exports) {
+                module.exports = {};
+                programs[index](require, module, module.exports);
+            }
+
+            return module.exports;
+        }
+    }
