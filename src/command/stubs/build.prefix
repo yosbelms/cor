@@ -10,7 +10,7 @@
         }
 
         return function Module() {
-			if (! module.exports) programs[index](require, module, module.exports = {});
+            if (! module.exports) programs[index](require, module, module.exports = {});
             return module.exports;
         }
     }
