@@ -110,29 +110,32 @@ There is three types of routes:
 
 Routes are tested in the same order as types above, if the route does not match to
 any of before types then it will be proccessed by `packagize` function which transform
-routes according to Cor package system.
+routes according to Cor package convention.
 */
 yy.generateRoute = function(route) {    
     var
     parsed, ext,
     rFileNameExt   = /([\s\S]+)*(^|\/)([\w\-]+)*(\.[\w\-]+)*$/,
     rCapitalLetter = /^[A-Z]/,
-    
-    rStatic  = /^(\.\.\/)|(\.\/)|(\/)/,
-    rInner   = /^\.([\w-]+)$/,
-    rPublic  = /^[a-z_-]+$/;
+    rStatic        = /^(\.\.\/)|(\.\/)|(\/)/,
+    rInner         = /^\.([\w-]+)$/,
+    rPublic        = /^[a-z_-]+$/;
     
     // replace \ by /
     function normalize(route) {
         return route.replace(/\\/g, '/').replace(/\/+/g, '/');
     }
 
+    // apply Cor package convention
     function packagize(route) {
         var
         parsed = rFileNameExt.exec(route);
 
-        if (parsed && !parsed[4] && !rCapitalLetter.test(parsed[3])) {
+        if (parsed && parsed[3] && !parsed[4] && !rCapitalLetter.test(parsed[3])) {
             route = (parsed[1] || '') + parsed[2] + parsed[3] + '/' + parsed[3];
+        }
+        else if (!parsed[3]) {
+            return null;
         }
 
         return normalize(route);
@@ -807,7 +810,11 @@ yy.UseNode = Class(yy.Node, {
         this.targetNode = this.children[1];
         this.route      = this.yy.generateRoute(this.targetNode.children.substring(1, this.targetNode.children.length - 1)); // trim quotes
         this.alias      = this.aliasNode ? this.aliasNode.children : '';
-        
+
+        if (!this.route) {
+            this.error('invalid route format', this.targetNode.lineno);
+        }
+
         parsed = this.rAlias.exec(this.route);
         if (parsed) {
             this.extractedAlias = (parsed[1] || '').replace(this.rClearName, '_');    
