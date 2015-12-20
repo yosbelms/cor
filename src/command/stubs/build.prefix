@@ -9,9 +9,8 @@
             return modules[depsTable[index][filename]]();
         }
 
-        return function Module() {            
-            module.exports = module.exports || {};
-            programs[index](require, module, module.exports);
+        return function Module() {
+			if (! module.exports) programs[index](require, module, module.exports = {});
             return module.exports;
         }
     }
