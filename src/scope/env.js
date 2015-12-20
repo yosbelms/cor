@@ -113,6 +113,8 @@ yy.Environment = Class({
 
     currentCompilingMethod: null,
 
+    comments: null,
+
     varSeed: 0,
 
     filename: '',
@@ -123,9 +125,18 @@ yy.Environment = Class({
         this.errors     = [];
         this.exported   = {};
         this.classNodes = [];
+        this.comments   = [];
 
         // initialize the first context (module)
         this.newContext();
+    },
+
+    addComment: function(node) {
+        this.comments.push(node);
+    },
+
+    getComments: function() {
+        return this.comments;
     },
 
     addExported: function(k, v) {

@@ -81,7 +81,7 @@ translationTable = {
     '^': ' ^ '
 };
 
-yy.parseError = function parseError (msg, hash) {
+yy.parseError = function parseError (msg, hash, replaceMsg) {
     var filename = yy.env.filename;
     //is non recoverable parser error?
     if (hash && hasProp.call(hash, 'loc') && hash.expected) {
@@ -89,10 +89,10 @@ yy.parseError = function parseError (msg, hash) {
             case '\n': hash.text = 'NEW_LINE';       break;
             case ''  : hash.text = 'END_OF_PROGRAM'; break;
         }
-        msg = 'unexpected ' + hash.text;
+        msg = replaceMsg ? msg : 'unexpected ' + hash.text;
     }
     else {
-        msg = 'unexpected ' + msg;
+        msg = replaceMsg ? msg : 'unexpected ' + msg;
     }
 
     msg += ' at ' + filename + ':' + hash.loc.first_line;
@@ -104,8 +104,8 @@ yy.parseError = function parseError (msg, hash) {
 /*
 There is three types of routes:
 
-- Inner    : begins with . example: `.models`
-- Delegate : routes which ends with extensions, example `filename.js`
+- Inner    : begins with . char, example: `.models`
+- Delegate : ends with file extensions, example `filename.js`
 - Public   : is tested against `^[a-z_-]+$` regex
 
 Routes are tested in the same order as types above, if the route does not match to
@@ -160,11 +160,13 @@ yy.generateRoute = function(route) {
         return normalize(route);
     }
 
-    // else process by applying Cor package system
+    // else process by applying Cor package convention
     return packagize(route);
 }
 
-
+// iterate recursevely in preorder starting from the node passed
+// as first parameter, it executes the function passed as second parameter
+// in each visited node, iteration ends if the function returns false
 function preorder(node, fn) {
     if (!(node instanceof yy.Node)) {
         return;
@@ -239,6 +241,7 @@ function getLesserLineNumber(node){
     return selLine;
 };
 
+// the base class for all AST nodes
 yy.Node = Class({
 
     type: 'Node',
@@ -251,8 +254,8 @@ yy.Node = Class({
 
     init: function init(children) {
         this.children = [];
-        this.lineno   = yy.env.yylloc.first_line;
-        this.loc      = Object.create(yy.env.yylloc);
+        this.lineno   = yy.env.loc.first_line;
+        this.loc      = Object.create(yy.env.loc);
 
         this.yy       = yy;
 
@@ -262,6 +265,7 @@ yy.Node = Class({
         this.initNode();
     },
 
+    // adopt an array of nodes
     adopt: function(children) {
         var
         i = 0, len;
@@ -274,8 +278,7 @@ yy.Node = Class({
     },
 
     initNode: function() {
-        //
-        //console.log('ahhh')
+        // virtual
     },
 
     runtimeFn: function(name) {
@@ -291,16 +294,7 @@ yy.Node = Class({
     }
 });
 
-yy.Mock = Class(yy.Node, {
-
-    type: 'Mock',
-
-    initNode: function() {
-        this; arguments;
-    }
-
-});
-
+// List of nodes
 yy.List = Class(yy.Node, {
 
     type: 'List',
@@ -322,6 +316,80 @@ yy.List = Class(yy.Node, {
 
 });
 
+
+// Literals are the smallest units to be compiled
+// its children is a string which must be returned
+// to write as compiled code
+// most of the nodes compiles by constructing yy.Lit-s
+// and adopting as children to be later readed by the compiler
+yy.Lit = yy.LiteralNode = Class(yy.Node, {
+
+    type: 'Lit, LiteralNode',
+
+    init: function(ch, yloc) {
+        this.children = ch;
+        this.lineno   = isNaN(yloc) ? yloc.first_line : yloc;
+        this.loc      = yloc;
+        this.yy       = yy;
+
+        this.initNode();
+    },
+
+    compile: function() {
+        var
+        txt = this.children, t;
+
+        if (hasProp.call(translationTable, txt)) {
+            txt = translationTable[txt];
+        }
+
+        return txt;
+    }
+});
+
+// Single line comment
+// is a comment starting by `//` and ends in the next EOL
+yy.SingleLineCommentNode = Class(yy.Lit, {
+
+    type: 'SingleLineCommentNode',
+
+    compile: function() {
+        this.children = [
+            new yy.Lit(this.children, this.lineno)
+        ];
+    }
+
+});
+
+// A comment beginning and ending with `---`
+// this kind of comments must have a new line before and after
+yy.MultiLineCommentNode = Class(yy.Lit, {
+
+    type: 'MultiLineCommentNode',
+
+    compile: function() {
+        this.children = this.children
+            .replace(/^(\s*)---/, '$1/*')
+            .replace(/---(\s*)$/, '*/$1');
+
+        var i, str,
+        lineno   = this.lineno,
+        splitted = this.children.split(/\r\n|\n/),
+        len      = splitted.length;
+
+        for (i = 0; i < len; i++) {
+            str = splitted[i].replace(/^\s+/, '');
+            splitted[i] = new yy.Lit(str, lineno + i);
+        }
+
+        this.children = splitted;
+    }
+
+});
+
+
+// A value is anithing that can be assigned,
+// an object literal, a string, boolean ...
 yy.ValueList = Class(yy.List, {
 
     type: 'ValueList',
@@ -342,7 +410,7 @@ yy.ValueList = Class(yy.List, {
 
 });
 
-
+// Node to wrap a single line expression or Inc-Dec statement
 yy.SimpleStmtNode = Class(yy.Node, {
 
     type: 'SimpleStmtNode',
@@ -368,7 +436,9 @@ yy.SimpleStmtNode = Class(yy.Node, {
     }
 });
 
-
+// Cor nodes such as modules, functions and clases knows
+// has their own context to know about variable scoping.
+// This is the base class
 yy.ContextAwareNode = Class(yy.Node, {
 
     type: 'ContextAwareNode',
@@ -386,6 +456,7 @@ yy.ContextAwareNode = Class(yy.Node, {
     }
 });
 
+// A module is a root node of the AST
 yy.ModuleNode = Class(yy.ContextAwareNode, {
 
     type: 'ModuleNode',
@@ -393,7 +464,6 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
     initializerName: 'init',
 
     compile: function() {
-        //console.log('compile module');
         this.base('compile', arguments);
         var i, item, name,
         nameLineno,
@@ -463,44 +533,24 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
     }
 });
 
-yy.Lit = yy.LiteralNode = Class(yy.Node, {
-
-    type: 'Lit, LiteralNode',
-
-    init: function(ch, yloc) {
-        //console.log(ch);
-        this.children = ch;
-        this.lineno   = isNaN(yloc) ? yloc.first_line : yloc;
-        this.loc      = yloc;
-        this.yy       = yy;
-
-        this.initNode();
-    },
-
-    compile: function() {
-        var
-        txt = this.children, t;
-
-        if (hasProp.call(translationTable, txt)) {
-            txt = translationTable[txt];
-        }
-
-        return txt;
-    }
-});
-
+// Node for dot-expression syntax: `a.b.c`
 yy.SelectorExprNode = Class(yy.Node, {
     type: 'SelectorExprNode'
 });
 
+// Expression such as !x, -x...
 yy.UnaryExprNode = Class(yy.Node, {
     type: 'UnaryExprNode'
 });
 
+// Expression wrapped by `(` and `)`
 yy.AssociationNode = Class(yy.Node, {
     type: 'AssociationNode'
 });
 
+
+// The Cor functions definition
+// it initializes variables used in its context
 yy.FunctionNode = Class(yy.ContextAwareNode, {
 
     type: 'FunctionNode',

@@ -1,14 +1,47 @@
+%{
+    yy.env.loc = yylloc;
+%}
+
 %%
 [ \f\t\u00A0\u2028\u2029\uFEFF]+ /* skip whitespace */
 
-"//".*                      /* single line comment */
-"---"([\s\S]*?)"---"        /* multiline comment */
+"//".*                      %{
+                                yy.env.addComment(
+                                    new yy.SingleLineCommentNode(yytext, yylloc)
+                                );
+                            %}
+
+// comments must begin and end with a new line
+"---"([\s\S]*?)"---"
+
+                            %{  
+
+                                var
+                                strBefore, strAfter,
+                                rBegin = /(\r\n|\n|^)\s*$/,
+                                rEnd   = /^\s*(\r\n|\n|$)/;
+
+                                strBefore = this.matched.substring(0, this.matched.length - yyleng);
+                                strAfter  = this._input;
+                                
+                                if (! rBegin.test(strBefore)) {
+                                    throw yy.parseError('comments must begin with a new line', {loc: {first_line: yylloc.first_line }}, true);
+                                }
+
+                                if (! rEnd.test(strAfter)) {
+                                    throw yy.parseError('comments must end with a new line', {loc: {first_line: yylloc.last_line }}, true);
+                                }
+
+                                yy.env.addComment(
+                                    new yy.MultiLineCommentNode(yytext, yylloc)
+                                );
+                            %}
 
 "'"([^\\']|\\[\s\S])*"'"    return 'STRING'
 (\r\n|\n)                   return 'EOL'
 "use"                       return 'USE'
-"class"                     %{ this.yy.env.newContext(); return 'CLASS' %}
-"func"                      %{ this.yy.env.newContext(); return 'FUNC' %}
+"class"                     %{ yy.env.newContext(); return 'CLASS' %}
+"func"                      %{ yy.env.newContext(); return 'FUNC' %}
 "me"                        return 'ME'
 "nil"                       return 'NIL'
 "return"                    return 'RETURN'

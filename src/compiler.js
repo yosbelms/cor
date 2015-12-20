@@ -74,7 +74,16 @@ var Compiler = cor.Class({
     },
 
     compile: function(ast) {
+        var i,
+        comments = this.env.getComments(),
+        len      = comments.length;
+
         this.visitNode(ast);
+
+        for (i = 0; i < len; i++) {
+            this.visitNode(comments[i]);
+        }
+
         return this.generateCode();
     },
 
