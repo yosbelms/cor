@@ -8,8 +8,8 @@ path   = cor.path;
 loader.addPlugin({
 
     ext       : '.js',
-    rComments : /\/\/([\s\S]*?)\n|\/\*([\s\S]*?)\*\//g,
-    rRequire  : /(?:^|\s)require\s*\(\s*['"]([\w-\.\/]*?)['"]/g,
+    rComments : /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg,
+    rRequire  : /[^.]\s*require\s*\(\s*["']([^'"\s]+)["']\s*\)/g,
     rootPath  : null,
 
     getRootPath: function() {
