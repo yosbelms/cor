@@ -67,6 +67,7 @@ func prepareJasmine() {
     env.specFilter = func(spec) {
         return specFilter.matches(spec.getFullName())
     }
+        
 }
 
 func browserHack() {
