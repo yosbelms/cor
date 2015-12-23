@@ -1,0 +1,6 @@
+    
+    // Global (using `self` in the browser and `global` on the server)
+    var root = (typeof self == 'object' && self.self == self && self) ||
+               (typeof global == 'object' && global.global == global && global);
+
+    root['{package_name}'] = modules[0]();

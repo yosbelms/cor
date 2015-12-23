@@ -1,0 +1,7 @@
+    
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define( '{package_name}', [], function() {
+            return modules[0]();
+        });
+    }

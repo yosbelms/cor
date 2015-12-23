@@ -81,7 +81,7 @@ translationTable = {
     '^': ' ^ '
 };
 
-yy.parseError = function parseError (msg, hash) {
+yy.parseError = function parseError (msg, hash, replaceMsg) {
     var filename = yy.env.filename;
     //is non recoverable parser error?
     if (hash && hasProp.call(hash, 'loc') && hash.expected) {
@@ -89,42 +89,84 @@ yy.parseError = function parseError (msg, hash) {
             case '\n': hash.text = 'NEW_LINE';       break;
             case ''  : hash.text = 'END_OF_PROGRAM'; break;
         }
-        msg = "unexpected " + hash.text;
+        msg = replaceMsg ? msg : 'unexpected ' + hash.text;
     }
     else {
-        msg = "unexpected " + msg;
+        msg = replaceMsg ? msg : 'unexpected ' + msg;
     }
 
-    msg += " at " + filename + ':' + hash.loc.first_line;
+    msg += ' at ' + filename + ':' + hash.loc.first_line;
 
     throw msg;
-};
+}
 
-yy.generateRoute = function(route) {
+
+/*
+There is three types of routes:
+
+- Inner    : begins with . char, example: `.models`
+- Delegate : ends with file extensions, example `filename.js`
+- Public   : is tested against `^[a-z_-]+$` regex
+
+Routes are tested in the same order as types above, if the route does not match to
+any of before types then it will be proccessed by `packagize` function which transform
+routes according to Cor package convention.
+*/
+yy.generateRoute = function(route) {    
     var
-    parsed,
+    parsed, ext,
     rFileNameExt   = /([\s\S]+)*(^|\/)([\w\-]+)*(\.[\w\-]+)*$/,
     rCapitalLetter = /^[A-Z]/,
-    rLocalModule   = /^\.([\w-]+)$/;
-
-    // is a local module '.local_module'?
-    parsed = rLocalModule.exec(route);
-    if (parsed) {
-        return './' + parsed[1];
+    rStatic        = /^(\.\.\/)|(\.\/)|(\/)/,
+    rInner         = /^\.([\w-]+)$/,
+    rPublic        = /^[a-z_-]+$/;
+    
+    // replace \ by /
+    function normalize(route) {
+        return route.replace(/\\/g, '/').replace(/\/+/g, '/');
     }
 
-    // is a valid route?
-    parsed = rFileNameExt.exec(route);
-    if (parsed) {
-        // if has no file extension and has no capital letter then is a package
-        if (! parsed[4] && ! rCapitalLetter.test(parsed[3])) {
-            return (parsed[1] || '') + parsed[2] + parsed[3] + '/' + parsed[3];
+    // apply Cor package convention
+    function packagize(route) {
+        var
+        parsed = rFileNameExt.exec(route);
+
+        if (parsed && parsed[3] && !parsed[4] && !rCapitalLetter.test(parsed[3])) {
+            route = (parsed[1] || '') + parsed[2] + parsed[3] + '/' + parsed[3];
         }
+        else if (!parsed[3]) {
+            return null;
+        }
+
+        return normalize(route);
     }
 
-    return route.replace(/\\/g, '/').replace(/\/+/g, '/');
-};
+    // Inner
+    parsed = rInner.exec(route);
+    if (parsed) {
+        return normalize('./' + parsed[1]);
+    }
 
+    // Public
+    if (rPublic.test(route)) {
+        return normalize(route);
+    }
+    
+    // Delegate
+    // parsed[4] is the file extension
+    // so if parsed[4]? then is delegate route
+    parsed = rFileNameExt.exec(route);
+    if (parsed[4]) {
+        return normalize(route);
+    }
+
+    // else process by applying Cor package convention
+    return packagize(route);
+}
+
+// iterate recursevely in preorder starting from the node passed
+// as first parameter, it executes the function passed as second parameter
+// in each visited node, iteration ends if the function returns false
 function preorder(node, fn) {
     if (!(node instanceof yy.Node)) {
         return;
@@ -199,6 +241,7 @@ function getLesserLineNumber(node){
     return selLine;
 };
 
+// the base class for all AST nodes
 yy.Node = Class({
 
     type: 'Node',
@@ -211,8 +254,8 @@ yy.Node = Class({
 
     init: function init(children) {
         this.children = [];
-        this.lineno   = yy.env.yylloc.first_line;
-        this.loc      = Object.create(yy.env.yylloc);
+        this.lineno   = yy.env.loc.first_line;
+        this.loc      = Object.create(yy.env.loc);
 
         this.yy       = yy;
 
@@ -222,6 +265,7 @@ yy.Node = Class({
         this.initNode();
     },
 
+    // adopt an array of nodes
     adopt: function(children) {
         var
         i = 0, len;
@@ -234,8 +278,7 @@ yy.Node = Class({
     },
 
     initNode: function() {
-        //
-        //console.log('ahhh')
+        // virtual
     },
 
     runtimeFn: function(name) {
@@ -251,16 +294,7 @@ yy.Node = Class({
     }
 });
 
-yy.Mock = Class(yy.Node, {
-
-    type: 'Mock',
-
-    initNode: function() {
-        this; arguments;
-    }
-
-});
-
+// List of nodes
 yy.List = Class(yy.Node, {
 
     type: 'List',
@@ -282,6 +316,80 @@ yy.List = Class(yy.Node, {
 
 });
 
+
+// Literals are the smallest units to be compiled
+// its children is a string which must be returned
+// to write as compiled code
+// most of the nodes compiles by constructing yy.Lit-s
+// and adopting as children to be later readed by the compiler
+yy.Lit = yy.LiteralNode = Class(yy.Node, {
+
+    type: 'Lit, LiteralNode',
+
+    init: function(ch, yloc) {
+        this.children = ch;
+        this.lineno   = isNaN(yloc) ? yloc.first_line : yloc;
+        this.loc      = yloc;
+        this.yy       = yy;
+
+        this.initNode();
+    },
+
+    compile: function() {
+        var
+        txt = this.children, t;
+
+        if (hasProp.call(translationTable, txt)) {
+            txt = translationTable[txt];
+        }
+
+        return txt;
+    }
+});
+
+// Single line comment
+// is a comment starting by `//` and ends in the next EOL
+yy.SingleLineCommentNode = Class(yy.Lit, {
+
+    type: 'SingleLineCommentNode',
+
+    compile: function() {
+        this.children = [
+            new yy.Lit(this.children, this.lineno)
+        ];
+    }
+
+});
+
+// A comment beginning and ending with `---`
+// this kind of comments must have a new line before and after
+yy.MultiLineCommentNode = Class(yy.Lit, {
+
+    type: 'MultiLineCommentNode',
+
+    compile: function() {
+        this.children = this.children
+            .replace(/^(\s*)---/, '$1/*')
+            .replace(/---(\s*)$/, '*/$1');
+
+        var i, str,
+        lineno   = this.lineno,
+        splitted = this.children.split(/\r\n|\n/),
+        len      = splitted.length;
+
+        for (i = 0; i < len; i++) {
+            str = splitted[i].replace(/^\s+/, '');
+            splitted[i] = new yy.Lit(str, lineno + i);
+        }
+
+        this.children = splitted;
+    }
+
+});
+
+
+// A value is anithing that can be assigned,
+// an object literal, a string, boolean ...
 yy.ValueList = Class(yy.List, {
 
     type: 'ValueList',
@@ -302,7 +410,7 @@ yy.ValueList = Class(yy.List, {
 
 });
 
-
+// Node to wrap a single line expression or Inc-Dec statement
 yy.SimpleStmtNode = Class(yy.Node, {
 
     type: 'SimpleStmtNode',
@@ -328,7 +436,9 @@ yy.SimpleStmtNode = Class(yy.Node, {
     }
 });
 
-
+// Cor nodes such as modules, functions and clases knows
+// has their own context to know about variable scoping.
+// This is the base class
 yy.ContextAwareNode = Class(yy.Node, {
 
     type: 'ContextAwareNode',
@@ -346,6 +456,7 @@ yy.ContextAwareNode = Class(yy.Node, {
     }
 });
 
+// A module is a root node of the AST
 yy.ModuleNode = Class(yy.ContextAwareNode, {
 
     type: 'ModuleNode',
@@ -353,7 +464,6 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
     initializerName: 'init',
 
     compile: function() {
-        //console.log('compile module');
         this.base('compile', arguments);
         var i, item, name,
         nameLineno,
@@ -423,44 +533,24 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
     }
 });
 
-yy.Lit = yy.LiteralNode = Class(yy.Node, {
-
-    type: 'Lit, LiteralNode',
-
-    init: function(ch, yloc) {
-        //console.log(ch);
-        this.children = ch;
-        this.lineno   = isNaN(yloc) ? yloc.first_line : yloc;
-        this.loc      = yloc;
-        this.yy       = yy;
-
-        this.initNode();
-    },
-
-    compile: function() {
-        var
-        txt = this.children, t;
-
-        if (hasProp.call(translationTable, txt)) {
-            txt = translationTable[txt];
-        }
-
-        return txt;
-    }
-});
-
+// Node for dot-expression syntax: `a.b.c`
 yy.SelectorExprNode = Class(yy.Node, {
     type: 'SelectorExprNode'
 });
 
+// Expression such as !x, -x...
 yy.UnaryExprNode = Class(yy.Node, {
     type: 'UnaryExprNode'
 });
 
+// Expression wrapped by `(` and `)`
 yy.AssociationNode = Class(yy.Node, {
     type: 'AssociationNode'
 });
 
+
+// The Cor functions definition
+// it initializes variables used in its context
 yy.FunctionNode = Class(yy.ContextAwareNode, {
 
     type: 'FunctionNode',
@@ -733,6 +823,7 @@ yy.Str = yy.StringNode = Class(yy.Lit, {
 
     compile: function() {        
         var i, str,
+        newNode,
         lineno   = this.lineno,
         splitted = this.children.split(/\r\n|\n/),
         len      = splitted.length;
@@ -742,7 +833,14 @@ yy.Str = yy.StringNode = Class(yy.Lit, {
             if (i < len - 1) {
                 str += '\\';
             }
-            splitted[i] = new yy.Lit(str, lineno + i);
+            newNode = new yy.Lit(str, lineno + i);
+            
+            newNode.loc = {
+                first_line: lineno + i,
+                first_column: this.loc.first_column
+            };
+
+            splitted[i] = newNode;
         }
 
         this.children = splitted;
@@ -759,6 +857,8 @@ yy.UseNode = Class(yy.Node, {
 
     rClearName: /[^\w]/,
 
+    extractedAlias: '',
+
     initNode: function() {
         this.base('initNode', arguments);
 
@@ -767,24 +867,28 @@ yy.UseNode = Class(yy.Node, {
         this.aliasNode  = this.children[2];
         this.targetNode = this.children[1];
         this.route      = this.yy.generateRoute(this.targetNode.children.substring(1, this.targetNode.children.length - 1)); // trim quotes
-        this.alias      = this.aliasNode ? this.aliasNode.children : false;
+        this.alias      = this.aliasNode ? this.aliasNode.children : '';
 
-        if (!this.alias) {
-            parsed = this.rAlias.exec(this.route);
-            this.alias = (parsed[1] || '').replace(this.rClearName, '_');
+        if (!this.route) {
+            this.error('invalid route format', this.targetNode.lineno);
         }
 
-        this.yy.env.context().addLocalVar(this.alias);
+        parsed = this.rAlias.exec(this.route);
+        if (parsed) {
+            this.extractedAlias = (parsed[1] || '').replace(this.rClearName, '_');    
+        }
+
+        this.yy.env.context().addLocalVar(this.alias || this.extractedAlias);
     },
 
     compile: function() {
         var
         ch     = this.children,
         route  = this.route,
-        alias  = this.alias,
+        alias  = this.alias || this.extractedAlias,
         suffix = '';
 
-        if (this.rCapitalLetter.test(alias)) {
+        if (this.rCapitalLetter.test(this.extractedAlias)) {
             suffix = '.' + alias;
         }
 
@@ -941,16 +1045,18 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
     },
 
     compileWithInit: function() {
-        var i, len,
+        var i, len, newNode,
         extendsStr   = '',
         ch           = this.children;
 
         if (this.superClassName) {
-             extendsStr = ', ' + this.superClassName;
+            extendsStr = ', ' + this.superClassName;
         }
 
+        newNode = new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno);
+        newNode.loc = ch[1].loc;
         this.children = [
-            new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
+            newNode,
             this.methodSet
         ];
 
@@ -960,13 +1066,11 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
     },
 
     compileWithoutInit: function() {
-        var i, len,
+        var i, len, newNode,
         ch = this.children,
         superInitStr   = '',
         extendsStr     = '',
-        applyConfStr   = '',
         prepareInitStr = '',
-        runInitStr     = '' + applyConfStr + '',
         argsStr        = this.propertiesNames.join(', ');
 
 
@@ -984,15 +1088,23 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
             }
         }
 
-        this.children = [
-            new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
-            new yy.Lit('('+ argsStr +'){' + prepareInitStr + superInitStr , ch[1].lineno),
-            this.propertySet,
-            new yy.Lit(runInitStr + '};', this.propertySet.lineno)
-        ];
+        this.children = [];
+
+        newNode = new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno);
+        newNode.loc = ch[1].loc;
+        this.children.push(newNode);
+
+        newNode = new yy.Lit('('+ argsStr +'){' + prepareInitStr + superInitStr, ch[1].lineno);
+        newNode.loc = ch[1].loc;
+        this.children.push(newNode);
+
+        this.children.push(this.propertySet);
+        this.children.push(new yy.Lit('};', this.propertySet.lineno));
 
         if (this.superClassName) {
-            this.children.push(new yy.Lit(this.runtimeFn('extend') + this.className + extendsStr +');', this.propertySet.lineno))
+            newNode = new yy.Lit(this.runtimeFn('extend') + this.className + extendsStr +');', this.propertySet.lineno);
+            newNode.loc = ch[2].loc;
+            this.children.push(newNode);
         }
 
         this.children.push(this.methodSet);
@@ -1146,6 +1258,7 @@ yy.CallNode = Class(yy.Node, {
     superBuiltin: function() {
         var
         methodName, cls,
+        newNode,
         ch   = this.children,
         stub = '',        
         ctx  = this.yy.env.context();
@@ -1170,12 +1283,16 @@ yy.CallNode = Class(yy.Node, {
         if (ch[2]) {
             stub += cls.superClassName + '.prototype.' + methodName + '.call';
             this.children[1].children = '(me, ';
-            this.children.splice(0, 1, new yy.Lit(stub, ch[0].lineno));
+            newNode = new yy.Lit(stub, ch[0].lineno);
+            newNode.loc = ch[0].loc;
+            this.children.splice(0, 1, newNode);
         }
         else {
             stub += cls.superClassName + '.prototype.' + methodName + '.apply';
             this.children[1].children = '(me, arguments';
-            this.children.splice(0, 1, new yy.Lit(stub, ch[0].lineno));
+            newNode = new yy.Lit(stub, ch[0].lineno);
+            newNode.loc = ch[0].loc;
+            this.children.splice(0, 1, newNode);
         }
 
     }

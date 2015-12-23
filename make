@@ -141,6 +141,7 @@ target.dist = function() {
         'src/scope/scope.js',
         'src/compiler.js',
         'src/sourcemap.js',
+        'src/loader/path.js',
         'src/loader/loader.js',
         'src/loader/browser.js',
         'src/loader/plugins.js',

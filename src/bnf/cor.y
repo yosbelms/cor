@@ -504,17 +504,3 @@ ValueList
     ;
 
 %%
-// parser customization
-
-var
-dperformAction = parser.performAction;
-
-parser.performAction = function performAction() {
-    var
-    yy = arguments[3];
-
-    yy.env.yylloc   = yy.lexer.yylloc;
-    yy.env.yylineno = yy.lexer.yylineno;
-
-    return dperformAction.apply(this, arguments);
-}

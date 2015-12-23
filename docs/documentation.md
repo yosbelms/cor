@@ -927,7 +927,7 @@ Prints documentation about `cor compile` command
 
 ### Build
 
-`build` command compiles packages and its dependencies, the resulting javascript code will be packed and written to a standalone `.js` file inside the specified package. CRL will be enbedded in the head of the resulting bundle.
+`build` command compiles packages and its dependencies, the resulting javascript code will be packed and written to a standalone `.js` file inside the specified package. CRL will be enbedded in the head of the resulting file. The `build` command supports four types of packages: AMD, CommonJS, Global and DOM Ready.
 
 Usage:
 ```
@@ -949,6 +949,10 @@ cor build <path> [build options]
         <tr>
             <td class="cmd-arg"><code>-env</code></td>
             <td>Specifies the path to the <code>.json</code> file to use as environment configuration.</td>
+        </tr>
+        <tr>
+            <td class="cmd-arg"><code>-type</code></td>
+            <td>Specifies the type of the resulting package. The supported types are <code>domready</code>, <code>commonjs</code>, <code>amd</code> and <code>global</code>. It must be provided separated by <code>,</code>(<i>do not write spaces between</i>). <code>domready</code> type will be used by default if <code>-type</code> option is omitted.</td>
         </tr>
         <tr>
             <td class="cmd-arg"><code>-no-crl</code></td>
@@ -973,11 +977,15 @@ cor build myapp -crl -o=app.js
 ```
 In this case the output file is named `app.js` and CRL will be embedded in the beginning of the file.
 
-
 ```
 cor build myapp -env=myapp/env.json
 ```
-Builds `myapp` package and tells compiler the environment file is located in `myapp/env.json`
+Builds `myapp` package and tells compiler the environment file is located in `myapp/env.json`.
+
+```
+cor build ./mylib -type=amd,commonjs,global
+```
+Build `./mylib` package making it available through AMD, CommonJS and Global api.
 
 ### Compile
 

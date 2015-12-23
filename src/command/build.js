@@ -10,6 +10,8 @@ require('../loader/node.js');
 var
 outFilename,
 envFilename,
+packageType,
+sourcePath,
 cliInput,
 cliApp,
 loader    = cor.loader,
@@ -38,14 +40,16 @@ function getHeadStub() {
 
 cor.Loader.prototype.onLoaderReady = function() {
     var
-    name, i, len,
+    name, i, len, content,
     filename, temp, dep,
+    rInvalidChars = /[^a-zA-Z_]/g,
     src           = '',
     depsSrcList   = [],
     fileNameTable = {},
     dependences   = [],
     programs      = [],
-    filenames     = [];
+    filenames     = [],
+    moduleName    = '';
 
     print('\nCompiling:\n');
 
@@ -59,8 +63,10 @@ cor.Loader.prototype.onLoaderReady = function() {
 
         dependences.push(this.moduleCache[name].dependences);
 
+        moduleName = path.basename(filename).replace(rInvalidChars, '_');
+        
         programs.push(
-            'function(require, module, exports){\n' +
+            'function ' + moduleName + '(require, module, exports){\n' +
              this.moduleCache[name].toJs().src  +
             '\n}'
         );
@@ -96,19 +102,34 @@ cor.Loader.prototype.onLoaderReady = function() {
         }
     }
 
-
     src += getHeadStub();
     if (embeddCrl) {
         src += fs.readFileSync(__dirname + '/../crl.js', 'utf8');
     }
-    src += fs.readFileSync(__dirname + '/build_stub', 'utf8');
-    src += '[\n' +
+    src += fs.readFileSync(__dirname + '/stubs/build.prefix', 'utf8');
+
+    for (i = 0, len = packageType.length; i < len; i++) {
+        try {
+            content = fs.readFileSync(__dirname + '/stubs/packageType.' + packageType[i], 'utf8');
+        } catch(e) {
+            throw packageType[i] + ' not supported';
+        }
+
+        src += content.replace('{package_name}', /^([a-zA-Z_]+)/.exec(path.basename(this.entryModulePath))[1]);
+    }
+    
+    src += '})([\n' +
           depsSrcList.join(',\n') +
           '\n],[\n' +
           programs.join(',') +
           '\n]);';
-
-    outFilename = path.resolve(cwd, outFilename || this.entryModulePath)  + '.js';
+    
+    if (! outFilename) {
+        outFilename = sourcePath + '.cor.js';
+    }
+    
+    outFilename = path.resolve(cwd, outFilename);
+    
     cliApp.print('\nWriting package to: ' + outFilename);
     fs.writeFileSync(outFilename, src);
 };
@@ -116,9 +137,9 @@ cor.Loader.prototype.onLoaderReady = function() {
 function build() {
     var
     spath, last,
-    path = cor.path.sanitize(cliInput.getArgument('path'));
-
-    if (path.length === 0) {
+    path = cor.path.sanitize(sourcePath);
+    
+    if (path.length === 0) {        
         return;
     }
 
@@ -130,13 +151,19 @@ function build() {
         embeddCrl = false;
     }
 
+    if (!packageType) {
+        packageType = ['domready'];
+    }
+    else {
+        packageType = packageType.split(',');
+    }
+
 	if (path) {
         if (cor.path.ext(path) === '') {
             spath = path.split(cor.path.pathSep);
             spath.push(cor.path.pathSep + spath[spath.length - 1] + '.cor');
             path  = cor.path.sanitize(spath.join(cor.path.pathSep));
-        }
-
+        }        
 		loader.setEntry(path, envFilename);
 	}
 
@@ -147,6 +174,7 @@ cmd = new cor.CliCommand('build', 'compile packages and dependecies');
 cmd.addArgument('path', 'path to the entry file or package to be compiled whith it dependences', true);
 
 cmd.addOption('o', 'name of the file to write the compiling result');
+cmd.addOption('type', 'type of the resulting package (domready, commonjs, amd and global)');
 cmd.addOption('env', 'path to the .json file which contains environment variables for cor.Loader');
 cmd.addOption('no-crl', 'specify tht CRL(Cor Runtime Library) should not be embedded in the head of the compiling result');
 cmd.addOption('v',   'print additional information during build proccess');
@@ -154,17 +182,14 @@ cmd.addOption('v',   'print additional information during build proccess');
 cmd.setAction(function (input, app){
     cliInput = input;
     cliApp   = app;
+    sourcePath  = input.getArgument('path');
     envFilename = input.getOption('env');
     outFilename = input.getOption('o');
+    packageType = input.getOption('type');
+
     build();
 });
 
 module.exports = cmd;
-
-/*
-If omitted, the name of the output file will be\
-the name of the entry file concatenated with ".js" suffix.\
-Example: myappcor ->
-*/
 
 }).call(this);

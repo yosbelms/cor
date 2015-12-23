@@ -106,7 +106,7 @@ function write(outPath) {
         fs.writeFileSync(absPath, content);
     }
 
-    print('\nOutput in ' + path.resolve(outPath));
+    console.log('\nOutput in ' + path.resolve(outPath));
 }
 
 var
@@ -122,7 +122,7 @@ cmd.setAction(function (input, app) {
     sourcePath = cor.path.sanitize(cliInput.getArgument('path'));
 
     var
-    defaultOut = cor.path.basename(sourcePath) + ('_js_' + (new Date()).getTime()),
+    defaultOut = cor.path.basename(sourcePath) + ('js_' + (new Date()).getTime()),
     basePath   = cor.path.cwd();
 
     if (input.getOption('v')) {

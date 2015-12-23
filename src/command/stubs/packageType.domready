@@ -1,14 +1,5 @@
-(function(depsTable, programs) {
-
-    var
-    len = programs.length,
-    i   = -1,
-    module;
-
-    while (++i < len) {
-        programs[i] = newModule(programs[i], depsTable[i], programs);
-    }
     
+    // DOM Ready
     if (window && document) {
         if (document.readyState === 'complete') {
             run();
@@ -27,7 +18,6 @@
     
     var runned = false;
     function run() {
-
         if (runned) {
             return;
         }
@@ -41,26 +31,6 @@
             window.detachEvent('onload', run);
         }
         
-        setTimeout(programs[0]);
+        setTimeout(modules[0]);
         runned = true;
     }
-
-    function newModule(program, deps, programs) {
-        var module = {exports : null};
-
-        function require(filename) {
-            return programs[deps[filename]]();
-        }
-
-        function wrapper() {
-            if (! module.exports) {
-                module.exports = {};
-                program(require, module, module.exports);
-            }
-            return module.exports;
-        }
-
-        return wrapper;
-    }
-
-})(
