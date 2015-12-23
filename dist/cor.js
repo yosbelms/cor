@@ -1809,37 +1809,6 @@ function moveToLine(node, offset) {
 }
 
 
-function preorder(node, fn) {
-    if (!(node instanceof yy.Node)) {
-        return;
-    }
-
-    var i,
-    ch  = node.children,
-    len = ch.length;
-
-    for (i = 0; i < len; i++) {
-        if (fn(ch[i]) === false) {
-            return;
-        }
-        preorder(ch[i], fn);
-    }
-}
-
-function flattenToLine(node, lineno) {
-    preorder(node, function(node) {
-        node.lineno = lineno;
-    })
-}
-
-
-function moveToLine(node, offset) {
-    preorder(node, function(node) {
-        node.lineno += offset;
-    })
-}
-
-
 function stringifyNode(node) {
     var
     i,
@@ -1954,26 +1923,6 @@ yy.List = Class(yy.Node, {
 
     addFront: function() {
         this.children = slice.call(arguments).concat(this.children);
-    }
-
-});
-
-yy.ValueList = Class(yy.List, {
-
-    type: 'ValueList',
-
-    compile: function() {
-        var ch, i = this.children.length;
-        while (--i) {
-            ch = this.children[i];
-            if (!ch || ch.children === ',') {
-                this.children.pop();
-            }
-            else {
-                break;
-            }
-        }
-        
     }
 
 });
@@ -2707,30 +2656,18 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
     },
 
     compileWithInit: function() {
-<<<<<<< HEAD
-        var i, len,
-=======
         var i, len, newNode,
->>>>>>> dev
         extendsStr   = '',
         ch           = this.children;
 
         if (this.superClassName) {
-<<<<<<< HEAD
-             extendsStr = ', ' + this.superClassName;
-=======
             extendsStr = ', ' + this.superClassName;
->>>>>>> dev
         }
 
         newNode = new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno);
         newNode.loc = ch[1].loc;
         this.children = [
-<<<<<<< HEAD
-            new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
-=======
             newNode,
->>>>>>> dev
             this.methodSet
         ];
 
@@ -2740,21 +2677,11 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
     },
 
     compileWithoutInit: function() {
-<<<<<<< HEAD
-        var i, len,
-        ch = this.children,
-        superInitStr   = '',
-        extendsStr     = '',
-        applyConfStr   = '',
-        prepareInitStr = '',
-        runInitStr     = '' + applyConfStr + '',
-=======
         var i, len, newNode,
         ch = this.children,
         superInitStr   = '',
         extendsStr     = '',
         prepareInitStr = '',
->>>>>>> dev
         argsStr        = this.propertiesNames.join(', ');
 
 
@@ -2772,17 +2699,6 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
             }
         }
 
-<<<<<<< HEAD
-        this.children = [
-            new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno),
-            new yy.Lit('('+ argsStr +'){' + prepareInitStr + superInitStr , ch[1].lineno),
-            this.propertySet,
-            new yy.Lit(runInitStr + '};', this.propertySet.lineno)
-        ];
-
-        if (this.superClassName) {
-            this.children.push(new yy.Lit(this.runtimeFn('extend') + this.className + extendsStr +');', this.propertySet.lineno))
-=======
         this.children = [];
 
         newNode = new yy.Lit(this.className + ' = function ' + this.className, ch[0].lineno);
@@ -2800,7 +2716,6 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
             newNode = new yy.Lit(this.runtimeFn('extend') + this.className + extendsStr +');', this.propertySet.lineno);
             newNode.loc = ch[2].loc;
             this.children.push(newNode);
->>>>>>> dev
         }
 
         this.children.push(this.methodSet);
@@ -2954,10 +2869,7 @@ yy.CallNode = Class(yy.Node, {
     superBuiltin: function() {
         var
         methodName, cls,
-<<<<<<< HEAD
-=======
         newNode,
->>>>>>> dev
         ch   = this.children,
         stub = '',        
         ctx  = this.yy.env.context();
@@ -2982,24 +2894,16 @@ yy.CallNode = Class(yy.Node, {
         if (ch[2]) {
             stub += cls.superClassName + '.prototype.' + methodName + '.call';
             this.children[1].children = '(me, ';
-<<<<<<< HEAD
-            this.children.splice(0, 1, new yy.Lit(stub, ch[0].lineno));
-=======
             newNode = new yy.Lit(stub, ch[0].lineno);
             newNode.loc = ch[0].loc;
             this.children.splice(0, 1, newNode);
->>>>>>> dev
         }
         else {
             stub += cls.superClassName + '.prototype.' + methodName + '.apply';
             this.children[1].children = '(me, arguments';
-<<<<<<< HEAD
-            this.children.splice(0, 1, new yy.Lit(stub, ch[0].lineno));
-=======
             newNode = new yy.Lit(stub, ch[0].lineno);
             newNode.loc = ch[0].loc;
             this.children.splice(0, 1, newNode);
->>>>>>> dev
         }
 
     }
