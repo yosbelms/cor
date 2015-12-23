@@ -181,12 +181,12 @@ td {
     padding-top: 60px;
     background-color: #286090;
     text-align: center;
-    height: 550px;
+    height: 440px;
     color: #fff;
 }
 
 .master .lead {
-    font-size: 30px;
+    font-size: 25px;
 }
 
 .feature {
@@ -200,7 +200,7 @@ td {
 }
 
 .feature .title {
-    font-size: 40px;
+    font-size: 35px;
     font-weight: bold;
     border: none;
     margin: 0px;
