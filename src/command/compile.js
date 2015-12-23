@@ -106,7 +106,7 @@ function write(outPath) {
         fs.writeFileSync(absPath, content);
     }
 
-    print('\nOutput in ' + path.resolve(outPath));
+    console.log('\nOutput in ' + path.resolve(outPath));
 }
 
 var

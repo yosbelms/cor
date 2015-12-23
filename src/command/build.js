@@ -138,8 +138,8 @@ function build() {
     var
     spath, last,
     path = cor.path.sanitize(sourcePath);
-
-    if (path.length === 0) {
+    
+    if (path.length === 0) {        
         return;
     }
 
