@@ -1,25 +1,48 @@
+# 0.2.6
+
+Important changes has been factored since `0.2.1`, the most important new feature is the possibility to build your project in 4 different ways: `domready`, `commonjs`, `amd` and `global`. Hence you can deliver your _lib/app_ with full compatibility in `js` ecosystem. The compiler now preserves comments(either `doc-block` and `single line comment`) and translate it to javascript comments which is very useful for the sake of source documentation and debugging.
+
+* Loader
+    * Refactor the way it evals `js` source
+* Cli
+    * Build command now produces a named function to improve debugging experience
+    * Build command now supports for `amd`, `commonjs` and `amd` package types
+    * Fixed a bug in bin/cor.cmd, it now gets arguments properly
+* Compiler
+    * Preserver comments and passthrough it as javscript comments
+    * Improve source-map support for classes and string literals
+    * improve routes tranformation in `use` statement
+    * Fixed bug, now throws when pass invalid routes, e.g ('', '!@#@')
+* Refactoring
+    * separate loader path proccessing logic from the loader itself
+
 # 0.2.1
 
-* add test covering the changes
-* fix bug, `super` no longer can be called from a class which does not inherits
-* change the way `super` is used
-* refactor the site
-* improve performance in yy.MethodNode
-* playground minor refactoring
-* remove multiple inheritance in favor of single inheritance, see issues #2 and #4
-    * refactor the parser grammar
-    * add CRL.extends
-    * remove CRL.defClass
-* update docs
+This release removes multiple inheritance in favor of single inheritance. Said that, from this release we promote composition over inheritance, however you can use single inheritance depending on your needs.
+
+* Fix bug, `super` no longer can be called from a class which does not inherits
+* Change the way `super` is used
+* Refactor the site
+* Improve performance in yy.MethodNode
+* Playground minor refactoring
+* Remove multiple inheritance in favor of single inheritance, see issues #2 and #4
+    * Refactor the parser grammar
+    * Add CRL.extends
+    * Remove CRL.defClass
+* Update docs
 
 # 0.1.4 
 
-* fix bug in the lexer (cor.l), it no longer recognize "(digit)(char)" as a valid identifier
-* fix `bower.json` malformation
-* add `make release` command
-* update docs
+This release fixes a malformation of `bower.json` among others. The changes introduced in `0.1.0` qre now documented.
+
+* Fix bug in the lexer (cor.l), it no longer recognize "(digit)(char)" as a valid identifier
+* Fix `bower.json` malformation
+* Add `make release` task
+* Update docs
 
 # 0.1.0
+
+The `0.1.0` release has a lot of bug fixes and refactoring related to the lexer and the AST. In this release we add the *Playground* to the documentation to allow developers to see the `js` code result of the compilation. The forum is now in Ost.io
 
 * Remove -crl option in `build` command. Support CRL embedding by default and add -no-crl option
 * Refactor CRL
@@ -41,7 +64,10 @@
 
 # 0.0.2
 
-Shipping : 
+The main motivation of this release is to provide an installable package for testing availability in NPM and Bower repositories.
+
+Shipping :
+
 * Compiler
 * Loader
 * Source-maps
