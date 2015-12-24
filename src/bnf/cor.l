@@ -72,11 +72,17 @@ true\b|false\b              return 'BOOLEAN'
 "["                         return '['
 "]"                         return ']'
 
+"??"                        return 'COALESCEOP'
+
 "*="|"/="|"%="|"+="|"-="|"<<="|">>="|">>>="|"&="|"^="|"|="  return 'ASSIGNMENTOP'
 "<<"|">>"|">>>"             return 'SHIFTOP'
 "<="|">="|"=="|"!="|"<"|">" return 'COMPARISONOP'
-"&&"|"||"|"&"|"^"|"|"       return 'BINARYOP'
+"&&"|"||"|"^"|"|"           return 'BINARYOP'
 "++"|"--"                   return 'INCDECOP'
+
+// this binary operator is separated form BINARYOP
+// because is used for object literal construction
+"&"                         return '&'
 
 "="                         return '='
 "@"                         return '@'
