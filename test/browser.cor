@@ -1,8 +1,8 @@
-use './util'
+use './jasbrowser'
 use './compiler'
 use './behavior'
 use './coverage'
 
 func init() {
-    util.jasmineEnv.execute()
+    jasbrowser.jasmineEnv.execute()
 }

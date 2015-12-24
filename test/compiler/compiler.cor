@@ -1,7 +1,7 @@
 
 use '../util'
 
-notShouldThrowList = [
+shouldNotThrowList = [
     'compiler/empty_program',
 
     'compiler/single_decl',
@@ -58,7 +58,7 @@ func init() {
     describe('Compiler', func() {
 
         describe('Should not throw compiling', func(){
-            for filename in notShouldThrowList {
+            for filename in shouldNotThrowList {
                 it(getSpec(filename), getNotThrowExpectation(filename))
             }
         })
