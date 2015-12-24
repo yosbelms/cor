@@ -108,7 +108,7 @@ FunctionArgs
 
 Block
     : '{' StmtList '}' {
-            $$= new yy.Node(
+            $$= new yy.BlockNode(
                 new yy.Lit($1, @1),
                 $2,
                 new yy.Lit($3, @3)
@@ -477,7 +477,7 @@ ArrayItems
     ;
 
 LambdaConstructor
-    : FUNC '(' FunctionArgs? ')' Block {
+    : FUNC '(' FunctionArgs? ')' (Block|Value) {
             $$= new yy.FunctionNode(
                 new yy.Lit($1, @1),
                 null,

@@ -533,6 +533,11 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
     }
 });
 
+// Node for function and class blocks
+yy.BlockNode = Class(yy.Node, {
+    type: 'BlockNode'
+});
+
 // Node for dot-expression syntax: `a.b.c`
 yy.SelectorExprNode = Class(yy.Node, {
     type: 'SelectorExprNode'
@@ -567,11 +572,12 @@ yy.FunctionNode = Class(yy.ContextAwareNode, {
             this.name = ch[1].children;
             this.nameLineno = ch[1].lineno;
         }        
-        if (!this.children[5]) {
-            this.children[5] = new yy.Node(
+        if (!(this.children[5] instanceof yy.BlockNode)) {
+            this.children[5] = new yy.BlockNode(
                 new yy.Lit('{', ch[4].lineno),
-                new yy.List(),
-                new yy.Lit('}', ch[4].lineno)
+                new yy.Lit('return', ch[5].loc.first_line),
+                new yy.List(this.children[5]),
+                new yy.Lit('}', this.loc.last_line)
             );
         }
 
