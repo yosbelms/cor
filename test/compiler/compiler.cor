@@ -34,20 +34,20 @@ shouldThrowList = [
     'compiler/module_members_with_equal_name2',
 
     'compiler/wrong_incdec_used_as_expr',
+
+    'compiler/super_call_autside_method',
 ]
 
 func getNotThrowExpectation(filename) {
-    ret = func() {
+    return func() {
         expect(util.fileCompiler(filename)).not.toThrow()
     }
-    return ret
 }
 
 func getThrowExpectation(filename) {
-    ret = func() {
+    return func() {
         expect(util.fileCompiler(filename)).toThrow()
     }
-    return ret
 }
 
 func getSpec(filename) {
