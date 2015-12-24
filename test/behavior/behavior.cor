@@ -13,5 +13,7 @@ use '.continue_stmt'
 use '.try_catch_finally'
 use '.variable_scope'
 use '.slices'
+use '.lambda'
+use '.coalesce'
 
 //use '.expression'

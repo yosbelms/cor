@@ -1,6 +1,6 @@
 # 0.2.6
 
-Important changes has been factored since `0.2.1`, the most important new feature is the possibility to build your project in 4 different ways: `domready`, `commonjs`, `amd` and `global`. Hence you can deliver your _lib/app_ with full compatibility in `js` ecosystem. The compiler now preserves comments(either `doc-block` and `single line comment`) and translate it to javascript comments which is very useful for the sake of source documentation and debugging.
+Important changes has been factored since `0.2.1`, the most important new feature is the possibility to build your project in 4 different ways: `domready`, `commonjs`, `amd` and `global`. Hence you can deliver your _lib/app_ with full compatibility in the `js` ecosystem. The compiler now preserves comments(either `doc-block` and `single line comment`) and translate it to javascript comments which is very useful for the sake of source documentation and debugging.
 
 * Loader
     * Refactor the way it evals `js` source

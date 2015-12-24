@@ -1,7 +1,7 @@
 
 use '../util'
 
-notShouldThrowList = [
+shouldNotThrowList = [
     'compiler/empty_program',
 
     'compiler/single_decl',
@@ -20,6 +20,7 @@ notShouldThrowList = [
     'compiler/strings',
     'compiler/lambda',
     'compiler/assignment',
+    'compiler/coalesce_expr',
 
     'compiler/for_stmt',
     'compiler/for_in_stmt',
@@ -34,20 +35,20 @@ shouldThrowList = [
     'compiler/module_members_with_equal_name2',
 
     'compiler/wrong_incdec_used_as_expr',
+
+    'compiler/super_call_autside_method',
 ]
 
 func getNotThrowExpectation(filename) {
-    ret = func() {
+    return func() {
         expect(util.fileCompiler(filename)).not.toThrow()
     }
-    return ret
 }
 
 func getThrowExpectation(filename) {
-    ret = func() {
+    return func() {
         expect(util.fileCompiler(filename)).toThrow()
     }
-    return ret
 }
 
 func getSpec(filename) {
@@ -58,7 +59,7 @@ func init() {
     describe('Compiler', func() {
 
         describe('Should not throw compiling', func(){
-            for filename in notShouldThrowList {
+            for filename in shouldNotThrowList {
                 it(getSpec(filename), getNotThrowExpectation(filename))
             }
         })

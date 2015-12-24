@@ -1,6 +1,7 @@
 %nonassoc IDENT
 %nonassoc ',' IN
 
+
 %start Module
 
 %ebnf
@@ -108,7 +109,7 @@ FunctionArgs
 
 Block
     : '{' StmtList '}' {
-            $$= new yy.Node(
+            $$= new yy.BlockNode(
                 new yy.Lit($1, @1),
                 $2,
                 new yy.Lit($3, @3)
@@ -346,6 +347,7 @@ OperationExprNotAdditive
     | OperationExprNotAdditive SHIFTOP UnaryExpr      { $$= new yy.Node($1, new yy.Lit($2, @2), $3) }
     | OperationExprNotAdditive COMPARISONOP UnaryExpr { $$= new yy.Node($1, new yy.Lit($2, @2), $3) }
     | OperationExprNotAdditive BINARYOP UnaryExpr     { $$= new yy.Node($1, new yy.Lit($2, @2), $3) }
+    | OperationExprNotAdditive '&' UnaryExpr          { $$= new yy.Node($1, new yy.Lit($2, @2), $3) }
     ;
 
 OperationExpr
@@ -357,6 +359,10 @@ OperationExpr
 AssignmentExpr
     : LeftHandExpr ASSIGNMENTOP Value                 { $$= new yy.AssignmentNode($1, new yy.Lit($2, @2), $3) }
     | LeftHandExpr '=' Value                          { $$= new yy.AssignmentNode($1, new yy.Lit($2, @2), $3) }
+    ;
+
+CoalesceExpr
+    : OperationExpr COALESCEOP Value                   { $$= new yy.CoalesceNode($1, new yy.Lit($2, @2), $3) }
     ;
 
 ExprList
@@ -405,6 +411,7 @@ TypeAssertExpr
 Expr
     : OperationExpr
     | AssignmentExpr
+    | CoalesceExpr
     ;
 
 /* Values */
@@ -412,6 +419,8 @@ Expr
 ObjectConstructor
     : '@' QualifiedIdent? ObjectConstructorArgs  { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2, $3) }
     | '@' QualifiedIdent                         { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2) }
+    | '&' QualifiedIdent? ObjectConstructorArgs  { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2, $3) }
+    | '&' QualifiedIdent                         { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2) }
     ;
 
 ObjectConstructorArgs
@@ -475,7 +484,7 @@ ArrayItems
     ;
 
 LambdaConstructor
-    : FUNC '(' FunctionArgs? ')' Block {
+    : FUNC '(' FunctionArgs? ')' (Block|Value) {
             $$= new yy.FunctionNode(
                 new yy.Lit($1, @1),
                 null,

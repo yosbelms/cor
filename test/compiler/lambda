@@ -3,4 +3,5 @@ func a() {
     a = func () {
         return x
     }
+	a = func() 1
 }
