@@ -40,6 +40,7 @@
 "'"([^\\']|\\[\s\S])*"'"    return 'STRING'
 (\r\n|\n)                   return 'EOL'
 "use"                       return 'USE'
+"new"                       return 'NEW'
 "class"                     %{ yy.env.newContext(); return 'CLASS' %}
 "func"                      %{ yy.env.newContext(); return 'FUNC' %}
 "me"                        return 'ME'

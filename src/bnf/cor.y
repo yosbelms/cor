@@ -412,6 +412,8 @@ Expr
 ObjectConstructor
     : '@' QualifiedIdent? ObjectConstructorArgs  { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2, $3) }
     | '@' QualifiedIdent                         { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2) }
+    | NEW QualifiedIdent? ObjectConstructorArgs  { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2, $3) }
+    | NEW QualifiedIdent                         { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2) }
     ;
 
 ObjectConstructorArgs
