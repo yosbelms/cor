@@ -1416,6 +1416,7 @@ yy.ForInNode = Class(yy.Node, {
 
     compile: function() {
         var
+        ctx = yy.env.context(),
         ch = this.children,
         k, v, str1, str2, str3,
         $i, $len, $coll, $keys;
@@ -1426,10 +1427,10 @@ yy.ForInNode = Class(yy.Node, {
             for (var $coll = coll, $keys = CRL_keys($coll), $i = 0, $len = $keys.length, v; $i < $len; $i++) {v = $coll[$keys[$i]];}
             */
             v     = ch[1].children[0].children;
-            $i    = yy.env.generateVar('i');
-            $len  = yy.env.generateVar('len');
-            $coll = yy.env.generateVar('coll');
-            $keys = yy.env.generateVar('keys');
+            $i    = ctx.generateVar('i');
+            $len  = ctx.generateVar('len');
+            $coll = ctx.generateVar('coll');
+            $keys = ctx.generateVar('keys');
 
             str1 = '(var ' + $coll + ' = ';
             str2 = ', ' +
@@ -1454,10 +1455,10 @@ yy.ForInNode = Class(yy.Node, {
             */
             k     = ch[1].children[0].children;
             v     = ch[3].children[0].children;
-            $i    = yy.env.generateVar('i');
-            $len  = yy.env.generateVar('len');
-            $coll = yy.env.generateVar('coll');
-            $keys = yy.env.generateVar('keys');
+            $i    = ctx.generateVar('i');
+            $len  = ctx.generateVar('len');
+            $coll = ctx.generateVar('coll');
+            $keys = ctx.generateVar('keys');
 
             str1 = '(var ' + $coll + ' = ';
             str2 = ', ' +
@@ -1518,8 +1519,13 @@ yy.CoalesceNode = Class(yy.Node, {
     ref: null,
     
     initNode: function() {        
-        this.ref = yy.env.generateVar('ref');        
-        this.yy.env.context().addLocalVar(this.ref);
+        if (this.children[0] instanceof yy.VarNode) {            
+            this.ref = this.children[0].name;
+        }
+        else {             
+            this.ref = yy.env.context().generateVar('ref');
+            this.yy.env.context().addLocalVar(this.ref);
+        }
     },
     
     compile: function() {
@@ -1527,16 +1533,23 @@ yy.CoalesceNode = Class(yy.Node, {
         ref = this.ref,
         ch = this.children;
         
-        this.yy.env.context().addLocalVar(ref);
-        
-        this.children = [
-            new yy.Lit('(' + ref + ' = ', ch[0].lineno),
-            ch[0],
-            new yy.Lit(',', ch[0].lineno),
-            new yy.Lit(ref + ' != null && '+ ref + ' != void 0 ?' + ref + ' :', ch[0].lineno),
-            ch[2],
-            new yy.Lit(')', ch[2].lineno),
-        ];
+        // optimize resulting code ovoiding ref generation
+        if (ch[0] instanceof yy.VarNode) {
+            this.children = [
+                ch[0],                
+                new yy.Lit(' != null && '+ ref + ' != void 0 ? ' + ref + ' : ', ch[0].lineno),
+                ch[2]
+            ];
+        }
+        else {
+            this.children = [
+                new yy.Lit('(' + ref + ' = ', ch[0].lineno),
+                ch[0],                
+                new yy.Lit(', ' + ref + ' != null && '+ ref + ' != void 0 ? ' + ref + ' : ', ch[0].lineno),
+                ch[2],
+                new yy.Lit(')', ch[2].lineno),
+            ];    
+        }        
     }
 })
 

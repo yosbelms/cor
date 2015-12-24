@@ -35,6 +35,15 @@ func init() {
             f = nilValue ?? &Foo
             expect(f.(Foo)).toBe(true)
         })
+        
+        it('Should work win many values', func() {
+            f = func(a, b, c, d) a ?? b ?? c ?? d
+            
+            expect(f(1)).toBe(1)
+            expect(f(nil, 1)).toBe(1)
+            expect(f(nil, nil, 1)).toBe(1)
+            expect(f(nil, nil, nil, 1)).toBe(1)
+        })
 
     })
 
