@@ -115,7 +115,7 @@ yy.Environment = Class({
 
     comments: null,
 
-    varSeed: 0,
+    varSeed: 1,
 
     filename: '',
 
@@ -185,7 +185,7 @@ yy.Environment = Class({
     },
 
     generateVar: function(str) {
-        return '__' + (str || 'var') + (this.varSeed++);
+        return '_' + (str || 'var') + (this.varSeed++);
     },
 
     error: function(e) {

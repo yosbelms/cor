@@ -1,0 +1,41 @@
+class Foo {}
+
+func init() {
+    describe('Coalesce operator', func() {
+        obj = &[]
+        one = 1
+        nilValue = nil
+        
+        it('Should work with nil', func() {
+            a = nilValue ?? one
+            expect(a).toBe(1)
+        })
+        
+        it('Should work with undefined', func() {
+            a = obj.undefined_ ?? one
+            expect(a).toBe(1)
+        })
+        
+        it('Should not work with CERO', func() {
+            a = 0 ?? one
+            expect(a).toBe(0)
+        })
+        
+        it('Should not work with FALSE', func() {
+            a = false ?? one
+            expect(a).toBe(false)
+        })
+        
+        it('Should work expressions', func() {
+            a = nilValue ?? 5 + 5 ?? obj
+            expect(a).toBe(10)
+        })
+        
+        it('Should work literal objects', func() {
+            f = nilValue ?? &Foo
+            expect(f.(Foo)).toBe(true)
+        })
+
+    })
+
+}

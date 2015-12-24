@@ -576,8 +576,8 @@ yy.FunctionNode = Class(yy.ContextAwareNode, {
             this.children[5] = new yy.BlockNode(
                 new yy.Lit('{', ch[4].lineno),
                 new yy.Lit('return', ch[5].loc.first_line),
-                new yy.List(this.children[5]),
-                new yy.Lit('}', this.loc.last_line)
+                new yy.List(ch[5]),
+                new yy.Lit('}', ch[5].lineno)
             );
         }
 
@@ -1509,6 +1509,36 @@ yy.CatchNode = Class(yy.Node, {
     }
 
 });
+
+
+yy.CoalesceNode = Class(yy.Node, {
+    
+    type: 'CoalesceNode',
+    
+    ref: null,
+    
+    initNode: function() {        
+        this.ref = yy.env.generateVar('ref');        
+        this.yy.env.context().addLocalVar(this.ref);
+    },
+    
+    compile: function() {
+        var
+        ref = this.ref,
+        ch = this.children;
+        
+        this.yy.env.context().addLocalVar(ref);
+        
+        this.children = [
+            new yy.Lit('(' + ref + ' = ', ch[0].lineno),
+            ch[0],
+            new yy.Lit(',', ch[0].lineno),
+            new yy.Lit(ref + ' != null && '+ ref + ' != void 0 ?' + ref + ' :', ch[0].lineno),
+            ch[2],
+            new yy.Lit(')', ch[2].lineno),
+        ];
+    }
+})
 
 
 })(typeof cor === 'undefined' ? {} : cor);

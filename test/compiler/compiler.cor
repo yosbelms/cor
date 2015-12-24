@@ -20,6 +20,7 @@ shouldNotThrowList = [
     'compiler/strings',
     'compiler/lambda',
     'compiler/assignment',
+    'compiler/coalesce_expr',
 
     'compiler/for_stmt',
     'compiler/for_in_stmt',
