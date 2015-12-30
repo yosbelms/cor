@@ -44,6 +44,12 @@ func init() {
             expect(f(nil, nil, 1)).toBe(1)
             expect(f(nil, nil, nil, 1)).toBe(1)
         })
+        
+        it('Should return nil if all are nil', func() {
+            f = func(a, b, c, d) a ?? b ?? c ?? d
+            
+            expect(f(nil, nil, nil, nil)).toBe(nil)
+        })
 
     })
 
