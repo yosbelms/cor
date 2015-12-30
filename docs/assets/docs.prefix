@@ -5,13 +5,14 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" type="text/css" href="assets/style.css">
+        <link rel="stylesheet" type="text/css" href="assets/highlightjs/cor.css">
         <link rel="shortcut icon" href="assets/favicon.ico" />
         <title></title>
     </head>
     <body>
-	<span id="top"></span>
-	
-	<div class="goto-top"><a href="#top">^</a></div>
+    <span id="top"></span>
+    
+    <div class="goto-top"><a href="#top">^</a></div>
 
     <nav class="navbar" role="navigation">
         <div class="nav content">
@@ -21,8 +22,8 @@
             <ul class="right">
                 <li class="inline"><a href="get_started.html">Get started</a></li>
                 <li class="inline"><a href="documentation.html">Documentation</a></li>
-				<li class="inline"><a href="playground/index.html">Playground</a></li>
-				<li class="inline"><a href="../test/index.html">Run tests</a></li>
+                <li class="inline"><a href="playground/index.html">Playground</a></li>
+                <li class="inline"><a href="../test/index.html">Run tests</a></li>
             </ul>
         </div>
     </nav>
