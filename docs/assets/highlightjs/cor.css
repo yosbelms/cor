@@ -1,0 +1,102 @@
+/*
+
+Cor style used in http://yosbelms.github.com/cor/
+By: Yosbel Marín @yosbelms
+
+*/
+
+.hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0.5em;
+    background: #202020;
+    color: #FFFFFF;
+}
+
+.hljs-name,
+.hljs-strong {
+    font-weight: bold;
+}
+
+.hljs-code,
+.hljs-emphasis {
+    font-style: italic;
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-selector-id,
+.hljs-selector-class {
+    color: #64B5F6;
+}
+
+.hljs-string,
+.hljs-bullet {  
+    color: #66BB6A;
+}
+
+.hljs-section,
+.hljs-attribute,
+.hljs-quote,
+.hljs-built_in,
+.hljs-builtin-name {
+    color: #FFF9C4;
+}
+
+.hljs-type,
+.hljs-title {
+   color: #FFE082;
+}
+
+.hljs-tag {
+    color: #64B5F6;  
+}
+
+.hljs-number,
+.hljs-symbol,
+.hljs-meta,
+.hljs-bullet {
+    color: #F06292;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-keyword {    
+    color: #B39DDB;
+}
+
+.hljs-literal {
+    color: #C0CA33;  
+}
+
+.hljs-comment,
+.hljs-deletion,
+.hljs-code {
+    color: #909090;
+}
+
+.hljs-regexp,
+.hljs-link {
+    color: #B39DDB;
+}
+
+.hljs-deletion {
+    background-color: #FF8A65;
+    color: #333;
+}
+
+.hljs-addition {
+    background-color: #66BB6A;
+    color: #333;
+}
+
+.hljs a {
+    color: inherit;
+}
+
+.hljs a:focus,
+.hljs a:hover {
+    color: inherit;
+    text-decoration: underline;
+}

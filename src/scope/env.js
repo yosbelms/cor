@@ -96,7 +96,17 @@ yy.Context = Class({
 
         this.isCompiled = true;
         return (stack.length > 0) ? 'var ' + stack.join(', ') + '; ': '';
-    }
+    },
+    
+    generateVar: function(str, seed) {
+        seed = seed || 1;
+        var v = (str || 'var') + (seed++);
+        if (hasProp.call(this.usedVars, v)) {
+            return this.generateVar(str, seed);
+        }
+        this.addUsedVar(v);
+        return v;
+    },
 });
 
 yy.Environment = Class({
@@ -114,8 +124,6 @@ yy.Environment = Class({
     currentCompilingMethod: null,
 
     comments: null,
-
-    varSeed: 1,
 
     filename: '',
 
@@ -182,10 +190,6 @@ yy.Environment = Class({
             n = this.contexts.length + (n - 1);
         }
         return this.contexts[n];
-    },
-
-    generateVar: function(str) {
-        return '_' + (str || 'var') + (this.varSeed++);
     },
 
     error: function(e) {

@@ -5,6 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" type="text/css" href="docs/assets/style.css">
+        <link rel="stylesheet" type="text/css" href="docs/assets/highlightjs/cor.css">
         <link rel="shortcut icon" href="docs/assets/favicon.ico" />
         <title>Cor - The language of the Web</title>
     </head>
@@ -24,45 +25,56 @@
     </nav>
 
     <div class="body">
-        <div class="master">
-            <div class="logo">cor</div>
-            <p class="lead">Cor is an opensource language that compiles to javascript. It is designed to make easy to write, build, and maintain client-side applications.</p>
-            <a class="button" href="docs/get_started.html#download">Download Cor</a>
+        <div class="master">        
+            <h1 class="content">The Cor Language</h1>
+            <p class="lead content">            
+            Cor is an opensource language that compiles to plain javascript. It is designed to make easy to write, build, and maintain large software for the web.</p>
         </div>
 
-        <div class="feature">
-            <h2 class="title">Designed for productivity</h2>
-            <p class="lead">Cor makes client-side development simple and nice. It is made to bring structure, reusability and scalability of maintenance to the front-end.</p>
+        <div class="rule"></div>
+        
+        <div class="content">
+            <div class="grid">
+                <div class="col">
+<pre><code class="hljs cor">use './Todo'
+use 'backbone' bb
+use 'storage'  Storage
+
+class TodoList : bb.Collection {
+    localStorage = &Storage['todos-backbone']
+    model        = Todo
+}
+</code></pre>
+                </div>
+            
+                <div class="col clear">
+                    <h3>Clean syntax</h3>
+                    <p>Cor enables you to write large applications by providing a clean syntax, classes and a modular architecture to keep organized code, enforcing the writing of readable source based on conventions.</p>
+                </div>
+            </div>
 
             <div class="rule"></div>
-
-            <div class="content">
-                <div class="grid">
-                    <div class="col">
-                        <h3>Programming structures</h3>
-                        <p>Cor easily lets you to make large front-end applications by providing a clear syntax, classes, modules and packages to keep organized code. You can write it as reusable as you want.</p>
-                    </div>
-
-                    <div class="col">
-                        <h3>Development experience</h3>
-                        <p>Cor asynchronously load and compiles sources, allowing easy debugging in the browser through source-maps. It ships CLI tools to build your application once it is ready for delivery.</p>
-                    </div>
-
-                    <div class="col">
-                        <h3>Embracing the web</h3>
-                        <p>With Cor you can utilize your favorite javascript library thanks to the Cor loader. It can be extended to support preprocessors such as LESS, Handlebars, Mustache, Showdown, and every else.</p>
-                    </div>
-
+            
+            <div class="grid">
+                <div class="col">
+                    <h3>Easy to debug</h3>
+                    <p>Cor supports source-maps, allowing you the easy debugging in major browsers. However a line of Cor source is compiled to the exact line number in javascript for accurated debugging when developing in platforms that doesn't supports source-maps such as servers.</p>
                 </div>
+ 
+                <div class="col">
+                    <img src="docs/assets/cor_debug.jpg" />
+                </div>
+                
+                <div>
             </div>
         </div>
         
         <div class="rule"></div>
-        
-        <div class="feature">
-            <p class="lead">Cor is hosted and developed on GitHub, It is an released under the BSD license.</p>
-            <a class="button-inverse" href="https://github.com/yosbelms/cor">View the project on GitHub</a>
-        </div>
+
+        <!--div>
+            <h2></h2>
+            <p></p>
+        </div-->
 
         <div class="full-rule"></div>
 
@@ -82,6 +94,9 @@
     <div class="feature footer">
             <p>Designed, written, and built with love by <a href="https://github.com/yosbelms" target="_blank">Yosbel Marín</a>. Code licensed under <a href="https://github.com/yosbelms/cor/blob/master/LICENSE" target="_blank">BSD</a>, documentation under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
     </div>
+
+    <script type="text/javascript" src="docs/assets/highlightjs/highlight.js"></script>
+    <script type="text/javascript"> hljs.initHighlightingOnLoad(); </script>
 
     <!--clicky stub-->
     <a title="Google Analytics Alternative" href="http://clicky.com/100894043" style="display: none;"><img alt="Google Analytics Alternative" src="//static.getclicky.com/media/links/badge.gif" border="0" /></a>

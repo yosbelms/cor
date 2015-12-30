@@ -14,24 +14,30 @@
 
     </div>
 
-	<div class="feature footer">
+    <div class="feature footer">
             <p>Designed, written, and built with love by <a href="https://github.com/yosbelms" target="_blank">Yosbel Marín</a>. Code licensed under <a href="https://github.com/yosbelms/cor/blob/master/LICENSE" target="_blank">BSD</a>, documentation under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
     </div>
 
-    <!--clicky stub-->
-    <a title="Google Analytics Alternative" href="http://clicky.com/100894043" style="display: none;"><img alt="Google Analytics Alternative" src="//static.getclicky.com/media/links/badge.gif" border="0" /></a>
-    <script type="text/javascript">
-    var clicky_site_ids = clicky_site_ids || [];
-    clicky_site_ids.push(100894043);
-    (function() {
-      var s = document.createElement('script');
-      s.type = 'text/javascript';
-      s.async = true;
-      s.src = '//static.getclicky.com/js';
-      ( document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0] ).appendChild( s );
-    })();
-    </script>
-    <noscript><p><img alt="Clicky" width="1" height="1" src="//in.getclicky.com/100894043ns.gif" /></p></noscript>
+    <script type="text/javascript" src="assets/highlightjs/highlight.js"></script>
+    <script type="text/javascript"> hljs.initHighlightingOnLoad(); </script>
+
+    <!--start clicky stub-->
+    
+        <a title="Google Analytics Alternative" href="http://clicky.com/100894043" style="display: none;"><img alt="Google Analytics Alternative" src="//static.getclicky.com/media/links/badge.gif" border="0" /></a>
+        <script type="text/javascript">
+        var clicky_site_ids = clicky_site_ids || [];
+        clicky_site_ids.push(100894043);
+        (function() {
+          var s = document.createElement('script');
+          s.type = 'text/javascript';
+          s.async = true;
+          s.src = '//static.getclicky.com/js';
+          ( document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0] ).appendChild( s );
+        })();
+        </script>
+        <noscript><p><img alt="Clicky" width="1" height="1" src="//in.getclicky.com/100894043ns.gif" /></p></noscript>
+        
+    <!--end of clicky stub-->
     
     </body>
 </html>
