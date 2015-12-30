@@ -1,6 +1,6 @@
 @font-face {
-  font-family: 'Oxygen';
-  src: url('./Oxygen-Regular.ttf') format('truetype');
+    font-family: 'Oxygen';
+    src: url('./Oxygen-Regular.ttf') format('truetype');
 }
 
 body {
@@ -15,6 +15,10 @@ a {
     color: #269abc;
 }
 
+a:hover {
+    border-bottom: 2px solid #269abc;
+}
+
 .inline {
     display: inline;
 }
@@ -27,6 +31,10 @@ a {
     float: right;
 }
 
+.clear {
+    clear: right;
+}
+
 /* NAV BAR */
 .navbar {
     left: 0px;
@@ -36,17 +44,10 @@ a {
     display: block;
     color: #fff;
     text-align: center;
-    background-color: #555;
+    background-color: #01579B;
     display: block;
     min-height: 50px;
     padding-bottom: 1px;
-}
-
-.brand {
-    float: left;
-    display: inline;
-    margin-left: 3px;
-    font-size: 15px;
 }
 
 .navbar a {
@@ -69,7 +70,7 @@ a {
 }
 
 .nav li a:hover {
-    border-bottom: 2px solid #aaa;
+    border-bottom: 2px solid #E1F5FE;
 }
 
 .nav li a:active {
@@ -91,14 +92,12 @@ ul {
 
 pre {
     background-color: #eee;
-    border: 1px solid #aaa;
-    padding: 10px;
     border-radius: 3px;
 }
 
 code {
     background-color: #eee;
-    font-family: Consolas, "Courier New", monospace;
+    font-family: Monaco, Consolas, "Lucida Console", monospace;
     font-size: 13px;
     padding: 0px 5px;
     color: #555;
@@ -106,23 +105,49 @@ code {
 }
 
 pre code {
-    padding: 0px;
+    padding: 15px !important;
     color: #000;
     font-size: 13px;
+    line-height: 17px;
 }
 
 h1, h2, h3, h4 {
     color: #286090;
+    padding: 0px;
+    margin: 0px;
 }
 
 h1 {
     padding-top: 20px;
+    padding-bottom: 5px;
+    font-size: 40px;
 }
 
-h2, h3 {
+h2 {
+    padding-top: 25px;
+    margin-bottom: 10px;
+    font-size: 32px;
+}
+
+h3 {
     padding-top: 10px;
-    padding-bottom: 10px;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
     border-bottom: 1px solid #ddd;
+    font-size: 25px;
+}
+
+p {
+    padding: 0px;
+    margin: 0px;
+    text-align: justify;
+}
+
+blockquote {
+    border-left: 5px solid #bbb;
+    margin-left: 0px;
+    padding: 10px 0px 10px 20px;
+    color: #666 !important;
 }
 
 table {
@@ -138,37 +163,28 @@ td {
     vertical-align: top;
 }
 
-.logo {
-    border-radius: 100%;
-    border: 12px solid #fff;
-    margin: 0 auto 30px;
-    width: 144px;
-    height: 144px;
-    font-size: 88px;
-    line-height: 127px;
-    font-family: Oxygen;
-    display: block;
-    font-weight: bold;
-    color: #fff;
-    text-align: center;
-    cursor: default;
-    background-color: #204d74;
+.brand {
+    float: left;
+    display: inline;
+    margin-left: 3px;
+    font-size: 15px;
+    padding: 14px 0px;
 }
 
 .rule {
     width: 100%;
-    margin: 70px auto;
+    margin: 30px auto;
+    clear: both;
 }
 
 .full-rule {
     width: 100%;
-    margin: 40px auto;
-    border-top: 1px solid #ddd;
+    margin: 100px auto;
+    clear: both;
 }
 
 
 .lead {
-    max-width: 70%;
     margin-right: auto;
     margin-left: auto;
     font-weight: normal;
@@ -177,16 +193,25 @@ td {
 .master {
     left: 0px;
     right: 0px;
-    width: auto;
-    padding-top: 60px;
-    background-color: #286090;
+    width: auto;    
+    background-color: #0277BD;
     text-align: center;
-    height: 440px;
+    padding-bottom: 40px;
+    margin-top: 0px;
     color: #fff;
 }
 
 .master .lead {
-    font-size: 25px;
+    font-size: 22px;
+}
+
+.master h1 {
+    margin-top: 0px;
+    margin-bottom: 20px;
+    padding-top: 20px;
+    text-align: left;
+    font-size: 50px;
+    color: #fff;
 }
 
 .feature {
@@ -213,29 +238,38 @@ td {
 }
 
 .grid {
-    margin-left: -50px;
-    margin-right: -50px;
+    margin-right: -15px;
+    margin-left: -15px;
     width: auto;
     display: table;
 }
 
-.grid .col{
-    width: 290px;
+.grid .col {
+    width: 380px;
     min-width: 90px;
     position: relative;
     display: inline;
     float: left;
-    padding: 0 5px;
+    padding: 0 15px;
 }
 
 .grid .col h3 {
     font-size: 23px;
+    margin-bottom: 10px;
     border: 0px;
     padding: 0px;
 }
 
-.grid .col p {
-    font-size: 18px;
+.grid .col img {    
+    margin-top: 15px;
+}
+
+.grid p {
+    font-size: 16px;
+}
+
+.grid pre {
+    margin-top: 6px;
 }
 
 /* BUTTON */
@@ -284,10 +318,11 @@ a.button-inline:hover {
 }
 
 /* FOOTER */
-.footer {
+.footer p {
     padding: 10px 0px;
     background-color: #eee;
     font-size: 11px;
+    text-align: center;
 }
 
 .footer-links > ul {
@@ -311,6 +346,7 @@ a.button-inline:hover {
 
 a.toclink:hover {
     background-color: #eee;
+    border: 0px;
 }
 
 .toclink-1 {
@@ -437,9 +473,13 @@ a.pg-btn-link:hover {
 
 @media (max-width: 900px) {
 
-    .master: {
-        right: -10px;
-        left: -10px;
+    .master h1 {
+        font-size: 40px;
+        text-align: center;
+    }
+    
+    .master .lead {        
+        text-align: center;
     }
     
     .brand {

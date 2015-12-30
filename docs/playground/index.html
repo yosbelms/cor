@@ -30,6 +30,7 @@
     <div class="body pg-content">
     
     <p><h1 style="display: inline;">Playground </h1><small>it is a living Cor example, you can find the source code <a href="https://github.com/yosbelms/cor/blob/master/docs/playground">here</a></small></p>
+    <br />
     Start with
     <select id="sample-select">
         <option name="play-hello">Hello !</option>
@@ -111,9 +112,9 @@ func size(ls) {
 }
 
 func fromArray(arr) {
-    ls = current = @List
+    ls = current = &List
     for item in arr {
-        node = @Node[item]
+        node = &Node[item]
         switch current.constructor {
             case List : current.head = node
             case Node : current.next = node
@@ -148,7 +149,7 @@ func genId() {
 class Model {
     id = genId()
     func toJSON() {
-        return @[id: me.id]
+        return &[id: me.id]
     }
 }
 
@@ -165,9 +166,9 @@ class Todo : Model {
 
 func init() {
     ls = [
-        @Todo['Buy a battery'],
-        @Todo['Clean the fan'],
-        @Todo['Make a push'],
+        &Todo['Buy a battery'],
+        &Todo['Clean the fan'],
+        &Todo['Make a push'],
     ]
     alert(JSON.stringify(ls, 0, 4))
 }
@@ -178,19 +179,20 @@ func init() {
 
 class View {
     elem
-    func move() { me.elem.style.marginLeft = '50px' }
-    func restore()  { me.elem.style.marginLeft = '0px' }
+    func move()    { me.elem.style.marginLeft = '50px' }
+    func restore() { me.elem.style.marginLeft = '0px'  }
 }
 
 func init() {
-    view = @View[elem: document.getElementById('btn-run')]
+    view = &View[elem: document.getElementById('btn-run')]
     view.move()
-    setTimeout(func(){ view.restore() }, 1000)
+    setTimeout(func() view.restore(), 1000)
 }
 </script>
 
     
-    <div class="full-rule"></div>
+    <div class="rule"></div>    
+    <div class="rule"></div>
 
     <div id="footer" class="feature footer-links">
         <ul>

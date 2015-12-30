@@ -1,25 +1,16 @@
 # Documentation
 
-This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases.
+This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases. Cor is a language designed with web development in mind. Programs are constructed from packages and modules, whose properties allow management of dependencies.
 
-Cor is a language designed with web development in mind. Programs are constructed from packages and modules, whose properties allow management of dependencies.
-
-
-## Key Concepts
-
-* **Symplicity:** Cor has a very simple and clear syntax which leverages Go, C# and Python languages enforcing developers to write maintainable code.
-* **Embrace the Web:** Cor is a different language to build applications for the browser, it addresses javascript limitations by highlighting it's best parts and adding another amazing ones.
-* **Organization:** Software is not just written and forgotten, it must be maintained. Cor empower you to write scalable software by providing structures such as packages, modules and classes.
-* **Fast Development:** Cor brings coding/run/test development flow. It is possible thanks to an asynchronous pluggable loader which compiles sources in the fly, offering faster possible development experience thanks to self-contained source-maps. However, it provides CLI tools to compile and build sources.
+<toc/>
 
 ## Semicolon Insertion
 
-Cor grammar uses semicolon to terminate statements, but those semicolons doesn't need to appear in the source. Instead, the lexer applies a simple rule to insert semicolons automatically as it scans, so you can avoid write it.
+Cor grammar uses semicolon to terminate statements, but those semicolons doesn't need to appear in the source. Instead, the lexer applies a simple rule to insert semicolons automatically as it scans, so you can avoid write it. **The rule is:** If the last token before a newline is an identifier (which includes keywords), a basic literal such as a number or string constant, or one of the tokens: `++ -- ) }` the lexer always inserts a semicolon after the token.
 
-**The rule is:** If the last token before a newline is an identifier (which includes keywords), a basic literal such as a number or string constant, or one of the tokens: `++ -- ) }` the lexer always inserts a semicolon after the token.
+## Expressions
 
-
-## Functions
+### Functions
 
 Functions may be defined using syntax such as the following:
 ```
@@ -28,32 +19,31 @@ func sum(a, b) {
 }
 ```
 
-Also can be used as a value.
+
+### Lambda
+
+Lambdas are functions that can be used as values, hence, they are assignables.
+
 ```
 mult = func(a, b) {
     return a * b
 }
 ```
 
+With simplified syntax:
+```
+mult = func(a, b) a * b
 
-## Comments
+// usage
+console.log(mult(2, 3)) // echoes 6
+```
 
-Cor supports two types of comments, one line and multiple line comments. The first type starts when the lexer finds `//` and terminates in the first end of line.
+
+### Comments
+
+Cor supports two types of comments, one line comments, and multi-line comments. The first type starts when the lexer finds `//` and terminates in the first end of line. The second type starts once the lexer finds `---` and ends in the next occurrence of `---`. This style is also known as `docblock`.
 
 Example:
-```
-// this is a one line type comment
-```
-The second type starts once the lexer finds `---` and ends in the next occurrence of `---`. This style is also known as `docblock`.
-
-Example:
-```
----
-This is a docblock
----
-```
-
-Example to show comments usage:
 ```
 ---
 sum(a int, b int) int
@@ -61,44 +51,53 @@ This function returns the result of a plus b
 ---
 func sum(a, b) {
     // sum two numbers
-    c = a + b
-    // return the result
-    return c
+    return a + b
 }
 ```
 
 
-## Variables and Lexical Scoping
+### Variables and Lexical Scoping
 
-Cor does not has a keyword to declare variables, instead Cor declares it for you the first time it is used. If a variable with equal name is declared in outer scope the compiler will assume you are using the declared outside. Unless you write the variable as a simple statement. This technique is called **variable announcing**.
+Cor does not has a keyword to declare variables, instead, Cor declares it for you the first time it is used. If a variable with equal name is declared in outer scope the compiler will assume you are using the declared outside. Unless you write the variable as a simple statement. This technique is called **variable announcing**.
 
 Example:
 ```
-insane = true
+outer = 'outer value'
+
+func changeGlobal() {
+    outer = 'inner value'
+}
 
 func init() {
-    insane = false
+    changeGlobal()
+    console.log(outer) // 'inner value'
 }
 ```
-`init` function changes the value of `insane` variable defined in outer scope.
+`changeScope` function changes the value of `outer` variable defined in module scope.
 
 ```
-insane = true
+outer = 'outer value'
+
+func changeLocal() {
+    outer // force to use it as local, even if is declared in outer scope
+    outer = 'inner value'
+}
 
 func init() {
-    insane
-    insane = false
+    changeLocal()
+    console.log(outer) // 'outer value'
 }
 ```
-in above fragment, `insane` variable will be declared in a local scope by **announcing** it inside `init` function.
+In above fragment, `outer` variable will be declared in a local scope by **announcing** it inside `changeLocal` function.
 
 
-## Objects
+### Objects
 
-Objects are a collection of variables and functions. It may be created using `@` operator:
+Objects are a collection of variables and functions. It may be created using `&` operator.
+> In previous versions it was possible to use `@` operator, but is now deprecated.
 ```
 // creates an empty object
-obj = @[]
+obj = &[]
 
 // filling properties
 obj.name = 'Aaron'
@@ -108,13 +107,13 @@ obj.age  = 20
 
 Object properties can be assigned in more declarative way by using `Literal Constructors`
 ```
-client = @[
+client = &[
     name : 'Aaron',
     age  : 20,
-    pet  : @[
+    pet  : &[
         name : 'Kitty',
-        kind : 'Cat'
-    ]
+        kind : 'Cat',
+    ],
 ]
 ```
 
@@ -123,87 +122,217 @@ There is two ways to access object properties, by using `.` symbol or by using `
 client.age = 20
 console.log(client.age)
 // will print '20'
-```
 
-The object properties are stored as keys which can be accessed using `['property']` syntax.
-```
 client['age'] = 20
 console.log(client['age'])
 // will print '20'
 ```
 
 
-## Literal Constructors
+### Literal Constructors
 
-A literal constructor is a list of elements bounded by `[` and `]` symbols, used for objects and arrays. An element can be either, expression or a key-value pair. If one element is key-value type, all other elements has to be key-value in the same declaration.
+A literal constructor is a list of elements bounded by `[` and `]` symbols, used for creating objects and arrays. An element can be either, expression or a key-value pair. If one element is key-value type, all other elements has to be key-value in the same declaration.
 
 Example using key-value pair elements:
 ```
-walter = @Client[
+walter = &Client[
     name : 'Walter',
-    age  : 12
+    age  : 12,
 ]
 ```
 
 Example using expression elements:
 ```
-aaron = @Client['Aaron', 20]
+aaron = &Client['Aaron', 20]
 
 // aaron.name = 'Aaron'
 // aaron.age  = 20
 ```
 
+### Strings
 
-## Classes
+A string is a series of characters delimited by `'` symbol, can be defined as following:
+```
+aaron  = 'Aaron Swartz'
+walter = 'Walter O\'Brian'
 
-A class is a "blueprint" for objects; it may be defined using syntax such as the following. However Cor is aimed to modules not to classes:
+// multi-line
+query = '
+    SELECT
+        *
+    FROM Article
+    WHERE slug = ?
+'
+```
+
+
+### Numbers
+
+Numbers can be specified using any of the following syntaxes:
+```
+// integer
+n = 3
+
+// signed
+n = +4
+n = -8
+
+// with floating point
+n = 4.7
+n = +6.3
+n = -50.2
+
+// with exponential part
+n = 4e12
+n = 4E12
+n = 3e+4
+n = 3e-10
+
+```
+
+
+### Operators
+Operators are the following:
+
+```
+// 1 - Assignment
+*=  /=  %=  +=  -=  <<=  >>=  >>>=  &=  ^=  |=
+
+// 2 - Comparison
+<=  >=  ==  !=  <   >
+
+// 3 - Arithmetic
+++  --  +   -
+
+// 4 - Binary Bitwise
+&   |   ^
+
+// 5 - Binary Logical
+&&  ||  !
+
+// 6 - Binary Shift
+<<  >>  >>>
+
+// 7 - Other
+??
+```
+
+The operators `==` and `!=` are translated to `===` and `!==` in the same order.
+
+
+### Coalesce
+
+The coalesce operator returns the first value that is not `nil` nor `undefined`. `nil` is returned only if all operands are `nil` or `undefined`. It replaces javascript `||` when substituting default value for `nil` or `undefined` values.
+
+Examle:
+
+```
+summary = article.summary ?? article.content ?? '(no content)'
+```
+
+This returns the articles's summary if exists, otherwise returns the content of the article if exists, otherwise retuns `(no content)`.
+
+
+### Arrays
+
+An array is a collection of ordered values. It may be defined using literal constructor with expressions as elements. Example:
+```
+empty  = []
+colors = ['red', 'green', 'blue']
+foo    = [bar(), 56, 'baz']
+
+// accessing
+color1 = colors[0]
+color2 = colors[1]
+
+// color1 == 'red'
+// color2 == 'green'
+```
+
+
+### Slices
+
+Slice expression construct an array from an existing array.
+```
+colors = ['red', 'green', 'blue']
+
+sliced = colors[1:2] // sliced is ['green', 'blue']
+sliced = colors[:1]  // sliced is ['red', 'green']
+sliced = colors[1:]  // sliced is ['green', 'blue']
+```
+
+
+### Type Assertion
+
+Type assertions checks if a value is an instance of a class. Having the following syntax:
+```
+value.(Class)
+```
+The result of type assertion evaluation is a `Boolean` value.
+```
+obj = &Object
+isObject = obj.(Object) // true
+
+class Runner {}
+
+rnr = &Runner
+isRunner = rnr.(Runner) // true
+isRunner = obj.(Runner) // false
+
+```
+
+
+### Classes
+
+A class is a "blueprint" for objects, Cor has its own approach and keeps compatibility with javascript. Unlike javascript's `this` which references the execution scope, Cor's `me` identifier is available as a reference to the class  instance.
 ```
 class Client {
-    name
-    age
-
-    func getAge() {
-        return me.age
+    firstName
+    lastName
+    accounts
+    
+    func getName() {
+        return me.firstName + ' ' + me.lastName
     }
 }
-```
-It defines a class named Client with properties `name` and `age` and a method `getAge`. `me` identifier is available as a reference to the class  instance. Classes may be instantiated using `@` operator.
-```
-client      = @Client
-client.name = 'Walter'
-client.age  = 12
-age         = c.getAge()
 
-// age should be 12
+client           = &Client
+client.firstName = 'Walter'
+client.lastName  = 'Martinez'
+
+name = client.getName()
+//name == Walter Martinez
 ```
 
 A complex example:
 ```
 class Client {
-    name
-    age
-    pet
+    firstName
+    lastName
+    accounts
 }
 
-class Pet {
-    name
-    kind
+class Account {
+    code
+    ammount
 }
 
-client = @Client[
-    name : 'Aaron',
-    age  : 20,
-    pet  : @Pet[
-        name : 'Kitty',
-        kind : 'Cat'
-    ]
+client = &Client[
+    firstName : 'Aaron',
+    lastName  : 20,
+    accounts  : [
+        &Account[
+            code    : '3980-121970',
+            ammount : 5000,
+        ],
+    ],
 ]
 ```
 
 
 ### Initialization
 
-There is two types to define a class initialization. The first type is by declaring a property set before any method declaration:
+There is two ways to define class initialization. The first way is by declaring a property-set before any method declaration:
 ```
 class Animal {
     name
@@ -213,29 +342,32 @@ class Animal {
 }
 
 
-// a = @Animal['snake', 'slithering']
-// a = @Animal[
+// a = &Animal['snake', 'slithering']
+// a = &Animal[
 //      name:     'snake',
 //      movement: 'slithering',
 //  ]
 ```
 
-The second one is by declaring `init` method, if used, it must be the first member of the class. You must use this way if you are inheriting from a class from a javascript library which relays in `constructor`. Using this approach does not mean there is a `init` method, so that if you call `super` builtin function, it will call the constructor of the super class, see [Super (Builtin Function)](#superbuiltinfunction).
+The second one is by declaring `init` as the first member of the class. You should use this way case of inheriting from a class defined in a javascript library which relays in `constructor` e.g: views and models of Backbone.js. Using this approach does not mean there is a `init` method in the compiled `js`, it will be translated to `constructor`, so that if you use `super` builtin function, it will call the constructor of the super class, see [Super (Builtin Function)](#superbuiltinfunction).
 
 Example:
 ```
 class Animal : Model {
-    func init(name) {
-        me.name = name
-        super(Model)
+    func init(name, movement) {
+        me.name     = name
+        me.movement = movement
+        super()
     }
     
     // methods...
 }
 
-// a = @Animal['snake', 'slithering']
+// a = &Animal['snake', 'slithering']
 ```
-Constructing it with a key-value literal constructor will pass an object intance of `CRL.Conf` as the first parmeter.
+
+> You can use eiter, `init` method of property-set, but not both.
+
 
 ### Inheritance
 
@@ -255,12 +387,13 @@ class Triangle : Shape {
     }
 }
 ```
-In above example `Triangle` class inherits from `Shape`.
+In above example `Triangle` class inherits from `Shape` class.
+
 
 
 ### Super (Builtin Function)
 
-`super` builtin function calls a method of the super class. It would call the method with equal name to the current method where `super` is located.
+The `super` builtin function calls a method of the super class. It will call the method with equal name to the current method where `super` is located. It should compile to `<SuperClass>.prototype.<Method>.apply(this, arguments)`
 
 Example:
 
@@ -278,7 +411,7 @@ class Chairman : Employee {
 }
 ```
 
-`super` can be called with parameters:
+Calling `super` with parameters:
 ```
 class Window {
     func show(position) {
@@ -293,44 +426,12 @@ class DialogBox : Window {
 }
 ```
 
-A complex example to show `super` usage:
-```
-class Employee {
-    workedHours
-    perHour
-
-    func monthSalary() {
-        return me.workedHours * me.perHour
-    }
-}
-
-class Chairman : Employee {
-    bonus
-    perHour = 40
-
-    func monthSalary() {
-        return super(Employee) + me.bonus
-    }
-}
-
-// initialize the module
-
-func init() {
-    e = @Chairman[
-        workedHours : 250,
-        bonus       : 700
-    ]
-    s = e.monthSalary()
-
-    expect(s).toEqual(10700)
-}
-```
 
 ## Modules
 
 A module is a `.cor` file containing definitions and declarations that can be used by other modules. Variables, classes and functions defined in a module are all exported without needing a keyword or a special statement. The name of the file is the name of the module with `.cor` suffix.
 
-Cor modules system is `CommonJS` compliant, so is possible to use Cor modules or import javascript from `node.js` or any other platform that implements `CommonJS` specifications.
+Cor modules are `CommonJS` compliant, so it is possible to use Cor modules from javascript and vice versa, whenever it implements `CommonJS` specifications.
 
 Example:
 ```
@@ -349,16 +450,14 @@ class Circle {
     }
 }
 ```
-This module exports `PI` variable, `circleArea` function and `Circle` class.
-
-Once a module is required to be used, it initializes by executing(if exists) a function named `init`. Modules initializes the first time is required.
+This module exports `PI` variable, `circleArea` function and `Circle` class. Once a module is required, it initializes by executing(if exists) a function named `init`. Modules initializes the first time is required.
 
 Example:
 ```
 http = nil
 
 func init() {
-    http = @HttpServer
+    http = &HttpServer
 }
 
 ```
@@ -369,7 +468,7 @@ There are three types of modules.
 2. **Exposed Module:** Are modules that the first letter of its name is uppercased and it can be accessed from any other module outside or inside of it's package, but just can be used the construction (variable, class or function) which has the name equal to the module name. It is an attempt to be compliant with coding standards which enforces to have a class per file.
 3. **Inner Module:** Is a module which can be only used in other modules inside the same package. It is a inner module if it is not a main module and is not exposed.
 
-*Note: A module may only contain variable declarations, functions, classes, and `use` statements.*
+> A module may only contain variable declarations, functions, classes, and `use` statements.
 
 Example:
 
@@ -413,7 +512,192 @@ math                      // package
 In above examples you could see a basic package structure where each directory is a package and every `.cor` file located inside is a module.
 
 
-## Use statement
+## Statements
+
+
+### For loop
+
+For loops similar to javascript For statement, but with higher flexibility. It has two syntaxes, the first is:
+```
+for Start; Continuation; Statement {
+    Statements
+}
+```
+
+Example:
+```
+fruits = ['orange', 'apple', 'pear']
+
+for i = 0, len = fruits.length; i < len; i++ {
+    console.log(fruits[i])
+}
+
+// orange
+// apple
+// pear
+```
+
+Each one of these expressions can be empty.
+```
+// infinite loop
+for ;; {
+
+}
+
+// whith only ContinuationExpression
+for ; i == len; i ++ {
+
+}
+```
+
+The second syntax is more compact than previous, it replaces `while` statements founded in many programming languages. The syntax is:
+```
+for Condition {
+    Statements
+}
+```
+
+Example:
+```
+// executes while i is less than 10
+for i < 10 {
+    i++
+}
+
+// executes while cm is truthy
+for cm = comments.next() {
+    cm.show()
+}
+
+// infinite loop
+for {
+    
+}
+```
+
+If you need to jump to the next iteration or to get out of the current curl, `break` and `continue` are there for you, it behaves exactly as in javascript.
+
+```
+array = [4, 3, 'Cor', 'PHP', 5, 'Go', 1, 7, 'Python']
+langs = []
+
+for item = array.shift() {
+    if item.(Number) { continue }
+    langs.push(item)
+}
+```
+
+
+### For/In
+
+A for/in loop provides the easiest way to iterate collections. There are two syntaxes; the second one is a slight extension of the first.
+
+The first syntax gives access to the current value in each iteration.
+```
+arr = [1, 2, 3]
+sum   = 0
+
+for value in arr {
+    sum += value
+}
+
+// sum == 6
+```
+
+The second way is similar but exposes the current index and value in each iteration.
+```
+arr = ['Jeremy', 'Nolan', 'Brendan']
+
+for index, value in arr {
+    console.log(index + ' ' + value)
+}
+
+// 0 Jeremy
+// 1 Nolan
+// 2 Brendan
+```
+
+For-In can be used to iterate over object properties
+```
+obj = &[name: 'Bill', age: 50]
+
+for index, value in obj {
+    console.log(index + ' ' + value)
+}
+
+// name Bill
+// age 50
+```
+> For-In statements does not iterates through the object prototype.
+
+
+### If/Else
+
+`if` statement is one of the most important features in many languages including Cor. It allows the execution of conditional code fragments.
+
+Example:
+```
+// if-else
+if a < b {
+    
+} else {
+    
+}
+
+// with else-if
+if a < b {
+    
+} else if b == 0 {
+    
+}
+```
+
+
+### Switch/Case/Default
+
+With Cor you don't need to remember to `break` after every `case`. Cor switch statements prevents accidental fall-though by automatically breaking at the end of each `case` clause.
+
+Switch statements in Cor can take multiple values for each `case` clause. If any of the values match, the clause runs.
+```
+switch good {
+    case 'House' : fee = 50
+    case 'Boat'  : fee = 20
+    case 'Car'   : fee = 10
+    default      :
+        fee = 0
+        console.log('The citizen has no House, Boat, or Car')
+}
+
+// with multiple values in a single case clause
+switch num {
+    case 0, 1 : alert('0 or 1')
+    case 2, 3 : alert('2 or 3')
+}
+```
+
+
+### Inc/Dec
+
+Inc/Dec statement increments or decrements an expression. Similar features are found in many languages but these are offered as an expression, in Cor it is a statement.
+
+Example:
+```
+// correct usage
+func init() {
+    a = 0
+    a++
+    a--
+}
+```
+
+The grammar enforces to be used as a statement.
+```
+// will cause a parsing error
+// because it is used as an expression
+b = a++
+```
+
+### Use
 
 Use statement requests modules previously defined. It is possible to achieve by using `use` keyword which behaves ruled by some conventions.
 
@@ -480,7 +764,7 @@ use '../model/Client' ClientStore
 
 class Client : Controller {
     func index() {
-        store = @ClientStore
+        store = &ClientStore
         store.findAll().then(func(){
             //...
         })
@@ -489,358 +773,9 @@ class Client : Controller {
 ```
 
 
-## Strings
-
-A string is a series of characters delimited by `'` symbol, can be defined as following:
-```
-aaron  = 'Aaron Swartz'
-walter = 'Walter O\'Brian'
-
-```
-Or in multiple lines
-```
-query = '
-    SELECT
-        *
-    FROM Article
-    WHERE slug = ?
-'
-```
-
-
-## Numbers
-
-Numbers can be specified using any of the following syntaxes:
-```
-// integer
-n = 3
-
-// signed
-n = +4
-n = -8
-
-// with floating point
-n = 4.7
-n = +6.3
-n = -50.2
-
-// with exponential part
-n = 4e12
-n = 4E12
-n = 3e+4
-n = 3e-10
-
-```
-
-
-## Operators
-Operators are separated in 6 groups:
-
-1 - Assignment Operators
-```
-*=  /=  %=  +=  -=  <<=  >>=  >>>=  &=  ^=  |=
-```
-
-2 - Comparison Operators
-```
-<=  >=  ==  !=  <   >
-```
-
-3 - Arithmetic Operators
-```
-++  --  +   -
-```
-
-4 - Binary Bitwise Operators
-```
-&   |   ^
-```
-
-5 - Binary Logical Operators
-```
-&&  ||  !
-```
-
-6 - Binary Shift Operators
-```
-<<  >>  >>>
-```
-
-## Arrays
-
-An array is a collection of ordered values. It may be defined using literal constructor with expressions as elements. Example:
-```
-empty = []
-
-colors = ['red', 'green', 'blue']
-
-foo = [bar(), 56, 'baz']
-
-```
-
-Arrays are zero based, which means the first stored element is located in `0` position. Values may be accessed using syntax similar to the following:
-```
-color1 = colors[0]
-color2 = colors[1]
-
-// color1 is 'red'
-// color2 is 'green'
-```
-
-## Slices
-
-Slice expression construct an array from an existing array.
-```
-colors = ['red', 'green', 'blue']
-
-slice = colors[1:2]
-
-// slice is ['green', 'blue']
-
-slice = colors[:1]
-
-// slice is  ['red', 'green']
-
-slice = colors[1:]
-
-// slice is ['green', 'blue']
-```
-
-## Type Assertions
-
-Type assertions checks if a value is an instance of a class. Having the following syntax:
-```
-value.(Class)
-```
-The result of type assertion evaluation is a `Boolean` value.
-```
-obj = @Object
-
-// obj.(Object) == true
-
-class Runner {}
-
-rnr = @Runner
-
-// rnr.(Runner) == true
-
-```
-
-
-## For-In Loops
-
-A for-In loop provides the easiest way to iterate collections. There are two syntaxes; the second one is a slight extension of the first.
-
-The first syntax gives access to the current value in each iteration.
-```
-store = [1, 2, 3]
-sum   = 0
-
-for value in store {
-    sum = sum + value
-}
-
-// sum is 6
-```
-
-The second way is similar but exposes the current index and value in each iteration.
-```
-str = ''
-
-for index, value in store {
-    str += 'Index: ' + index + '; Value:' + value + '</br>'
-}
-```
-
-Can be used to iterate over object properties
-```
-obj = @[name: 'John', age: 30]
-
-for index, value in obj {
-    str += index + ':' + value + '</br>'
-}
-```
-**Notice:** it does not iterates through the object prototype.
-
-
-## For Loops
-
-For loops are more complex than For-In loops. It is similar to `C` For statement, but with higher flexibility. It has two syntaxes, the first is:
-```
-for start_expression; continuation_expression; statement_expression {
-    statements
-}
-```
-`start_expression` is evaluated once when the loop begins. It can contain many expressions separated by `,`.
-
-`continuation_expression` is evaluated in the beginning of each iteration, if the result of such evaluation is `true`, loop continues and `statements` are executed. The loop ends if the result of `continuation_expression` evaluation is `false`.
-
-`statement_expression` is executed in the end of each iteration.
-
-Example:
-```
-fruits = ['orange', 'apple', 'pear']
-
-for i = 0, len = fruits.length; i < len; i++ {
-    console.log(fruits[i])
-}
-```
-
-Each one of these expressions can be empty.
-```
-// infinite loop
-for ;; {
-
-}
-
-// whith only continuation_expression
-for ; i == len; i ++ {
-
-}
-```
-
-The second syntax is more compact than previous, it replaces `while` statements founded in many programming languages. The syntax is:
-```
-for condition {
-    statements
-}
-```
-`condition` is evaluated at the beginning of each iteration. If the result of such evaluation is `true` the loop continues and `statements` are executed. The loop will end otherwise.
-
-Example:
-```
-// example 1
-i = 0
-for i < 10 {
-    i++
-}
-
-// example 2
-for cm = comments.next() {
-    cm.show()
-}
-```
-
-`condition` can be empty
-
-Example:
-```
-for {
-    // infinite loop
-}
-```
-
-
-## Loop Control statements
-
-Sometimes when loops are running may needs to jump to the next iteration or to get out of the current curl. Cor provides two well-known keywords to cover these use cases, these are `break` and `continue`. `break` keyword terminates the current loop and `continue` keyword jumps to the next iteration. It can be used in both, For and For-In loops.
-
-`break` example:
-```
-i = 0
-for {
-    if i == 10 {
-        break
-    }
-    i++
-}
-```
-Stops the loop once `i` is equal to `10`
-
-`continue` example:
-```
-array = [4, 3, 'Cor', 'PHP', 5, 'Go', 1, 7, 'Python']
-langs = []
-
-for item = array.shift() {
-    if item.(Number) {
-        continue
-    }
-    langs.push(item)
-}
-```
-if `item` is a `Number` then jumps to the next iteration
-
-## If Conditionals
-
-`if` statement is one of the most important features in many languages including Cor. It allows the execution of conditional code fragments. The syntax is the following:
-```
-if conditional_expression {
-    statemets
-}
-```
-
-`conditional_expression` is evaluated and converted to its boolean value, if that value is `true` Cor executes `statements`, if `false` `statements` will be ignored.
-
-```
-// executes statements
-if a < b {
-    somethingWillBeDone()
-}
-
-```
-
-Often needs to execute sentences if case of certain condition is `true` and execute different sentences in case of such condition be `false`
-
-```
-if a {
-    // a is true
-} else {
-    // a is not true
-}
-```
-
-`if` statement can be attached after `else` keyword to achieve more complex conditional execution. That will be executed in case of the previous `if` is not `true`
-```
-if b {
-
-} else if c {
-
-} else if d {
-
-}
-```
-
-
-## Switch Conditionals
-
-Switch statement is similar to a series of `if` statements in the same expression. In many occasions you may want to compare the same expression with many different values, and execute a different piece of code depending on which value it equals to.
-```
-// expressed with Switch statement
-switch good {
-    case 'House' : fee = 50
-    case 'Boat'  : fee = 20
-    case 'Car'   : fee = 10
-}
-
-// expressed with If statement
-if (good == 'House') {
-    fee = 50
-} else if (good == 'Boat') {
-    fee = 20
-} else if (good == 'Car') {
-    fee = 10
-}
-```
-`case` keyword is used to define possible matches which the expression will be compared to. The `switch` statement is executed line by line, when a matching `case` is found Cor begins to execute the statements. A special case is `default` keyword, which will match any expression that was not matched before.
-
-```
-switch good {
-    case 'House' : fee = 50
-    case 'Boat'  : fee = 20
-    case 'Car'   : fee = 10
-    default      :
-        fee = 0
-        console.log('The citizen has no House, Boat or Car')
-}
-
-```
-
-
 ## Exceptions (*Experimental)
 
-
-Cor has an exception model similar to that javascript to guarantee interoperability between Cor and javascript. So, `try/catch/finally` syntax is very close javascript syntax. Syntax similar to the following may be used:
+Cor has an exception model similar to that javascript to guarantee interoperability between both languages. So, `try/catch/finally` syntax is very close to javascript syntax.
 ```
 // just try
 try {
@@ -877,28 +812,6 @@ try {
 ```
 
 
-## Inc-Dec statement
-
-Inc-Dec statement increments or decrements an expression. Similar features are found in many languages but these offers it as an expression, in Cor it is a statement.
-
-Example:
-```
-// will cause a parsing error
-// because it is used as an expression
-b = a++
-```
-The grammar enforces to be used as a statement.
-
-Example:
-```
-// correct usage
-func init() {
-    a = 0
-    a++
-    a--
-}
-```
-
 ## Commands
 
 Cor cli is available as a [Node.js](http://nodejs.org) utility, it allows you to compile and build sources. Commands are used as subcommands of Cor program, for instance `cor build`. Each command may have parameters and options, parameters are passed after the name of the command and options are specified using the following format: `-option=value` which must be specified after parameters. To know about usage, `help` command is there for you. Running `cor help` or just `cor` would show available commands, and `cor help [command]` will print usage of the specified `command`.
@@ -927,7 +840,7 @@ Prints documentation about `cor compile` command
 
 ### Build
 
-`build` command compiles packages and its dependencies, the resulting javascript code will be packed and written to a standalone `.js` file inside the specified package. CRL will be enbedded in the head of the resulting file. The `build` command supports four types of packages: AMD, CommonJS, Global and DOM Ready.
+`build` command compiles packages and its dependencies, the resulting javascript code will be packed and written to a standalone `.js` file inside the specified package. CRL will be embedded in the head of the resulting file. The `build` command supports four types of packages: AMD, CommonJS, Global and DOM Ready.
 
 Usage:
 ```
@@ -980,7 +893,7 @@ In this case the output file is named `app.js` and CRL will be embedded in the b
 ```
 cor build myapp -env=myapp/env.json
 ```
-Builds `myapp` package and tells compiler the environment file is located in `myapp/env.json`.
+Builds `myapp` package and tells compiler the environment file is located at `myapp/env.json`.
 
 ```
 cor build ./mylib -type=amd,commonjs,global
@@ -989,7 +902,7 @@ Build `./mylib` package making it available through AMD, CommonJS and Global api
 
 ### Compile
 
-`compile` command compiles packages and put the result in the specified directory. Every file contained in the source package will be copied to the destination directory as they are, except `.cor` or any other file processed by the loader extensions. These files will be compiled and written to the file system as '.js'.
+`compile` command compiles packages and put the result in the specified directory. Every file contained in the source package will be copied to the destination directory as they are, except `.cor` or any other file processed by the loader extensions. These files will be compiled and written to the file system as `.js`.
 
 Usage:
 ```
@@ -1006,11 +919,11 @@ cor compile <path> [compile options]
         <tr><td colspan="2">Options:</td></tr>
         <tr>
             <td class="cmd-arg"><code>-o</code></td>
-            <td>Specifies the path to the directory where the compiled package will be written. The default name has the format: `compiled_{timestamp}`</td>
+            <td>Specifies the path to the directory where the compiled package will be written. The default name has the format: <code>compiled_{timestamp}<code></td>
         </tr>
         <tr>
             <td class="cmd-arg"><code>-v</code></td>
-            <td>Specifies if print or not file names as they are compiled.</td>
+            <td>Specifies whether to print or not file names as they are compiled.</td>
         </tr>
     </tbody>
 </table>
@@ -1042,7 +955,7 @@ cor http [http options]
         <tr><td colspan="2">Options:</td></tr>
         <tr>
             <td class="cmd-arg"><code>-port</code></td>
-            <td>Specifies the port where the server will listen requests. Default is `9000`</td>
+            <td>Specifies the port where the server will listen requests. Default is <code>9000</code></td>
         </tr>
     </tbody>
 </table>
@@ -1060,13 +973,30 @@ cor http -port=8790
 Using `8790` port.
 
 
-## Loader
+## The Loader
 
-The loader is a component which manages dependencies and dynamically loads files into the browser. It is extensible, so, it is possible to add support for any processor, for example, markdown, or mustache templates. It expects every requested file is `CommonJS` compliant. It is intended to be used in development environments, so, the loader is not needed once sources are compiled and packed.
+The loader is a component which manages dependencies and dynamically loads files into the browser by using Ajax. It is extensible, so, it is possible to add support for any processor, for example, markdown, or mustache templates. It expects every requested file to be `CommonJS` compliant. It is intended to be used just for development, so, once the cource is compiled and packed the loader is not needed any more.
 
-**Embrace the Web** is one of the Cor's key concepts, because that Cor attempts to be friendly with the technologies that move the Web. The loader supports `.js` files loading out of the box, if you need to write some javascript code do not hesitate, put down the source taking into account `module`, `exports` and `require` objects, parts of `CommonJS` specification.
+The loader supports `.js` files loading out of the box, if you need to write some javascript code do not hesitate, put down the source taking into account `module`, `exports` and `require` objects, parts of `CommonJS` specification.
+
+This is a valid Cor project:
+```
+// filename: app.cor
+
+use './util.js'     util
+use './template.js' tpl
+
+func show(){
+    util.ajax('http://server.com/api.php').then(func(r) tpl.render(r))
+}
+
+func init() {
+    show()
+}
+
+```
 
 
-## CRL (Cor Runtime Library)
+## The CRL (Cor Runtime Library)
 
-CRL is a small library which makes possible to take advantage of features such as *literal constructors, for-in statements, class combination and type assertions*, these beloved Cor properties would not be possible without CRL. Cor tends to depend less on it, but, without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by compiled routines.
+The CRL is a small (~3Kb) library which makes possible to take advantage of features such as *for/in statements, inheritance, type assertions, among others*. Without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by the javascript resulting code.
