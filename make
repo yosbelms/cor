@@ -32,7 +32,7 @@ function setPageTitle(html) {
 // takes HTML source as input, regarding h1, h2, h3... tags
 // it generates a "table of contents"
 function generateTableOfContents(html) {
-    var toc = '<h1>Table of Content</h1>';
+    var toc = '<h2>Table of Content</h2>';
 
     html.replace(/(?:\<h)(\d)\s*(?:id\=")(\w*)(?:"\>)([\s\S]*?)(?:\<\/h)/g, function() {
         var
@@ -176,7 +176,7 @@ target.docs = function() {
         html = converter.makeHtml(cat(files[i]));
         
         if (files[i] === 'docs/documentation.md') {
-            html = generateTableOfContents(html) + html;
+            html = html.replace('<toc/>', generateTableOfContents(html));
         }
 
         html      = prefix + html + suffix;
