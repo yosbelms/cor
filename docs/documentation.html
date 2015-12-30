@@ -5,13 +5,14 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" type="text/css" href="assets/style.css">
+        <link rel="stylesheet" type="text/css" href="assets/highlightjs/cor.css">
         <link rel="shortcut icon" href="assets/favicon.ico" />
         <title>Cor - Documentation</title>
     </head>
     <body>
-	<span id="top"></span>
-	
-	<div class="goto-top"><a href="#top">^</a></div>
+    <span id="top"></span>
+    
+    <div class="goto-top"><a href="#top">^</a></div>
 
     <nav class="navbar" role="navigation">
         <div class="nav content">
@@ -21,39 +22,27 @@
             <ul class="right">
                 <li class="inline"><a href="get_started.html">Get started</a></li>
                 <li class="inline"><a href="documentation.html">Documentation</a></li>
-				<li class="inline"><a href="playground/index.html">Playground</a></li>
-				<li class="inline"><a href="../test/index.html">Run tests</a></li>
+                <li class="inline"><a href="playground/index.html">Playground</a></li>
+                <li class="inline"><a href="../test/index.html">Run tests</a></li>
             </ul>
         </div>
     </nav>
 
     <div class="body content">
 
-<h1>Table of Content</h1><a class="toclink toclink-2" href="#keyconcepts">Key Concepts</a><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#functions">Functions</a><a class="toclink toclink-2" href="#comments">Comments</a><a class="toclink toclink-2" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-2" href="#objects">Objects</a><a class="toclink toclink-2" href="#literalconstructors">Literal Constructors</a><a class="toclink toclink-2" href="#classes">Classes</a><a class="toclink toclink-3" href="#initialization">Initialization</a><a class="toclink toclink-3" href="#inheritance">Inheritance</a><a class="toclink toclink-3" href="#superbuiltinfunction">Super (Builtin Function)</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#packages">Packages</a><a class="toclink toclink-2" href="#usestatement">Use statement</a><a class="toclink toclink-2" href="#strings">Strings</a><a class="toclink toclink-2" href="#numbers">Numbers</a><a class="toclink toclink-2" href="#operators">Operators</a><a class="toclink toclink-2" href="#arrays">Arrays</a><a class="toclink toclink-2" href="#slices">Slices</a><a class="toclink toclink-2" href="#typeassertions">Type Assertions</a><a class="toclink toclink-2" href="#forinloops">For-In Loops</a><a class="toclink toclink-2" href="#forloops">For Loops</a><a class="toclink toclink-2" href="#loopcontrolstatements">Loop Control statements</a><a class="toclink toclink-2" href="#ifconditionals">If Conditionals</a><a class="toclink toclink-2" href="#switchconditionals">Switch Conditionals</a><a class="toclink toclink-2" href="#exceptionsexperimental">Exceptions (*Experimental)</a><a class="toclink toclink-2" href="#incdecstatement">Inc-Dec statement</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#loader">Loader</a><a class="toclink toclink-2" href="#crlcorruntimelibrary">CRL (Cor Runtime Library)</a><h1 id="documentation">Documentation</h1>
+<h1 id="documentation">Documentation</h1>
 
-<p>This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases.</p>
+<p>This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases. Cor is a language designed with web development in mind. Programs are constructed from packages and modules, whose properties allow management of dependencies.</p>
 
-<p>Cor is a language designed with web development in mind. Programs are constructed from packages and modules, whose properties allow management of dependencies.</p>
-
-<h2 id="keyconcepts">Key Concepts</h2>
-
-<ul>
-<li><strong>Symplicity:</strong> Cor has a very simple and clear syntax which leverages Go, C# and Python languages enforcing developers to write maintainable code.</li>
-
-<li><strong>Embrace the Web:</strong> Cor is a different language to build applications for the browser, it addresses javascript limitations by highlighting it's best parts and adding another amazing ones.</li>
-
-<li><strong>Organization:</strong> Software is not just written and forgotten, it must be maintained. Cor empower you to write scalable software by providing structures such as packages, modules and classes.</li>
-
-<li><strong>Fast Development:</strong> Cor brings coding/run/test development flow. It is possible thanks to an asynchronous pluggable loader which compiles sources in the fly, offering faster possible development experience thanks to self-contained source-maps. However, it provides CLI tools to compile and build sources.</li>
-</ul>
+<p><h2>Table of Content</h2><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#expressions">Expressions</a><a class="toclink toclink-3" href="#functions">Functions</a><a class="toclink toclink-3" href="#lambda">Lambda</a><a class="toclink toclink-3" href="#comments">Comments</a><a class="toclink toclink-3" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-3" href="#objects">Objects</a><a class="toclink toclink-3" href="#literalconstructors">Literal Constructors</a><a class="toclink toclink-3" href="#strings">Strings</a><a class="toclink toclink-3" href="#numbers">Numbers</a><a class="toclink toclink-3" href="#operators">Operators</a><a class="toclink toclink-3" href="#coalesce">Coalesce</a><a class="toclink toclink-3" href="#arrays">Arrays</a><a class="toclink toclink-3" href="#slices">Slices</a><a class="toclink toclink-3" href="#typeassertion">Type Assertion</a><a class="toclink toclink-3" href="#classes">Classes</a><a class="toclink toclink-3" href="#initialization">Initialization</a><a class="toclink toclink-3" href="#inheritance">Inheritance</a><a class="toclink toclink-3" href="#superbuiltinfunction">Super (Builtin Function)</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#packages">Packages</a><a class="toclink toclink-2" href="#statements">Statements</a><a class="toclink toclink-3" href="#forloop">For loop</a><a class="toclink toclink-3" href="#forin">For/In</a><a class="toclink toclink-3" href="#ifelse">If/Else</a><a class="toclink toclink-3" href="#switchcasedefault">Switch/Case/Default</a><a class="toclink toclink-3" href="#incdec">Inc/Dec</a><a class="toclink toclink-3" href="#use">Use</a><a class="toclink toclink-2" href="#exceptionsexperimental">Exceptions (*Experimental)</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#theloader">The Loader</a><a class="toclink toclink-2" href="#thecrlcorruntimelibrary">The CRL (Cor Runtime Library)</a></p>
 
 <h2 id="semicoloninsertion">Semicolon Insertion</h2>
 
-<p>Cor grammar uses semicolon to terminate statements, but those semicolons doesn't need to appear in the source. Instead, the lexer applies a simple rule to insert semicolons automatically as it scans, so you can avoid write it.</p>
+<p>Cor grammar uses semicolon to terminate statements, but those semicolons doesn't need to appear in the source. Instead, the lexer applies a simple rule to insert semicolons automatically as it scans, so you can avoid write it. <strong>The rule is:</strong> If the last token before a newline is an identifier (which includes keywords), a basic literal such as a number or string constant, or one of the tokens: <code>++ -- ) }</code> the lexer always inserts a semicolon after the token.</p>
 
-<p><strong>The rule is:</strong> If the last token before a newline is an identifier (which includes keywords), a basic literal such as a number or string constant, or one of the tokens: <code>++ -- ) }</code> the lexer always inserts a semicolon after the token.</p>
+<h2 id="expressions">Expressions</h2>
 
-<h2 id="functions">Functions</h2>
+<h3 id="functions">Functions</h3>
 
 <p>Functions may be defined using syntax such as the following:</p>
 
@@ -62,32 +51,28 @@
 }
 </code></pre>
 
-<p>Also can be used as a value.</p>
+<h3 id="lambda">Lambda</h3>
+
+<p>Lambdas are functions that can be used as values, hence, they are assignables.</p>
 
 <pre><code>mult = func(a, b) {
     return a * b
 }
 </code></pre>
 
-<h2 id="comments">Comments</h2>
+<p>With simplified syntax:</p>
 
-<p>Cor supports two types of comments, one line and multiple line comments. The first type starts when the lexer finds <code>//</code> and terminates in the first end of line.</p>
+<pre><code>mult = func(a, b) a * b
 
-<p>Example:</p>
-
-<pre><code>// this is a one line type comment
+// usage
+console.log(mult(2, 3)) // echoes 6
 </code></pre>
 
-<p>The second type starts once the lexer finds <code>---</code> and ends in the next occurrence of <code>---</code>. This style is also known as <code>docblock</code>.</p>
+<h3 id="comments">Comments</h3>
+
+<p>Cor supports two types of comments, one line comments, and multi-line comments. The first type starts when the lexer finds <code>//</code> and terminates in the first end of line. The second type starts once the lexer finds <code>---</code> and ends in the next occurrence of <code>---</code>. This style is also known as <code>docblock</code>.</p>
 
 <p>Example:</p>
-
-<pre><code>---
-This is a docblock
----
-</code></pre>
-
-<p>Example to show comments usage:</p>
 
 <pre><code>---
 sum(a int, b int) int
@@ -95,43 +80,55 @@ This function returns the result of a plus b
 ---
 func sum(a, b) {
     // sum two numbers
-    c = a + b
-    // return the result
-    return c
+    return a + b
 }
 </code></pre>
 
-<h2 id="variablesandlexicalscoping">Variables and Lexical Scoping</h2>
+<h3 id="variablesandlexicalscoping">Variables and Lexical Scoping</h3>
 
-<p>Cor does not has a keyword to declare variables, instead Cor declares it for you the first time it is used. If a variable with equal name is declared in outer scope the compiler will assume you are using the declared outside. Unless you write the variable as a simple statement. This technique is called <strong>variable announcing</strong>.</p>
+<p>Cor does not has a keyword to declare variables, instead, Cor declares it for you the first time it is used. If a variable with equal name is declared in outer scope the compiler will assume you are using the declared outside. Unless you write the variable as a simple statement. This technique is called <strong>variable announcing</strong>.</p>
 
 <p>Example:</p>
 
-<pre><code>insane = true
+<pre><code>outer = 'outer value'
+
+func changeGlobal() {
+    outer = 'inner value'
+}
 
 func init() {
-    insane = false
+    changeGlobal()
+    console.log(outer) // 'inner value'
 }
 </code></pre>
 
-<p><code>init</code> function changes the value of <code>insane</code> variable defined in outer scope.</p>
+<p><code>changeScope</code> function changes the value of <code>outer</code> variable defined in module scope.</p>
 
-<pre><code>insane = true
+<pre><code>outer = 'outer value'
+
+func changeLocal() {
+    outer // force to use it as local, even if is declared in outer scope
+    outer = 'inner value'
+}
 
 func init() {
-    insane
-    insane = false
+    changeLocal()
+    console.log(outer) // 'outer value'
 }
 </code></pre>
 
-<p>in above fragment, <code>insane</code> variable will be declared in a local scope by <strong>announcing</strong> it inside <code>init</code> function.</p>
+<p>In above fragment, <code>outer</code> variable will be declared in a local scope by <strong>announcing</strong> it inside <code>changeLocal</code> function.</p>
 
-<h2 id="objects">Objects</h2>
+<h3 id="objects">Objects</h3>
 
-<p>Objects are a collection of variables and functions. It may be created using <code>@</code> operator:</p>
+<p>Objects are a collection of variables and functions. It may be created using <code>&amp;</code> operator.</p>
+
+<blockquote>
+  <p>In previous versions it was possible to use <code>@</code> operator, but is now deprecated.</p>
+</blockquote>
 
 <pre><code>// creates an empty object
-obj = @[]
+obj = &amp;[]
 
 // filling properties
 obj.name = 'Aaron'
@@ -140,13 +137,13 @@ obj.age  = 20
 
 <p>Object properties can be assigned in more declarative way by using <code>Literal Constructors</code></p>
 
-<pre><code>client = @[
+<pre><code>client = &amp;[
     name : 'Aaron',
     age  : 20,
-    pet  : @[
+    pet  : &amp;[
         name : 'Kitty',
-        kind : 'Cat'
-    ]
+        kind : 'Cat',
+    ],
 ]
 </code></pre>
 
@@ -155,85 +152,206 @@ obj.age  = 20
 <pre><code>client.age = 20
 console.log(client.age)
 // will print '20'
-</code></pre>
 
-<p>The object properties are stored as keys which can be accessed using <code>['property']</code> syntax.</p>
-
-<pre><code>client['age'] = 20
+client['age'] = 20
 console.log(client['age'])
 // will print '20'
 </code></pre>
 
-<h2 id="literalconstructors">Literal Constructors</h2>
+<h3 id="literalconstructors">Literal Constructors</h3>
 
-<p>A literal constructor is a list of elements bounded by <code>[</code> and <code>]</code> symbols, used for objects and arrays. An element can be either, expression or a key-value pair. If one element is key-value type, all other elements has to be key-value in the same declaration.</p>
+<p>A literal constructor is a list of elements bounded by <code>[</code> and <code>]</code> symbols, used for creating objects and arrays. An element can be either, expression or a key-value pair. If one element is key-value type, all other elements has to be key-value in the same declaration.</p>
 
 <p>Example using key-value pair elements:</p>
 
-<pre><code>walter = @Client[
+<pre><code>walter = &amp;Client[
     name : 'Walter',
-    age  : 12
+    age  : 12,
 ]
 </code></pre>
 
 <p>Example using expression elements:</p>
 
-<pre><code>aaron = @Client['Aaron', 20]
+<pre><code>aaron = &amp;Client['Aaron', 20]
 
 // aaron.name = 'Aaron'
 // aaron.age  = 20
 </code></pre>
 
-<h2 id="classes">Classes</h2>
+<h3 id="strings">Strings</h3>
 
-<p>A class is a "blueprint" for objects; it may be defined using syntax such as the following. However Cor is aimed to modules not to classes:</p>
+<p>A string is a series of characters delimited by <code>'</code> symbol, can be defined as following:</p>
 
-<pre><code>class Client {
-    name
-    age
+<pre><code>aaron  = 'Aaron Swartz'
+walter = 'Walter O\'Brian'
 
-    func getAge() {
-        return me.age
-    }
-}
+// multi-line
+query = '
+    SELECT
+        *
+    FROM Article
+    WHERE slug = ?
+'
 </code></pre>
 
-<p>It defines a class named Client with properties <code>name</code> and <code>age</code> and a method <code>getAge</code>. <code>me</code> identifier is available as a reference to the class  instance. Classes may be instantiated using <code>@</code> operator.</p>
+<h3 id="numbers">Numbers</h3>
 
-<pre><code>client      = @Client
-client.name = 'Walter'
-client.age  = 12
-age         = c.getAge()
+<p>Numbers can be specified using any of the following syntaxes:</p>
 
-// age should be 12
+<pre><code>// integer
+n = 3
+
+// signed
+n = +4
+n = -8
+
+// with floating point
+n = 4.7
+n = +6.3
+n = -50.2
+
+// with exponential part
+n = 4e12
+n = 4E12
+n = 3e+4
+n = 3e-10
+</code></pre>
+
+<h3 id="operators">Operators</h3>
+
+<p>Operators are the following:</p>
+
+<pre><code>// 1 - Assignment
+*=  /=  %=  +=  -=  &lt;&lt;=  &gt;&gt;=  &gt;&gt;&gt;=  &amp;=  ^=  |=
+
+// 2 - Comparison
+&lt;=  &gt;=  ==  !=  &lt;   &gt;
+
+// 3 - Arithmetic
+++  --  +   -
+
+// 4 - Binary Bitwise
+&amp;   |   ^
+
+// 5 - Binary Logical
+&amp;&amp;  ||  !
+
+// 6 - Binary Shift
+&lt;&lt;  &gt;&gt;  &gt;&gt;&gt;
+
+// 7 - Other
+??
+</code></pre>
+
+<p>The operators <code>==</code> and <code>!=</code> are translated to <code>===</code> and <code>!==</code> in the same order.</p>
+
+<h3 id="coalesce">Coalesce</h3>
+
+<p>The coalesce operator returns the first value that is not <code>nil</code> nor <code>undefined</code>. <code>nil</code> is returned only if all operands are <code>nil</code> or <code>undefined</code>. It replaces javascript <code>||</code> when substituting default value for <code>nil</code> or <code>undefined</code> values.</p>
+
+<p>Examle:</p>
+
+<pre><code>summary = article.summary ?? article.content ?? '(no content)'
+</code></pre>
+
+<p>This returns the articles's summary if exists, otherwise returns the content of the article if exists, otherwise retuns <code>(no content)</code>.</p>
+
+<h3 id="arrays">Arrays</h3>
+
+<p>An array is a collection of ordered values. It may be defined using literal constructor with expressions as elements. Example:</p>
+
+<pre><code>empty  = []
+colors = ['red', 'green', 'blue']
+foo    = [bar(), 56, 'baz']
+
+// accessing
+color1 = colors[0]
+color2 = colors[1]
+
+// color1 == 'red'
+// color2 == 'green'
+</code></pre>
+
+<h3 id="slices">Slices</h3>
+
+<p>Slice expression construct an array from an existing array.</p>
+
+<pre><code>colors = ['red', 'green', 'blue']
+
+sliced = colors[1:2] // sliced is ['green', 'blue']
+sliced = colors[:1]  // sliced is ['red', 'green']
+sliced = colors[1:]  // sliced is ['green', 'blue']
+</code></pre>
+
+<h3 id="typeassertion">Type Assertion</h3>
+
+<p>Type assertions checks if a value is an instance of a class. Having the following syntax:</p>
+
+<pre><code>value.(Class)
+</code></pre>
+
+<p>The result of type assertion evaluation is a <code>Boolean</code> value.</p>
+
+<pre><code>obj = &amp;Object
+isObject = obj.(Object) // true
+
+class Runner {}
+
+rnr = &amp;Runner
+isRunner = rnr.(Runner) // true
+isRunner = obj.(Runner) // false
+</code></pre>
+
+<h3 id="classes">Classes</h3>
+
+<p>A class is a "blueprint" for objects, Cor has its own approach and keeps compatibility with javascript. Unlike javascript's <code>this</code> which references the execution scope, Cor's <code>me</code> identifier is available as a reference to the class  instance.</p>
+
+<pre><code>class Client {
+    firstName
+    lastName
+    accounts
+
+    func getName() {
+        return me.firstName + ' ' + me.lastName
+    }
+}
+
+client           = &amp;Client
+client.firstName = 'Walter'
+client.lastName  = 'Martinez'
+
+name = client.getName()
+//name == Walter Martinez
 </code></pre>
 
 <p>A complex example:</p>
 
 <pre><code>class Client {
-    name
-    age
-    pet
+    firstName
+    lastName
+    accounts
 }
 
-class Pet {
-    name
-    kind
+class Account {
+    code
+    ammount
 }
 
-client = @Client[
-    name : 'Aaron',
-    age  : 20,
-    pet  : @Pet[
-        name : 'Kitty',
-        kind : 'Cat'
-    ]
+client = &amp;Client[
+    firstName : 'Aaron',
+    lastName  : 20,
+    accounts  : [
+        &amp;Account[
+            code    : '3980-121970',
+            ammount : 5000,
+        ],
+    ],
 ]
 </code></pre>
 
 <h3 id="initialization">Initialization</h3>
 
-<p>There is two types to define a class initialization. The first type is by declaring a property set before any method declaration:</p>
+<p>There is two ways to define class initialization. The first way is by declaring a property-set before any method declaration:</p>
 
 <pre><code>class Animal {
     name
@@ -243,30 +361,33 @@ client = @Client[
 }
 
 
-// a = @Animal['snake', 'slithering']
-// a = @Animal[
+// a = &amp;Animal['snake', 'slithering']
+// a = &amp;Animal[
 //      name:     'snake',
 //      movement: 'slithering',
 //  ]
 </code></pre>
 
-<p>The second one is by declaring <code>init</code> method, if used, it must be the first member of the class. You must use this way if you are inheriting from a class from a javascript library which relays in <code>constructor</code>. Using this approach does not mean there is a <code>init</code> method, so that if you call <code>super</code> builtin function, it will call the constructor of the super class, see <a href="#superbuiltinfunction">Super (Builtin Function)</a>.</p>
+<p>The second one is by declaring <code>init</code> as the first member of the class. You should use this way case of inheriting from a class defined in a javascript library which relays in <code>constructor</code> e.g: views and models of Backbone.js. Using this approach does not mean there is a <code>init</code> method in the compiled <code>js</code>, it will be translated to <code>constructor</code>, so that if you use <code>super</code> builtin function, it will call the constructor of the super class, see <a href="#superbuiltinfunction">Super (Builtin Function)</a>.</p>
 
 <p>Example:</p>
 
 <pre><code>class Animal : Model {
-    func init(name) {
-        me.name = name
-        super(Model)
+    func init(name, movement) {
+        me.name     = name
+        me.movement = movement
+        super()
     }
 
     // methods...
 }
 
-// a = @Animal['snake', 'slithering']
+// a = &amp;Animal['snake', 'slithering']
 </code></pre>
 
-<p>Constructing it with a key-value literal constructor will pass an object intance of <code>CRL.Conf</code> as the first parmeter.</p>
+<blockquote>
+  <p>You can use eiter, <code>init</code> method of property-set, but not both.</p>
+</blockquote>
 
 <h3 id="inheritance">Inheritance</h3>
 
@@ -287,11 +408,11 @@ class Triangle : Shape {
 }
 </code></pre>
 
-<p>In above example <code>Triangle</code> class inherits from <code>Shape</code>.</p>
+<p>In above example <code>Triangle</code> class inherits from <code>Shape</code> class.</p>
 
 <h3 id="superbuiltinfunction">Super (Builtin Function)</h3>
 
-<p><code>super</code> builtin function calls a method of the super class. It would call the method with equal name to the current method where <code>super</code> is located.</p>
+<p>The <code>super</code> builtin function calls a method of the super class. It will call the method with equal name to the current method where <code>super</code> is located. It should compile to <code>&lt;SuperClass&gt;.prototype.&lt;Method&gt;.apply(this, arguments)</code></p>
 
 <p>Example:</p>
 
@@ -308,7 +429,7 @@ class Chairman : Employee {
 }
 </code></pre>
 
-<p><code>super</code> can be called with parameters:</p>
+<p>Calling <code>super</code> with parameters:</p>
 
 <pre><code>class Window {
     func show(position) {
@@ -323,44 +444,11 @@ class DialogBox : Window {
 }
 </code></pre>
 
-<p>A complex example to show <code>super</code> usage:</p>
-
-<pre><code>class Employee {
-    workedHours
-    perHour
-
-    func monthSalary() {
-        return me.workedHours * me.perHour
-    }
-}
-
-class Chairman : Employee {
-    bonus
-    perHour = 40
-
-    func monthSalary() {
-        return super(Employee) + me.bonus
-    }
-}
-
-// initialize the module
-
-func init() {
-    e = @Chairman[
-        workedHours : 250,
-        bonus       : 700
-    ]
-    s = e.monthSalary()
-
-    expect(s).toEqual(10700)
-}
-</code></pre>
-
 <h2 id="modules">Modules</h2>
 
 <p>A module is a <code>.cor</code> file containing definitions and declarations that can be used by other modules. Variables, classes and functions defined in a module are all exported without needing a keyword or a special statement. The name of the file is the name of the module with <code>.cor</code> suffix.</p>
 
-<p>Cor modules system is <code>CommonJS</code> compliant, so is possible to use Cor modules or import javascript from <code>node.js</code> or any other platform that implements <code>CommonJS</code> specifications.</p>
+<p>Cor modules are <code>CommonJS</code> compliant, so it is possible to use Cor modules from javascript and vice versa, whenever it implements <code>CommonJS</code> specifications.</p>
 
 <p>Example:</p>
 
@@ -380,16 +468,14 @@ class Circle {
 }
 </code></pre>
 
-<p>This module exports <code>PI</code> variable, <code>circleArea</code> function and <code>Circle</code> class.</p>
-
-<p>Once a module is required to be used, it initializes by executing(if exists) a function named <code>init</code>. Modules initializes the first time is required.</p>
+<p>This module exports <code>PI</code> variable, <code>circleArea</code> function and <code>Circle</code> class. Once a module is required, it initializes by executing(if exists) a function named <code>init</code>. Modules initializes the first time is required.</p>
 
 <p>Example:</p>
 
 <pre><code>http = nil
 
 func init() {
-    http = @HttpServer
+    http = &amp;HttpServer
 }
 </code></pre>
 
@@ -405,7 +491,9 @@ func init() {
 <li><strong>Inner Module:</strong> Is a module which can be only used in other modules inside the same package. It is a inner module if it is not a main module and is not exposed.</li>
 </ol>
 
-<p><em>Note: A module may only contain variable declarations, functions, classes, and <code>use</code> statements.</em></p>
+<blockquote>
+  <p>A module may only contain variable declarations, functions, classes, and <code>use</code> statements.</p>
+</blockquote>
 
 <p>Example:</p>
 
@@ -444,7 +532,189 @@ func init() {
 
 <p>In above examples you could see a basic package structure where each directory is a package and every <code>.cor</code> file located inside is a module.</p>
 
-<h2 id="usestatement">Use statement</h2>
+<h2 id="statements">Statements</h2>
+
+<h3 id="forloop">For loop</h3>
+
+<p>For loops similar to javascript For statement, but with higher flexibility. It has two syntaxes, the first is:</p>
+
+<pre><code>for Start; Continuation; Statement {
+    Statements
+}
+</code></pre>
+
+<p>Example:</p>
+
+<pre><code>fruits = ['orange', 'apple', 'pear']
+
+for i = 0, len = fruits.length; i &lt; len; i++ {
+    console.log(fruits[i])
+}
+
+// orange
+// apple
+// pear
+</code></pre>
+
+<p>Each one of these expressions can be empty.</p>
+
+<pre><code>// infinite loop
+for ;; {
+
+}
+
+// whith only ContinuationExpression
+for ; i == len; i ++ {
+
+}
+</code></pre>
+
+<p>The second syntax is more compact than previous, it replaces <code>while</code> statements founded in many programming languages. The syntax is:</p>
+
+<pre><code>for Condition {
+    Statements
+}
+</code></pre>
+
+<p>Example:</p>
+
+<pre><code>// executes while i is less than 10
+for i &lt; 10 {
+    i++
+}
+
+// executes while cm is truthy
+for cm = comments.next() {
+    cm.show()
+}
+
+// infinite loop
+for {
+
+}
+</code></pre>
+
+<p>If you need to jump to the next iteration or to get out of the current curl, <code>break</code> and <code>continue</code> are there for you, it behaves exactly as in javascript.</p>
+
+<pre><code>array = [4, 3, 'Cor', 'PHP', 5, 'Go', 1, 7, 'Python']
+langs = []
+
+for item = array.shift() {
+    if item.(Number) { continue }
+    langs.push(item)
+}
+</code></pre>
+
+<h3 id="forin">For/In</h3>
+
+<p>A for/in loop provides the easiest way to iterate collections. There are two syntaxes; the second one is a slight extension of the first.</p>
+
+<p>The first syntax gives access to the current value in each iteration.</p>
+
+<pre><code>arr = [1, 2, 3]
+sum   = 0
+
+for value in arr {
+    sum += value
+}
+
+// sum == 6
+</code></pre>
+
+<p>The second way is similar but exposes the current index and value in each iteration.</p>
+
+<pre><code>arr = ['Jeremy', 'Nolan', 'Brendan']
+
+for index, value in arr {
+    console.log(index + ' ' + value)
+}
+
+// 0 Jeremy
+// 1 Nolan
+// 2 Brendan
+</code></pre>
+
+<p>For-In can be used to iterate over object properties</p>
+
+<pre><code>obj = &amp;[name: 'Bill', age: 50]
+
+for index, value in obj {
+    console.log(index + ' ' + value)
+}
+
+// name Bill
+// age 50
+</code></pre>
+
+<blockquote>
+  <p>For-In statements does not iterates through the object prototype.</p>
+</blockquote>
+
+<h3 id="ifelse">If/Else</h3>
+
+<p><code>if</code> statement is one of the most important features in many languages including Cor. It allows the execution of conditional code fragments.</p>
+
+<p>Example:</p>
+
+<pre><code>// if-else
+if a &lt; b {
+
+} else {
+
+}
+
+// with else-if
+if a &lt; b {
+
+} else if b == 0 {
+
+}
+</code></pre>
+
+<h3 id="switchcasedefault">Switch/Case/Default</h3>
+
+<p>With Cor you don't need to remember to <code>break</code> after every <code>case</code>. Cor switch statements prevents accidental fall-though by automatically breaking at the end of each <code>case</code> clause.</p>
+
+<p>Switch statements in Cor can take multiple values for each <code>case</code> clause. If any of the values match, the clause runs.</p>
+
+<pre><code>switch good {
+    case 'House' : fee = 50
+    case 'Boat'  : fee = 20
+    case 'Car'   : fee = 10
+    default      :
+        fee = 0
+        console.log('The citizen has no House, Boat, or Car')
+}
+
+// with multiple values in a single case clause
+switch num {
+    case 0, 1 : alert('0 or 1')
+    case 2, 3 : alert('2 or 3')
+}
+</code></pre>
+
+<h3 id="incdec">Inc/Dec</h3>
+
+<p>Inc/Dec statement increments or decrements an expression. Similar features are found in many languages but these are offered as an expression, in Cor it is a statement.</p>
+
+<p>Example:</p>
+
+<pre><code>// correct usage
+func init() {
+    a = 0
+    a++
+    a--
+}
+</code></pre>
+
+<p>The grammar enforces to be used as a statement.</p>
+
+<pre><code>// will cause a parsing error
+// because it is used as an expression
+b = a++
+</code></pre>
+
+<h3 id="use">Use</h3>
 
 <p>Use statement requests modules previously defined. It is possible to achieve by using <code>use</code> keyword which behaves ruled by some conventions.</p>
 
@@ -509,7 +779,7 @@ func init() {
 
 class Client : Controller {
     func index() {
-        store = @ClientStore
+        store = &amp;ClientStore
         store.findAll().then(func(){
             //...
         })
@@ -517,350 +787,9 @@ class Client : Controller {
 }
 </code></pre>
 
-<h2 id="strings">Strings</h2>
-
-<p>A string is a series of characters delimited by <code>'</code> symbol, can be defined as following:</p>
-
-<pre><code>aaron  = 'Aaron Swartz'
-walter = 'Walter O\'Brian'
-</code></pre>
-
-<p>Or in multiple lines</p>
-
-<pre><code>query = '
-    SELECT
-        *
-    FROM Article
-    WHERE slug = ?
-'
-</code></pre>
-
-<h2 id="numbers">Numbers</h2>
-
-<p>Numbers can be specified using any of the following syntaxes:</p>
-
-<pre><code>// integer
-n = 3
-
-// signed
-n = +4
-n = -8
-
-// with floating point
-n = 4.7
-n = +6.3
-n = -50.2
-
-// with exponential part
-n = 4e12
-n = 4E12
-n = 3e+4
-n = 3e-10
-</code></pre>
-
-<h2 id="operators">Operators</h2>
-
-<p>Operators are separated in 6 groups:</p>
-
-<p>1 - Assignment Operators</p>
-
-<pre><code>*=  /=  %=  +=  -=  &lt;&lt;=  &gt;&gt;=  &gt;&gt;&gt;=  &amp;=  ^=  |=
-</code></pre>
-
-<p>2 - Comparison Operators</p>
-
-<pre><code>&lt;=  &gt;=  ==  !=  &lt;   &gt;
-</code></pre>
-
-<p>3 - Arithmetic Operators</p>
-
-<pre><code>++  --  +   -
-</code></pre>
-
-<p>4 - Binary Bitwise Operators</p>
-
-<pre><code>&amp;   |   ^
-</code></pre>
-
-<p>5 - Binary Logical Operators</p>
-
-<pre><code>&amp;&amp;  ||  !
-</code></pre>
-
-<p>6 - Binary Shift Operators</p>
-
-<pre><code>&lt;&lt;  &gt;&gt;  &gt;&gt;&gt;
-</code></pre>
-
-<h2 id="arrays">Arrays</h2>
-
-<p>An array is a collection of ordered values. It may be defined using literal constructor with expressions as elements. Example:</p>
-
-<pre><code>empty = []
-
-colors = ['red', 'green', 'blue']
-
-foo = [bar(), 56, 'baz']
-</code></pre>
-
-<p>Arrays are zero based, which means the first stored element is located in <code>0</code> position. Values may be accessed using syntax similar to the following:</p>
-
-<pre><code>color1 = colors[0]
-color2 = colors[1]
-
-// color1 is 'red'
-// color2 is 'green'
-</code></pre>
-
-<h2 id="slices">Slices</h2>
-
-<p>Slice expression construct an array from an existing array.</p>
-
-<pre><code>colors = ['red', 'green', 'blue']
-
-slice = colors[1:2]
-
-// slice is ['green', 'blue']
-
-slice = colors[:1]
-
-// slice is  ['red', 'green']
-
-slice = colors[1:]
-
-// slice is ['green', 'blue']
-</code></pre>
-
-<h2 id="typeassertions">Type Assertions</h2>
-
-<p>Type assertions checks if a value is an instance of a class. Having the following syntax:</p>
-
-<pre><code>value.(Class)
-</code></pre>
-
-<p>The result of type assertion evaluation is a <code>Boolean</code> value.</p>
-
-<pre><code>obj = @Object
-
-// obj.(Object) == true
-
-class Runner {}
-
-rnr = @Runner
-
-// rnr.(Runner) == true
-</code></pre>
-
-<h2 id="forinloops">For-In Loops</h2>
-
-<p>A for-In loop provides the easiest way to iterate collections. There are two syntaxes; the second one is a slight extension of the first.</p>
-
-<p>The first syntax gives access to the current value in each iteration.</p>
-
-<pre><code>store = [1, 2, 3]
-sum   = 0
-
-for value in store {
-    sum = sum + value
-}
-
-// sum is 6
-</code></pre>
-
-<p>The second way is similar but exposes the current index and value in each iteration.</p>
-
-<pre><code>str = ''
-
-for index, value in store {
-    str += 'Index: ' + index + '; Value:' + value + '&lt;/br&gt;'
-}
-</code></pre>
-
-<p>Can be used to iterate over object properties</p>
-
-<pre><code>obj = @[name: 'John', age: 30]
-
-for index, value in obj {
-    str += index + ':' + value + '&lt;/br&gt;'
-}
-</code></pre>
-
-<p><strong>Notice:</strong> it does not iterates through the object prototype.</p>
-
-<h2 id="forloops">For Loops</h2>
-
-<p>For loops are more complex than For-In loops. It is similar to <code>C</code> For statement, but with higher flexibility. It has two syntaxes, the first is:</p>
-
-<pre><code>for start_expression; continuation_expression; statement_expression {
-    statements
-}
-</code></pre>
-
-<p><code>start_expression</code> is evaluated once when the loop begins. It can contain many expressions separated by <code>,</code>.</p>
-
-<p><code>continuation_expression</code> is evaluated in the beginning of each iteration, if the result of such evaluation is <code>true</code>, loop continues and <code>statements</code> are executed. The loop ends if the result of <code>continuation_expression</code> evaluation is <code>false</code>.</p>
-
-<p><code>statement_expression</code> is executed in the end of each iteration.</p>
-
-<p>Example:</p>
-
-<pre><code>fruits = ['orange', 'apple', 'pear']
-
-for i = 0, len = fruits.length; i &lt; len; i++ {
-    console.log(fruits[i])
-}
-</code></pre>
-
-<p>Each one of these expressions can be empty.</p>
-
-<pre><code>// infinite loop
-for ;; {
-
-}
-
-// whith only continuation_expression
-for ; i == len; i ++ {
-
-}
-</code></pre>
-
-<p>The second syntax is more compact than previous, it replaces <code>while</code> statements founded in many programming languages. The syntax is:</p>
-
-<pre><code>for condition {
-    statements
-}
-</code></pre>
-
-<p><code>condition</code> is evaluated at the beginning of each iteration. If the result of such evaluation is <code>true</code> the loop continues and <code>statements</code> are executed. The loop will end otherwise.</p>
-
-<p>Example:</p>
-
-<pre><code>// example 1
-i = 0
-for i &lt; 10 {
-    i++
-}
-
-// example 2
-for cm = comments.next() {
-    cm.show()
-}
-</code></pre>
-
-<p><code>condition</code> can be empty</p>
-
-<p>Example:</p>
-
-<pre><code>for {
-    // infinite loop
-}
-</code></pre>
-
-<h2 id="loopcontrolstatements">Loop Control statements</h2>
-
-<p>Sometimes when loops are running may needs to jump to the next iteration or to get out of the current curl. Cor provides two well-known keywords to cover these use cases, these are <code>break</code> and <code>continue</code>. <code>break</code> keyword terminates the current loop and <code>continue</code> keyword jumps to the next iteration. It can be used in both, For and For-In loops.</p>
-
-<p><code>break</code> example:</p>
-
-<pre><code>i = 0
-for {
-    if i == 10 {
-        break
-    }
-    i++
-}
-</code></pre>
-
-<p>Stops the loop once <code>i</code> is equal to <code>10</code></p>
-
-<p><code>continue</code> example:</p>
-
-<pre><code>array = [4, 3, 'Cor', 'PHP', 5, 'Go', 1, 7, 'Python']
-langs = []
-
-for item = array.shift() {
-    if item.(Number) {
-        continue
-    }
-    langs.push(item)
-}
-</code></pre>
-
-<p>if <code>item</code> is a <code>Number</code> then jumps to the next iteration</p>
-
-<h2 id="ifconditionals">If Conditionals</h2>
-
-<p><code>if</code> statement is one of the most important features in many languages including Cor. It allows the execution of conditional code fragments. The syntax is the following:</p>
-
-<pre><code>if conditional_expression {
-    statemets
-}
-</code></pre>
-
-<p><code>conditional_expression</code> is evaluated and converted to its boolean value, if that value is <code>true</code> Cor executes <code>statements</code>, if <code>false</code> <code>statements</code> will be ignored.</p>
-
-<pre><code>// executes statements
-if a &lt; b {
-    somethingWillBeDone()
-}
-</code></pre>
-
-<p>Often needs to execute sentences if case of certain condition is <code>true</code> and execute different sentences in case of such condition be <code>false</code></p>
-
-<pre><code>if a {
-    // a is true
-} else {
-    // a is not true
-}
-</code></pre>
-
-<p><code>if</code> statement can be attached after <code>else</code> keyword to achieve more complex conditional execution. That will be executed in case of the previous <code>if</code> is not <code>true</code></p>
-
-<pre><code>if b {
-
-} else if c {
-
-} else if d {
-
-}
-</code></pre>
-
-<h2 id="switchconditionals">Switch Conditionals</h2>
-
-<p>Switch statement is similar to a series of <code>if</code> statements in the same expression. In many occasions you may want to compare the same expression with many different values, and execute a different piece of code depending on which value it equals to.</p>
-
-<pre><code>// expressed with Switch statement
-switch good {
-    case 'House' : fee = 50
-    case 'Boat'  : fee = 20
-    case 'Car'   : fee = 10
-}
-
-// expressed with If statement
-if (good == 'House') {
-    fee = 50
-} else if (good == 'Boat') {
-    fee = 20
-} else if (good == 'Car') {
-    fee = 10
-}
-</code></pre>
-
-<p><code>case</code> keyword is used to define possible matches which the expression will be compared to. The <code>switch</code> statement is executed line by line, when a matching <code>case</code> is found Cor begins to execute the statements. A special case is <code>default</code> keyword, which will match any expression that was not matched before.</p>
-
-<pre><code>switch good {
-    case 'House' : fee = 50
-    case 'Boat'  : fee = 20
-    case 'Car'   : fee = 10
-    default      :
-        fee = 0
-        console.log('The citizen has no House, Boat or Car')
-}
-</code></pre>
-
 <h2 id="exceptionsexperimental">Exceptions (*Experimental)</h2>
 
-<p>Cor has an exception model similar to that javascript to guarantee interoperability between Cor and javascript. So, <code>try/catch/finally</code> syntax is very close javascript syntax. Syntax similar to the following may be used:</p>
+<p>Cor has an exception model similar to that javascript to guarantee interoperability between both languages. So, <code>try/catch/finally</code> syntax is very close to javascript syntax.</p>
 
 <pre><code>// just try
 try {
@@ -895,29 +824,6 @@ try {
 }
 </code></pre>
 
-<h2 id="incdecstatement">Inc-Dec statement</h2>
-
-<p>Inc-Dec statement increments or decrements an expression. Similar features are found in many languages but these offers it as an expression, in Cor it is a statement.</p>
-
-<p>Example:</p>
-
-<pre><code>// will cause a parsing error
-// because it is used as an expression
-b = a++
-</code></pre>
-
-<p>The grammar enforces to be used as a statement.</p>
-
-<p>Example:</p>
-
-<pre><code>// correct usage
-func init() {
-    a = 0
-    a++
-    a--
-}
-</code></pre>
-
 <h2 id="commands">Commands</h2>
 
 <p>Cor cli is available as a <a href="http://nodejs.org">Node.js</a> utility, it allows you to compile and build sources. Commands are used as subcommands of Cor program, for instance <code>cor build</code>. Each command may have parameters and options, parameters are passed after the name of the command and options are specified using the following format: <code>-option=value</code> which must be specified after parameters. To know about usage, <code>help</code> command is there for you. Running <code>cor help</code> or just <code>cor</code> would show available commands, and <code>cor help [command]</code> will print usage of the specified <code>command</code>.</p>
@@ -947,7 +853,7 @@ func init() {
 
 <h3 id="build">Build</h3>
 
-<p><code>build</code> command compiles packages and its dependencies, the resulting javascript code will be packed and written to a standalone <code>.js</code> file inside the specified package. CRL will be enbedded in the head of the resulting file. The <code>build</code> command supports four types of packages: AMD, CommonJS, Global and DOM Ready.</p>
+<p><code>build</code> command compiles packages and its dependencies, the resulting javascript code will be packed and written to a standalone <code>.js</code> file inside the specified package. CRL will be embedded in the head of the resulting file. The <code>build</code> command supports four types of packages: AMD, CommonJS, Global and DOM Ready.</p>
 
 <p>Usage:</p>
 
@@ -1000,7 +906,7 @@ func init() {
 <pre><code>cor build myapp -env=myapp/env.json
 </code></pre>
 
-<p>Builds <code>myapp</code> package and tells compiler the environment file is located in <code>myapp/env.json</code>.</p>
+<p>Builds <code>myapp</code> package and tells compiler the environment file is located at <code>myapp/env.json</code>.</p>
 
 <pre><code>cor build ./mylib -type=amd,commonjs,global
 </code></pre>
@@ -1009,7 +915,7 @@ func init() {
 
 <h3 id="compile">Compile</h3>
 
-<p><code>compile</code> command compiles packages and put the result in the specified directory. Every file contained in the source package will be copied to the destination directory as they are, except <code>.cor</code> or any other file processed by the loader extensions. These files will be compiled and written to the file system as '.js'.</p>
+<p><code>compile</code> command compiles packages and put the result in the specified directory. Every file contained in the source package will be copied to the destination directory as they are, except <code>.cor</code> or any other file processed by the loader extensions. These files will be compiled and written to the file system as <code>.js</code>.</p>
 
 <p>Usage:</p>
 
@@ -1026,11 +932,11 @@ func init() {
         <tr><td colspan="2">Options:</td></tr>
         <tr>
             <td class="cmd-arg"><code>-o</code></td>
-            <td>Specifies the path to the directory where the compiled package will be written. The default name has the format: `compiled_{timestamp}`</td>
+            <td>Specifies the path to the directory where the compiled package will be written. The default name has the format: <code>compiled_{timestamp}<code></td>
         </tr>
         <tr>
             <td class="cmd-arg"><code>-v</code></td>
-            <td>Specifies if print or not file names as they are compiled.</td>
+            <td>Specifies whether to print or not file names as they are compiled.</td>
         </tr>
     </tbody>
 </table>
@@ -1061,7 +967,7 @@ func init() {
         <tr><td colspan="2">Options:</td></tr>
         <tr>
             <td class="cmd-arg"><code>-port</code></td>
-            <td>Specifies the port where the server will listen requests. Default is `9000`</td>
+            <td>Specifies the port where the server will listen requests. Default is <code>9000</code></td>
         </tr>
     </tbody>
 </table>
@@ -1078,15 +984,31 @@ func init() {
 
 <p>Using <code>8790</code> port.</p>
 
-<h2 id="loader">Loader</h2>
+<h2 id="theloader">The Loader</h2>
 
-<p>The loader is a component which manages dependencies and dynamically loads files into the browser. It is extensible, so, it is possible to add support for any processor, for example, markdown, or mustache templates. It expects every requested file is <code>CommonJS</code> compliant. It is intended to be used in development environments, so, the loader is not needed once sources are compiled and packed.</p>
+<p>The loader is a component which manages dependencies and dynamically loads files into the browser by using Ajax. It is extensible, so, it is possible to add support for any processor, for example, markdown, or mustache templates. It expects every requested file to be <code>CommonJS</code> compliant. It is intended to be used just for development, so, once the cource is compiled and packed the loader is not needed any more.</p>
 
-<p><strong>Embrace the Web</strong> is one of the Cor's key concepts, because that Cor attempts to be friendly with the technologies that move the Web. The loader supports <code>.js</code> files loading out of the box, if you need to write some javascript code do not hesitate, put down the source taking into account <code>module</code>, <code>exports</code> and <code>require</code> objects, parts of <code>CommonJS</code> specification.</p>
+<p>The loader supports <code>.js</code> files loading out of the box, if you need to write some javascript code do not hesitate, put down the source taking into account <code>module</code>, <code>exports</code> and <code>require</code> objects, parts of <code>CommonJS</code> specification.</p>
 
-<h2 id="crlcorruntimelibrary">CRL (Cor Runtime Library)</h2>
+<p>This is a valid Cor project:</p>
 
-<p>CRL is a small library which makes possible to take advantage of features such as <em>literal constructors, for-in statements, class combination and type assertions</em>, these beloved Cor properties would not be possible without CRL. Cor tends to depend less on it, but, without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by compiled routines.</p>        <div class="full-rule"></div>
+<pre><code>// filename: app.cor
+
+use './util.js'     util
+use './template.js' tpl
+
+func show(){
+    util.ajax('http://server.com/api.php').then(func(r) tpl.render(r))
+}
+
+func init() {
+    show()
+}
+</code></pre>
+
+<h2 id="thecrlcorruntimelibrary">The CRL (Cor Runtime Library)</h2>
+
+<p>The CRL is a small (~3Kb) library which makes possible to take advantage of features such as <em>for/in statements, inheritance, type assertions, among others</em>. Without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by the javascript resulting code.</p>        <div class="full-rule"></div>
 
         <div class="feature footer-links">
             <ul>
@@ -1102,24 +1024,30 @@ func init() {
 
     </div>
 
-	<div class="feature footer">
+    <div class="feature footer">
             <p>Designed, written, and built with love by <a href="https://github.com/yosbelms" target="_blank">Yosbel Marín</a>. Code licensed under <a href="https://github.com/yosbelms/cor/blob/master/LICENSE" target="_blank">BSD</a>, documentation under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
     </div>
 
-    <!--clicky stub-->
-    <a title="Google Analytics Alternative" href="http://clicky.com/100894043" style="display: none;"><img alt="Google Analytics Alternative" src="//static.getclicky.com/media/links/badge.gif" border="0" /></a>
-    <script type="text/javascript">
-    var clicky_site_ids = clicky_site_ids || [];
-    clicky_site_ids.push(100894043);
-    (function() {
-      var s = document.createElement('script');
-      s.type = 'text/javascript';
-      s.async = true;
-      s.src = '//static.getclicky.com/js';
-      ( document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0] ).appendChild( s );
-    })();
-    </script>
-    <noscript><p><img alt="Clicky" width="1" height="1" src="//in.getclicky.com/100894043ns.gif" /></p></noscript>
+    <script type="text/javascript" src="assets/highlightjs/highlight.js"></script>
+    <script type="text/javascript"> hljs.initHighlightingOnLoad(); </script>
+
+    <!--start clicky stub-->
+    
+        <a title="Google Analytics Alternative" href="http://clicky.com/100894043" style="display: none;"><img alt="Google Analytics Alternative" src="//static.getclicky.com/media/links/badge.gif" border="0" /></a>
+        <script type="text/javascript">
+        var clicky_site_ids = clicky_site_ids || [];
+        clicky_site_ids.push(100894043);
+        (function() {
+          var s = document.createElement('script');
+          s.type = 'text/javascript';
+          s.async = true;
+          s.src = '//static.getclicky.com/js';
+          ( document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0] ).appendChild( s );
+        })();
+        </script>
+        <noscript><p><img alt="Clicky" width="1" height="1" src="//in.getclicky.com/100894043ns.gif" /></p></noscript>
+        
+    <!--end of clicky stub-->
     
     </body>
 </html>
