@@ -1,3 +1,56 @@
+# 0.3.0
+
+This release brings important language additions in order to look modern allowing to write less code without loosing readability. Was added the coalesce operator (`??`), also the `&` symbol now should be used as a replacement of `@` to create new objects. Now the lambda function has a convenient shorter syntax to fill some use cases, however, the new syntax does not replaces the classic one.
+
+A show case using some features of the new syntax. Lets assume we are using **Underscore.js**:
+
+Before `0.3.0`:
+```
+stooges = [
+    @[name: 'curly', age: 25],
+    @[name: 'moe',   age: 21],
+    @[name: 'larry', age: 23],
+]
+
+func init() {
+    ch = _.chain(stooges)
+    ch.sortBy(func(s){ return s.age })
+    ch.map(func(s){ return s.name + ' is ' + s.age })
+
+    console.log(ch.first().value()) // "moe is 21"
+}
+```
+
+With `0.3.0`:
+```
+stooges = [
+    &[name: 'curly', age: 25],
+    &[name: 'moe',   age: 21],
+    &[name: 'larry', age: 23],
+]
+
+func init() {
+    ch = _.chain(stooges)
+    ch.sortBy(func(s) s.age)
+    ch.map(func(s) s.name + ' is ' + s.age)
+    
+    console.log(ch.first().value()) // "moe is 21"
+}
+```
+As you can see, the code with `0.3.0` is cleaner and still remains readable with a modern look.
+
+* Syntax
+    * Add coalesce operator `??`
+    * Add `&` operator for literal contruction
+    * Deprecate `@` operator for literal contruction in favor of `&`
+    * Simplify lambda functions, now the body can be an expression whithout to be warpped by `{}`
+* AST
+    * Improve the way internal variables are generated avoiding conflict whith user defined variables
+* Documentation
+    * Add syntax hihghlighter for Cor code
+    * Change the index.html page to be more engaging
+    
+
 # 0.2.6
 
 Important changes has been factored since `0.2.1`, the most important new feature is the possibility to build your project in 4 different ways: `domready`, `commonjs`, `amd` and `global`. Hence you can deliver your _lib/app_ with full compatibility in the `js` ecosystem. The compiler now preserves comments(either `doc-block` and `single line comment`) and translate it to javascript comments which is very useful for the sake of source documentation and debugging.
