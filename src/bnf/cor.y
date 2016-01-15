@@ -337,6 +337,9 @@ UnaryExpr
     | '-' UnaryExpr  { $$= new yy.UnaryExprNode(new yy.Lit($1, @1), $2) }
     | '!' UnaryExpr  { $$= new yy.UnaryExprNode(new yy.Lit($1, @1), $2) }
     | '~' UnaryExpr  { $$= new yy.UnaryExprNode(new yy.Lit($1, @1), $2) }
+    
+    // pure existence
+    | PrimaryExpr '?'
     ;
 
 OperationExprNotAdditive
@@ -381,19 +384,43 @@ SliceExpr
                 new yy.Lit($6, @6)
             )
         }
+    
+    // slice if exists
+    | PrimaryExpr '?' '[' OperationExpr? ':' OperationExpr? ']' {
+            $$= new yy.ExistenceNode(
+                new yy.SliceNode(
+                    $1,                    
+                    new yy.Lit($3, @3),
+                    $4,
+                    new yy.Lit($5, @5),
+                    $6,
+                    new yy.Lit($7, @7)
+                )
+            )
+        }
     ;
 
 CallExpr
     : PrimaryExpr '(' ValueList? ')'  { $$= new yy.CallNode($1, new yy.Lit($2, @2), $3, new yy.Lit($4, @4)) }
+    
+    // call if exists
+    | PrimaryExpr '?' '(' ValueList? ')'  { $$= new yy.ExistenceNode(new yy.CallNode($1, new yy.Lit($3, @3), $4, new yy.Lit($5, @5))) }
     ;
 
 SelectorExpr
     : PrimaryExpr '.' IDENT           { $$= new yy.Node($1, new yy.Lit($2, @2), new yy.Lit($3, @3)) }
+    
+    // reference if exists
+    | PrimaryExpr '?' '.' IDENT       { $$= new yy.ExistenceNode(new yy.Node($1, new yy.Lit($3, @3), new yy.Lit($4, @4))) }
     ;
 
 IndexExpr
     : PrimaryExpr '[' ']'             { $$= new yy.Node($1, new yy.Lit($2, @2), new yy.Lit($3, @3)) }
     | PrimaryExpr '[' PrimaryExpr ']' { $$= new yy.Node($1, new yy.Lit($2, @2), $3, new yy.Lit($4, @4)) }
+    
+    // reference if exists
+    | PrimaryExpr '?' '[' ']'             { $$= new yy.ExistenceNode(new yy.Node($1, new yy.Lit($3, @3), new yy.Lit($4, @4))) }
+    | PrimaryExpr '?' '[' PrimaryExpr ']' { $$= new yy.ExistenceNode(new yy.Node($1, new yy.Lit($3, @3), $4, new yy.Lit($5, @5))) }
     ;
 
 TypeAssertExpr
@@ -410,16 +437,15 @@ TypeAssertExpr
 
 Expr
     : OperationExpr
+    //| OperationExpr '?'
     | AssignmentExpr
     | CoalesceExpr
     ;
 
 /* Values */
 
-ObjectConstructor
-    : '@' QualifiedIdent? ObjectConstructorArgs  { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2, $3) }
-    | '@' QualifiedIdent                         { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2) }
-    | '&' QualifiedIdent? ObjectConstructorArgs  { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2, $3) }
+ObjectConstructor    
+    : '&' QualifiedIdent? ObjectConstructorArgs  { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2, $3) }
     | '&' QualifiedIdent                         { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2) }
     ;
 

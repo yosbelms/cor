@@ -97,6 +97,8 @@ true\b|false\b              return 'BOOLEAN'
 "*"                         return '*'
 "/"                         return '/'
 "%"                         return '%'
+"?"							return '?'
+
 .                           { yy.parseError('character ' + yytext + ' with code: ' + yytext.charCodeAt(0), {loc: yylloc}); }
 $                           return 'EOF'
 
