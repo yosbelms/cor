@@ -13,23 +13,17 @@ function bootApp() {
     isBooted = true;
 
     var
-    entry, conf, sentry,
+    entry, conf,
     scripts = document.getElementsByTagName('script'),
     len     = scripts.length,
     i       = -1;
 
     while (++i < len) {
         entry = entry || scripts[i].getAttribute('data-entry');
-        conf   = conf   || scripts[i].getAttribute('data-conf');
+        conf  = conf  || scripts[i].getAttribute('data-conf');
     }
 
-    if (entry && path.ext(entry) === '') {
-        sentry = entry.split(path.pathSep);
-        sentry.push(path.pathSep + sentry[sentry.length - 1] + '.cor');
-        entry  = path.sanitize(sentry.join(path.pathSep));
-    }
-
-    loader.setEntry(entry, conf);
+    loader.setEntry(path.sanitize(entry || ''), path.sanitize(conf || ''));
 
 }
 

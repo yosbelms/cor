@@ -9,7 +9,7 @@ require('../loader/node.js');
 
 var
 outFilename,
-envFilename,
+confFilename,
 packageType,
 sourcePath,
 cliInput,
@@ -125,7 +125,7 @@ cor.Loader.prototype.onLoaderReady = function() {
           '\n]);';
     
     if (! outFilename) {
-        outFilename = sourcePath + '.cor.js';
+        outFilename = sourcePath + '.js';
     }
     
     outFilename = path.resolve(cwd, outFilename);
@@ -157,16 +157,8 @@ function build() {
     else {
         packageType = packageType.split(',');
     }
-
-	if (path) {
-        if (cor.path.ext(path) === '') {
-            spath = path.split(cor.path.pathSep);
-            spath.push(cor.path.pathSep + spath[spath.length - 1] + '.cor');
-            path  = cor.path.sanitize(spath.join(cor.path.pathSep));
-        }        
-		loader.setEntry(path, envFilename);
-	}
-
+        
+	loader.setEntry(path, confFilename);
 }
 
 var
@@ -175,17 +167,17 @@ cmd.addArgument('path', 'path to the entry file or package to be compiled whith 
 
 cmd.addOption('o', 'name of the file to write the compiling result');
 cmd.addOption('type', 'type of the resulting package (domready, commonjs, amd and global)');
-cmd.addOption('env', 'path to the .json file which contains environment variables for cor.Loader');
+cmd.addOption('conf', 'path to the .json file which contains environment variables for cor.Loader');
 cmd.addOption('no-crl', 'specify tht CRL(Cor Runtime Library) should not be embedded in the head of the compiling result');
 cmd.addOption('v',   'print additional information during build proccess');
 
 cmd.setAction(function (input, app){
     cliInput = input;
     cliApp   = app;
-    sourcePath  = input.getArgument('path');
-    envFilename = input.getOption('env');
-    outFilename = input.getOption('o');
-    packageType = input.getOption('type');
+    sourcePath   = input.getArgument('path');
+    confFilename = input.getOption('conf');
+    outFilename  = input.getOption('o');
+    packageType  = input.getOption('type');
 
     build();
 });
