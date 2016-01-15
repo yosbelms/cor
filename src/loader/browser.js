@@ -13,14 +13,14 @@ function bootApp() {
     isBooted = true;
 
     var
-    entry, env, sentry,
+    entry, conf, sentry,
     scripts = document.getElementsByTagName('script'),
     len     = scripts.length,
     i       = -1;
 
     while (++i < len) {
         entry = entry || scripts[i].getAttribute('data-entry');
-        env   = env   || scripts[i].getAttribute('data-env');
+        conf   = conf   || scripts[i].getAttribute('data-conf');
     }
 
     if (entry && path.ext(entry) === '') {
@@ -29,7 +29,7 @@ function bootApp() {
         entry  = path.sanitize(sentry.join(path.pathSep));
     }
 
-    loader.setEntry(entry, env);
+    loader.setEntry(entry, conf);
 
 }
 
