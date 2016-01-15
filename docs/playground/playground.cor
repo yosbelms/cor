@@ -107,7 +107,7 @@ func init() {
     })
     
     hash  = window.location.hash    
-    rHash = @RegExp['^#link:']
+    rHash = &RegExp['^#link:']
     
     if rHash.test(hash) {
         ElSource.value = decodeURIComponent(hash.replace(rHash, ''))

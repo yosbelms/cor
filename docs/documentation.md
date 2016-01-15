@@ -366,7 +366,7 @@ class Animal : Model {
 // a = &Animal['snake', 'slithering']
 ```
 
-> You can use eiter, `init` method of property-set, but not both.
+> You can use eiter, `init` method or property-set, but not both.
 
 
 ### Inheritance
@@ -860,8 +860,8 @@ cor build <path> [build options]
             <td>Specifies the name of the file where the resulting javascript code will be written, if not specified the file name will be the base name of the entry file with <code>.js</code> suffix.</td>
         </tr>
         <tr>
-            <td class="cmd-arg"><code>-env</code></td>
-            <td>Specifies the path to the <code>.json</code> file to use as environment configuration.</td>
+            <td class="cmd-arg"><code>-conf</code></td>
+            <td>Specifies the path to the <code>.json</code> file to use as configuration.</td>
         </tr>
         <tr>
             <td class="cmd-arg"><code>-type</code></td>
@@ -975,26 +975,100 @@ Using `8790` port.
 
 ## The Loader
 
-The loader is a component which manages dependencies and dynamically loads files into the browser by using Ajax. It is extensible, so, it is possible to add support for any processor, for example, markdown, or mustache templates. It expects every requested file to be `CommonJS` compliant. It is intended to be used just for development, so, once the cource is compiled and packed the loader is not needed any more.
+The loader is a component which manages dependencies and dynamically loads files into the browser by using Ajax and using `fs` library on Node.js. It is extensible, so, it is possible to add support for any processor, for example, Markdown, or Mustache. It expects every requested file to be `CommonJS` compliant. It is intended to be used just for development, so, once the cource is compiled and packed the loader is not needed any more.
 
-The loader supports `.js` files loading out of the box, if you need to write some javascript code do not hesitate, put down the source taking into account `module`, `exports` and `require` objects, parts of `CommonJS` specification.
+The loader supports `.js` files loading out of the box, hence it is possible to use thirth party javascript libraries compliant with `CommonJS` specifications.
 
 This is a valid Cor project:
 ```
 // filename: app.cor
 
-use './util.js'     util
+use './jquery.js'   jquery
 use './template.js' tpl
 
-func show(){
-    util.ajax('http://server.com/api.php').then(func(r) tpl.render(r))
+func show() {
+    jquery.get('http://server.com/api.php', func(r) tpl.render(r))
 }
 
 func init() {
     show()
 }
+```
+
+### Configuration
+
+The configuration file must be in JSON format, but not javascript object literal, it will affect the behavior of the loader beeing used to resolve dependencies. This file should be named `conf.json` just for convention, however you can choose de name you prefer. It must be used with `-conf` option in `cor build` command or with `data-conf` in HTML pages. All relative paths defined are relative to the configuration file. The file might look like this:
+```
+{    
+    "paths" : {
+        "jquery"     : "node_modules/jquery/dist/jquery.js",
+        "underscore" : "node_modules/underscore/underscore.js",
+        "backbone"   : "node_modules/backbone/backbone.js"
+    },
+    
+    "ignore"         : ["fs", "child_process"]
+}
+```
+
+Values:
+
+* **paths**: The mapping from routes (used with `use` statement in Cor or with `require` function in javascript) to file paths.
+
+* **ignore**: The routes to be ignored.
+
+With the above example we could write:
+```
+// Backbone.js requires jQuery and Underescore.js
+// the loader will handle it
+
+use 'backbone' bbone
+
+class TodoModel : bbone.Model {
+    // ...
+}
+```
+
+
+#### Dependence injection
+
+If you have not catched on, the configuration file is good resource for dependence injection. Check the following configuration:
+```
+{
+    
+    "paths" : {
+        "jquery" : "node_modules/zepto/zepto.js"
+    }
+}
+```
+In the above case we inject Zepto.js to be used used as `jquery` route.
+
+
+## Cor in the Browser
+
+Cor library (located at `cor/dist/cor.js`) should be inlcuded using a script `tag` inside a html page for development environments:
+```
+<html>
+    <script type="text/javascript" src="cor/dist/cor.js"></script>
+</html>
+```
+Once the DOM is ready the Loader will look for a script tag containig the `data-entry` or `data-conf` attribute, or both to boot the application. Example:
 
 ```
+<script data-entry="myapp.cor"></script>
+```
+In the above example was setted `myapp.cor` module as the entry of  the application.
+
+Example using a `.js` module as entry:
+```
+<script data-entry="./myapp.js" data-conf="./conf.json"></script>
+```
+
+Example using a Cor package as entry:
+```
+<script data-entry="./myapp" data-conf="./conf.json"></script>
+```
+
+> The browser way to use Cor is recomended for development to take advantage of the hot-realod and to avoid coding/compile/run/test handicap. However you must use the `build` command for production environments, example: `cor build ./myapp -conf=./conf.json` and utilize the resulting standalone `.js` file which will contain all the bundled source code of your application including its dependences.
 
 
 ## The CRL (Cor Runtime Library)

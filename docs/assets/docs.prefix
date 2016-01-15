@@ -16,14 +16,16 @@
 
     <nav class="navbar" role="navigation">
         <div class="nav content">
-            <a href="../index.html">
-                <p class="brand"><strong>Cor</strong></p>
-            </a>
-            <ul class="right">
+            <ul class="left">
+				<li class="inline"><a href="../index.html">Cor</a></li>
                 <li class="inline"><a href="get_started.html">Get started</a></li>
                 <li class="inline"><a href="documentation.html">Documentation</a></li>
                 <li class="inline"><a href="playground/index.html">Playground</a></li>
                 <li class="inline"><a href="../test/index.html">Run tests</a></li>
+            </ul>
+			<ul class="right">
+                <li class="inline"><a class="icon-twitter" href="http://twitter.com/yosbelms" target="_blank"></a></li>
+                <li class="inline"><a class="icon-github" href="https://github.com/yosbelms/cor" target="_blank"></a></li>
             </ul>
         </div>
     </nav>
