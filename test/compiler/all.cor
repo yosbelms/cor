@@ -28,6 +28,8 @@ shouldNotThrowList = [
     'compiler/switch_stmt',
     'compiler/use_stmt',
     'compiler/try_catch_stmt',
+    
+    'compiler/existential_op',
 ]
 
 shouldThrowList = [

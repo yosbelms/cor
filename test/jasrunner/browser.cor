@@ -23,7 +23,7 @@ func prepareJasmine() {
         window[k] = item
     }
 
-    queryString = @jasmine.QueryString[
+    queryString = &jasmine.QueryString[
         getWindowLocation: func() {
             return window.location
         },
@@ -32,7 +32,7 @@ func prepareJasmine() {
     catchingExceptions = queryString.getParam('catch')
     env.catchExceptions(catchingExceptions)
 
-    htmlReporter = @jasmine.HtmlReporter[
+    htmlReporter = &jasmine.HtmlReporter[
         env: env,
         onRaiseExceptionsClick: func() {
             queryString.navigateWithNewParam('catch', !env.catchingExceptions())
@@ -52,13 +52,13 @@ func prepareJasmine() {
         createTextNode: func() {
             return document.createTextNode.apply(document, arguments)
         },
-        timer: @jasmine.Timer,
+        timer: &jasmine.Timer,
     ]
 
     env.addReporter(jasmineInterface.jsApiReporter)
     env.addReporter(htmlReporter)
 
-    specFilter = @jasmine.HtmlSpecFilter[
+    specFilter = &jasmine.HtmlSpecFilter[
         filterString: func() {
             return queryString.getParam('spec')
         },

@@ -9,16 +9,6 @@ func init() {
             expect(r('pkg')).not.toBe('pkg/pkg')
         })
 
-        it('Package type routes', func() {            
-            expect(r('./pkg')).toBe('./pkg/pkg')
-            expect(r('./pkg/sub_pkg')).toBe('./pkg/sub_pkg/sub_pkg')
-        })
-
-        it('Local Module type routes', func() {
-            expect(r('.pkg')).toBe('./pkg')
-            expect(r('.Class')).toBe('./Class')
-        })
-
         it('Class type routes', func() {
             expect(r('./Class')).toBe('./Class')
             expect(r('/Class')).toBe('/Class')

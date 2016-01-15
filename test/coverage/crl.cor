@@ -44,7 +44,7 @@ func init() {
             })
 
             it('From Objects should not extract property names of prototype', func() {
-                c = @Client
+                c = &Client
 
                 keys = CRL.keys(c)
                 expect(keys).toEqual(['name', 'age'])
@@ -55,7 +55,7 @@ func init() {
         describe('assertType', func(){
             describe('Should work for classes', func() {
 
-                account = @AccountDAO
+                account = &AccountDAO
 
                 it('When is direct instance', func() {
                     expect(CRL.assertType(account, AccountDAO)).toBeTruthy()
@@ -75,7 +75,7 @@ func init() {
 
             describe('Should work for non Cor classes', func() {
 
-                c = @Client
+                c = &Client
 
                 it('When is direct instance', func() {
                     expect(CRL.assertType(c, Client)).toBeTruthy()
