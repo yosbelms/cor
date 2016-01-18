@@ -1,6 +1,6 @@
 # Documentation
 
-This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases. Cor is a language designed with web development in mind. Programs are constructed from packages and modules, whose properties allow management of dependencies.
+This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases. Cor is a language designed with web development in mind. Programs are constructed from modules, whose properties allow management of dependencies.
 
 <toc/>
 
@@ -463,53 +463,38 @@ func init() {
 ```
 Once this module is initialized, `http` variable will have an instance of `HttpServer` class.
 
-There are three types of modules.
-1. **Main Module:** Is the module which has the same name as its package with `.cor` suffix.
-2. **Exposed Module:** Are modules that the first letter of its name is uppercased and it can be accessed from any other module outside or inside of it's package, but just can be used the construction (variable, class or function) which has the name equal to the module name. It is an attempt to be compliant with coding standards which enforces to have a class per file.
-3. **Inner Module:** Is a module which can be only used in other modules inside the same package. It is a inner module if it is not a main module and is not exposed.
-
 > A module may only contain variable declarations, functions, classes, and `use` statements.
+
+Modules which the first letter of its name is uppercased only exports the construction (variable, class or function) which has the name equal to the module name. This convention replaces `CommonJS` `module.exports` however is completely compatible whith it.
 
 Example:
 
+Let's suppose we have the following project structure:
 ```
-app                       
-  |── app.cor             // main module
-  |── model               
-  |     |── Client.cor    // exposed module
-  |     |── Account.cor   // exposed module
-  |     └── util.cor      // inner module
-  ...
-  |
-  |── controller  
-  └── view
-        
+app
+  |── app.cor
+  └── model
+        └── User.cor
 ```
 
-
-## Packages
-
-A package is a directory containing one or several modules and/or subpackages. The name of the package is equal to the name of the directory. The `main module` is module located inside a package with equal name to the package followed `.cor` suffix. That is the right place to write API for humans. Once a package is required through `use` keyword the main module will be loaded and exported variables, classes and functions will be available for usage.
-
-Example of a package named `math`:
+In `model/User.cor`
 ```
-math              // package
-  |── math.cor    // main package module
-  └── util.cor    // module
-
+class User {
+    username
+    password    
+}
 ```
+There is a class named equal to the `filename`, so it will be exported by default. Any other function or variable defined in the module wil not be exported.
 
-With a supackage named `finance`:
+In `app.cor`
 ```
-math                      // package
-  |── math.cor            // main package module
-  |── util.cor            // module
-  └── finance             // subpackage
-        |── finance.cor   // main package module
-        └── Loan.cor      // module
-```
+use 'model/User'
 
-In above examples you could see a basic package structure where each directory is a package and every `.cor` file located inside is a module.
+func init() {
+    u = &User['ragnar', 'secretpass']
+}
+```
+Don't need to qualify the name when importing throwgh `use` statement because the class `User` will be exported as default.
 
 
 ## Statements
@@ -699,10 +684,11 @@ b = a++
 
 ### Use
 
-Use statement requests modules previously defined. It is possible to achieve by using `use` keyword which behaves ruled by some conventions.
+Use statement imports modules previously defined. The `use` keyword behaves ruled by some conventions.
 
-Example. Using a subpackage:
+Example:
 ```
+// importing math.cor
 use './math'
 
 func init() {
@@ -721,57 +707,7 @@ func init() {
 
 ```
 
-Use a module located in the same package
-```
-use '.util'
-
-func init() {
-    util.square(3)
-}
-// 9
-```
-
-
-Notice the `.` just in the beginning of the module name in the route of above example. As you can see, there is an important difference between `./` and `.` prefixes, `./` can be translated as *"package relative to the current path"* and `.` can be translated to *"module located in the same package"*.
-
-Module routes which base name starts with uppercased letter, example: `./model/Client`, that imports a defined variable, class or function having the name equal to the route base name. Consider the following example:
-
-`Project structure`
-```
-app
-  |── controller
-  |      |── Client.cor
-  |      └── ...
-  └── model
-         |── Client.cor
-         └── ...
-```
-
-`app/store/Client.cor`
-```
-class Client : Store {
-    func findAll() {
-        // return a promise
-    }
-}
-```
-
-`app/controller/Client.cor`
-
-Using a module with base name having first letter uppercased
-```
-use '../model/Client' ClientStore
-
-class Client : Controller {
-    func index() {
-        store = &ClientStore
-        store.findAll().then(func(){
-            //...
-        })
-    }
-}
-```
-
+You may see [Modules](#modules) and [Configuration](#configuration) as a complement.
 
 ## Exceptions (*Experimental)
 
