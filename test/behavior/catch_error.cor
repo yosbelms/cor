@@ -1,0 +1,43 @@
+
+func init() {
+    describe('Catch Error, Should Work for', func() {
+
+        it('Just catch', func() {
+            boom = func() {
+                catch noFunc() { }
+            }
+            expect(boom).not.toThrow()
+        })
+
+        it('Do something on catch', func() {
+            boom = func() {
+                catch noFunc() {
+                    return 5
+                }
+            }
+            expect(boom).not.toThrow()
+            expect(boom()).toBe(5)
+        })
+
+        it('Despite errors', func() {
+            boom = func() {
+                error()
+            }
+            expect(boom).toThrow()
+        })
+        
+        it('Grab errors', func() {
+            boom = func() {
+                error(1)
+            }
+            
+            getError = func() {
+                catch boom() {
+                    return error()
+                }
+            }
+            expect(getError()).toBe(1)
+        })
+
+    })
+}
