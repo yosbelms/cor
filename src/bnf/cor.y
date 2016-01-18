@@ -238,29 +238,9 @@ CaseStmt
     | DEFAULT ':' StrictStmtList            { $$= new yy.CaseNode(new yy.Lit($1, @1), new yy.Lit($2, @2), $3) }
     ;
 
-// experimental
-TryCatchFinallyStmt
-    : TRY Block                             { $$= new yy.TryNode(new yy.Lit($1, @1), $2) }
-    | TRY Block CatchStmt                   { $$= new yy.TryNode(new yy.Lit($1, @1), $2, $3) }
-    | TRY Block FinallyStmt                 { $$= new yy.TryNode(new yy.Lit($1, @1), $2, $3) }
-    | TRY Block CatchStmt FinallyStmt       { $$= new yy.TryNode(new yy.Lit($1, @1), $2, $3, $4) }
-    ;
-
+// Error management
 CatchStmt
-    : CATCH IDENT? Block                    { $$= new yy.CatchNode(new yy.Lit($1, @1), new yy.Lit($2, @2), $3) }
-    ;
-
-FinallyStmt
-    : FINALLY Block                         { $$= new yy.Node(new yy.Lit($1, @1), $2) }
-    ;
-
-ThrowStmt
-    : THROW Value? ';'                      { $$= new yy.Node(new yy.Lit($1, @1), $2, new yy.Lit(';', @3)) }
-    ;
-
-ThrowStmtNotSemicolon
-    : THROW Value                           { $$= new yy.Node(new yy.Lit($1, @1), $2) }
-    | THROW                                 { $$= new yy.Lit($1, @1) }
+    : CATCH Expr Block                      { $$= new yy.CatchNode(new yy.Lit($1, @1), $2, $3) }
     ;
 
 ReturnStmt
@@ -297,14 +277,12 @@ Stmt
     | ReturnStmt
     | BreakStmt
     | ContinueStmt
-    | TryCatchFinallyStmt //experimental
-    | ThrowStmt
+    | CatchStmt
     ;
 
 StmtNotSemicolon
     : SimpleStmtNotSemicolon
     | ReturnStmtNotSemicolon
-    | ThrowStmtNotSemicolon
     | BreakStmtNotSemicolon
     | ContinueStmtNotSemicolon
     ;

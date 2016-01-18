@@ -1281,7 +1281,25 @@ yy.CallNode = Class(yy.Node, {
             newNode.loc = ch[0].loc;
             this.children.splice(0, 1, newNode);
         }
-
+    },
+    
+    errorBuiltin: function() {
+        var ch = this.children;
+        if (this.parent instanceof yy.SimpleStmtNode) {
+            // no arguments
+            if (!ch[2]) {
+                ch[2] = new yy.Lit('_error', ch[0].lineno);
+            }
+            
+            ch[0].children[0].children = 'throw';            
+            ch.splice(1, 1);
+            ch.splice(2, 1);
+        }
+        else {
+            this.children = [
+                new yy.Lit('_error', ch[0].lineno)
+            ]
+        }
     }
 
 });
@@ -1462,20 +1480,6 @@ yy.ForInNode = Class(yy.Node, {
 
 });
 
-yy.TryNode = Class(yy.Node, {
-
-    type: 'TryNode',
-
-    compile: function() {
-        var
-        ch = this.children;
-
-        if (!ch[2]) {
-            this.children.push(new yy.Lit('catch($error){}', this.lineno));
-        }
-    }
-
-});
 
 yy.CatchNode = Class(yy.Node, {
 
@@ -1484,10 +1488,9 @@ yy.CatchNode = Class(yy.Node, {
     compile: function() {
         var
         ch = this.children;
-
-        if (ch[1]) {
-            ch[1].children = '(' + ch[1].children + ') ';
-        }
+        
+        ch[0].children = 'try { ';
+        ch.splice(2, 0, new yy.Lit('; } catch (_error) ', ch[1].lineno));
     }
 
 });
