@@ -782,11 +782,11 @@ hljs.registerLanguage('cor', function(hljs) {
         keyword:
             'new use class func me return ' +
             'if else for in switch case default ' +
-            'continue break try catch finally throw',
+            'continue break catch',
         literal:
             'true false nil',
         built_in:
-            'super len copy error'
+            'super error'
     };
 
     return {
