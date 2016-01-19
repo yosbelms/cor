@@ -1,6 +1,6 @@
 # Documentation
 
-This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases. Cor is a language designed with large web development in mind.
+This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases. Cor is a language designed with large web development in mind. Hence, is possible to develop your software without to execute any command to compile the source code, CLI tools are only needed to make the product able for production environments.
 
 <toc/>
 
@@ -233,23 +233,22 @@ summary = article.summary ?? article.content ?? '(no content)'
 This returns the articles's summary if exists, otherwise returns the content of the article if exists, otherwise retuns `(no content)`.
 
 
-### Existential Operator
+### Exist Conditional
 
-Existential operator is a convenient way to replace `if` statements that checks for a value existence to access or call the tested value.
+Sometimes code tends to drown a bit in existence-checking. The exist-conditional operator lets you access members and elements only when the receiver exists, providing an empty result otherwise:
 
 Example:
 ```
 someFunc?()
 ```
+
 The above example should be translated to: *if `someFunc` exists, call it*. It also can be used with indexes, selectors and slices.
 ```
-arr?[0]
-obj?.prop
-arr?[0:5]
-
-// complex usage
-obj.arr?[0]?.someFunc?()
+len  = customers?.length;
+frst = customers?[0];
+copy = customers?[:];
 ```
+
 
 ### Arrays
 
@@ -270,7 +269,7 @@ color2 = colors[1]
 
 ### Slices
 
-Slice expression construct an array from an existing array.
+Slice expression constructs an array from an existing array.
 ```
 colors = ['red', 'green', 'blue']
 
@@ -741,11 +740,11 @@ func init() {
 
 You may see [Modules](#modules) and [Configuration](#configuration) as a complement.
 
-## Catch/Error
+### Catch/Error
 
-Cor has a simple exception model that works very well with the javascript exceptions, it guarantees interoperability between both languages. The `catch` statement executes a defined block instructions is a exception is thrown by a expression.
+Cor has a simple exception model that works very well with javascript exceptions, it guarantees full interoperability between both languages. The `catch` statement executes a defined block of instructions if a exception is thrown by a watched expression.
 ```
-catch expression {
+catch WatchedExpression {
     // ... instructions
 }
 ```
@@ -997,7 +996,7 @@ If you have not catched on, the configuration file is good resource for dependen
     }
 }
 ```
-In the above case we inject Zepto.js to be used used as `jquery` route.
+In the above case we inject Zepto.js to be used used as `jquery` replacement under the same route.
 
 
 ## Cor in the Browser
