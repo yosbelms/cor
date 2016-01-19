@@ -56,11 +56,7 @@
 "break"                     return 'BREAK'
 true\b|false\b              return 'BOOLEAN'
 
-// experimental
-"try"                       return 'TRY'
 "catch"                     return 'CATCH'
-"finally"                   return 'FINALLY'
-"throw"                     return 'THROW'
 
 0x[\da-fA-F]+|^\d*\.?\d+(?:[eE][+-]?\d+)?\b   return 'NUMBER'
 [\$_a-zA-Z\x7f-\uffff]+[\$\w\x7f-\uffff]*     return 'IDENT'
@@ -97,6 +93,8 @@ true\b|false\b              return 'BOOLEAN'
 "*"                         return '*'
 "/"                         return '/'
 "%"                         return '%'
+"?"							return '?'
+
 .                           { yy.parseError('character ' + yytext + ' with code: ' + yytext.charCodeAt(0), {loc: yylloc}); }
 $                           return 'EOF'
 

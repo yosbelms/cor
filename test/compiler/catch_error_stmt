@@ -1,0 +1,9 @@
+func init() {
+    catch a = 3 { }
+    
+    catch a = 3 {
+        e = error()
+    }
+    
+    error()
+}

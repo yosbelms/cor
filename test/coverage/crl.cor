@@ -44,7 +44,7 @@ func init() {
             })
 
             it('From Objects should not extract property names of prototype', func() {
-                c = @Client
+                c = &Client
 
                 keys = CRL.keys(c)
                 expect(keys).toEqual(['name', 'age'])
@@ -53,36 +53,36 @@ func init() {
         })
 
         describe('assertType', func(){
-            describe('For Cor classes', func() {
+            describe('Should work for classes', func() {
 
-                account = @AccountDAO
+                account = &AccountDAO
 
-                it('Should work for instances', func() {
+                it('When is direct instance', func() {
                     expect(CRL.assertType(account, AccountDAO)).toBeTruthy()
                 })
 
-                it('Should work for inheritance', func() {
+                it('When is a subclass', func() {
                     expect(CRL.assertType(account, AccountDAO)).toBeTruthy()
                     expect(CRL.assertType(account, DAO)).toBeTruthy()
                 })
 
-                it('Should work even passing native types', func() {
+                it('When is native type', func() {
                     expect(CRL.assertType(account, Object)).toBeTruthy()
                     expect(CRL.assertType('', String)).toBeTruthy()
                 })
 
             })
 
-            describe('For non Cor classes', func() {
+            describe('Should work for non Cor classes', func() {
 
-                c = @Client
+                c = &Client
 
-                it('Should work for instances', func() {
+                it('When is direct instance', func() {
                     expect(CRL.assertType(c, Client)).toBeTruthy()
                     expect(CRL.assertType(c, AccountDAO)).toBeFalsy()
                 })
 
-                it('Should work even passing native types', func() {
+                it('When is native type', func() {
                     expect(CRL.assertType(c, Object)).toBeTruthy()
                 })
 

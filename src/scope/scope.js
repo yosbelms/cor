@@ -118,7 +118,6 @@ yy.generateRoute = function(route) {
     rFileNameExt   = /([\s\S]+)*(^|\/)([\w\-]+)*(\.[\w\-]+)*$/,
     rCapitalLetter = /^[A-Z]/,
     rStatic        = /^(\.\.\/)|(\.\/)|(\/)/,
-    rInner         = /^\.([\w-]+)$/,
     rPublic        = /^[a-z_-]+$/;
     
     // replace \ by /
@@ -126,33 +125,14 @@ yy.generateRoute = function(route) {
         return route.replace(/\\/g, '/').replace(/\/+/g, '/');
     }
 
-    // apply Cor package convention
-    function packagize(route) {
-        var
-        parsed = rFileNameExt.exec(route);
 
-        if (parsed && parsed[3] && !parsed[4] && !rCapitalLetter.test(parsed[3])) {
-            route = (parsed[1] || '') + parsed[2] + parsed[3] + '/' + parsed[3];
-        }
-        else if (!parsed[3]) {
-            return null;
-        }
-
-        return normalize(route);
-    }
-
-    // Inner
-    parsed = rInner.exec(route);
-    if (parsed) {
-        return normalize('./' + parsed[1]);
-    }
-
-    // Public
+    // Public modules
     if (rPublic.test(route)) {
         return normalize(route);
     }
     
-    // Delegate
+    // Delegate, is a route that has explicit extension
+    // example: jquery.js, mylib.cor
     // parsed[4] is the file extension
     // so if parsed[4]? then is delegate route
     parsed = rFileNameExt.exec(route);
@@ -161,7 +141,8 @@ yy.generateRoute = function(route) {
     }
 
     // else process by applying Cor package convention
-    return packagize(route);
+    //return packagize(route);
+    return route;
 }
 
 // iterate recursevely in preorder starting from the node passed
@@ -1300,7 +1281,25 @@ yy.CallNode = Class(yy.Node, {
             newNode.loc = ch[0].loc;
             this.children.splice(0, 1, newNode);
         }
-
+    },
+    
+    errorBuiltin: function() {
+        var ch = this.children;
+        if (this.parent instanceof yy.SimpleStmtNode) {
+            // no arguments
+            if (!ch[2]) {
+                ch[2] = new yy.Lit('_error', ch[0].lineno);
+            }
+            
+            ch[0].children[0].children = 'throw';            
+            ch.splice(1, 1);
+            ch.splice(2, 1);
+        }
+        else {
+            this.children = [
+                new yy.Lit('_error', ch[0].lineno)
+            ]
+        }
     }
 
 });
@@ -1481,20 +1480,6 @@ yy.ForInNode = Class(yy.Node, {
 
 });
 
-yy.TryNode = Class(yy.Node, {
-
-    type: 'TryNode',
-
-    compile: function() {
-        var
-        ch = this.children;
-
-        if (!ch[2]) {
-            this.children.push(new yy.Lit('catch($error){}', this.lineno));
-        }
-    }
-
-});
 
 yy.CatchNode = Class(yy.Node, {
 
@@ -1503,10 +1488,9 @@ yy.CatchNode = Class(yy.Node, {
     compile: function() {
         var
         ch = this.children;
-
-        if (ch[1]) {
-            ch[1].children = '(' + ch[1].children + ') ';
-        }
+        
+        ch[0].children = 'try { ';
+        ch.splice(2, 0, new yy.Lit('; } catch (_error) ', ch[1].lineno));
     }
 
 });
@@ -1548,6 +1532,76 @@ yy.CoalesceNode = Class(yy.Node, {
                 new yy.Lit(', ' + ref + ' != null && '+ ref + ' != void 0 ? ' + ref + ' : ', ch[0].lineno),
                 ch[2],
                 new yy.Lit(')', ch[2].lineno),
+            ];    
+        }        
+    }
+});
+
+
+yy.ExistenceNode = Class(yy.Node, {
+
+    type: 'ExistenceNode',
+    
+    ref: null,
+    
+    subject: null,
+    
+    init: function(sub) {
+        this.subject = sub;
+        this.base('init', sub.children);
+    },
+    
+    initNode: function() {        
+        if (this.children[0] instanceof yy.VarNode) {            
+            this.ref = this.children[0].name;
+        }
+        else {             
+            this.ref = yy.env.context().generateVar('ref');
+            this.yy.env.context().addLocalVar(this.ref);
+        }
+    },
+    
+    compile: function() {
+        var
+        oldNode, newNode,
+        condition,
+        ref = this.ref,
+        ch  = this.children;
+        
+        // if call node
+        if (this.subject instanceof yy.CallNode) {
+            condition = ' !== \'function\' ? ';
+        }
+        // otherwise
+        else {
+            condition = ' === \'undefined\' || '+ ref + ' === null ? ';
+        }
+        
+        // replace the first node of the
+        // subject by new ref VarNode
+        oldNode = this.subject.children[0];
+        newNode = new yy.VarNode(oldNode.children);
+        newNode.loc    = oldNode.loc;
+        newNode.lineno = oldNode.lineno;
+        newNode.name   = oldNode.name;
+
+        this.subject.children[0] = newNode;
+        
+        // optimize resulting code avoiding ref generation
+        if (ch[0] instanceof yy.VarNode) {
+            this.children = [
+                new yy.Lit('typeof ' + ref + condition, ch[0].lineno),
+                new yy.Lit('void 0 : ' + ref, this.subject.lineno),
+                this.subject,
+            ];
+        }
+        else {
+            this.children = [
+                new yy.Lit('typeof (' + ref + ' = ', ch[0].lineno),
+                ch[0],
+                new yy.Lit(')' + condition, ch[0].lineno),
+                new yy.Lit('void 0 : ' + ref, ch[ch.length - 1].lineno),
+                this.subject,
             ];    
         }        
     }

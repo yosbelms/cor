@@ -31,7 +31,7 @@ in the source code. It resolve module dependencies
 */
 var Loader = Class({
     // the path of the .json file containig the environment variables
-    envPath                : null,
+    confPath                : null,
     // the modules are astored here once compiled
     moduleCache            : {},
     // path ignored by the loader
@@ -255,10 +255,10 @@ var Loader = Class({
         }
     },
 
-    setPath: function(srcPaths, envPath) {
+    setPath: function(srcPaths, confPath) {
         var name;
         for (name in srcPaths) {
-            this.pathMap[name] = path.resolve(envPath, srcPaths[name]);
+            this.pathMap[name] = path.resolve(confPath, srcPaths[name]);
         }
     },
 
@@ -279,24 +279,24 @@ var Loader = Class({
         }
     },
 
-    setEntry: function(entryPath, envPath) {
+    setEntry: function(entryPath, confPath) {
         var
         parsed,
         me  = this,
         cwd = path.cwd();
 
         if (entryPath) {
-            if (path.ext(envPath) === '.json') {
-                me.readFile(envPath, cwd, function onEnvReady(envPath, from, txt) {
+            if (path.ext(confPath) === '.json') {
+                me.readFile(confPath, cwd, function onConfReady(confPath, from, txt) {
                     var
-                    env = parseJson(txt);
-                    me.envPath = path.resolve(cwd, envPath);
-                    if (env) {
-                        if (env.ignore) {
-                            me.ignorePath(env.ignore);
+                    conf = parseJson(txt);
+                    me.confPath = path.resolve(cwd, confPath);
+                    if (conf) {
+                        if (conf.ignore) {
+                            me.ignorePath(conf.ignore);
                         }
-                        if (env.paths) {
-                            me.setPath(env.paths, me.envPath);
+                        if (conf.paths) {
+                            me.setPath(conf.paths, me.confPath);
                         }
                         me.boot(entryPath);
                     }
@@ -336,7 +336,7 @@ var Program = Class({
     },
 
     getExports: function() {
-        var path, prog, env, js;
+        var path, prog, js;
 
         if (this.environment === null) {
 

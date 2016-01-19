@@ -16,14 +16,19 @@
 
     <nav class="navbar" role="navigation">
         <div class="nav content">
-            <a href="../index.html">
-                <p class="brand"><strong>Cor</strong></p>
-            </a>
-            <ul class="right">
+            <ul class="left">
+				<li class="inline"><a href="../index.html">Cor</a></li>
                 <li class="inline"><a href="get_started.html">Get started</a></li>
                 <li class="inline"><a href="documentation.html">Documentation</a></li>
                 <li class="inline"><a href="playground/index.html">Playground</a></li>
                 <li class="inline"><a href="../test/index.html">Run tests</a></li>
+<<<<<<< HEAD
+=======
+            </ul>
+			<ul class="right">
+                <li class="inline"><a class="icon-twitter" href="http://twitter.com/yosbelms" target="_blank"></a></li>
+                <li class="inline"><a class="icon-github" href="https://github.com/yosbelms/cor" target="_blank"></a></li>
+>>>>>>> dev
             </ul>
         </div>
     </nav>
@@ -32,7 +37,11 @@
 
 <h1 id="getstarted">Get started</h1>
 
+<<<<<<< HEAD
 <p>Cor promotes modularity, conventions and code organization, it is built for scalable applications development. Its package system leads to organization and the syntax enforces teams to write mantainable code. With Cor, you can use any library written in javascript or require from javscript any library written and built with Cor.</p>
+=======
+<p>Cor promotes modularity, conventions and code organization, it is built for scalable applications development. The language itself allows organization and the syntax enforces teams to write mantainable code. With Cor, you can use any library written in javascript or import from javscript source any library written and built with Cor.</p>
+>>>>>>> dev
 
 <h3 id="download">Download</h3>
 
@@ -40,7 +49,11 @@
 
 <h3 id="fromgithub">From GitHub</h3>
 
+<<<<<<< HEAD
 <p>Available releases can be downloaded from <a href="https://github.com/yosbelms/cor/releases">here</a>. Once downloaded, decompress the bundle (.zip or .tar). The main script can be found at <code>cor/dis/cor.js</code></p>
+=======
+<p>Available releases can be downloaded from <a href="https://github.com/yosbelms/cor/releases">here</a>. Once downloaded, decompress the bundle (.zip or .tar). The main script can be found at <code>cor/dis/cor.js</code> ready to be included in production evironments.</p>
+>>>>>>> dev
 
 <h3 id="withbower">With Bower</h3>
 
@@ -84,10 +97,10 @@
 
 <p>Compiles and builds <code>app.cor</code> file and its dependences, the resulting file should be located at <code>app.cor.js</code> file.</p>
 
-<pre><code>cor build ./app -o=app.js
+<pre><code>cor build ./app.cor -o=app.js
 </code></pre>
 
-<p>Compiles and builds <code>app</code> package and its dependences writing the result to <code>./app/app.js</code> file. Output file (<code>app.js</code>) is now ready to be used in a web page through <code>&lt;srcipt src="app.js"&gt;&lt;/script&gt;</code> tag. See <a href="documentation.html#commands">commands</a> for reference.</p>
+<p>Compiles and builds <code>app.cor</code> file and its dependences writing the result to <code>./app/app.js</code> file. The output file (<code>app.js</code>) is now ready to be used in a web page through <code>&lt;srcipt src="app.js"&gt;&lt;/script&gt;</code> tag. See <a href="documentation.html#commands">commands</a> for reference.</p>
 
 <p>If you want to use Cor with <a href="http://nodejs.org">Node.js</a> you should use <code>compile</code> command instead.</p>
 

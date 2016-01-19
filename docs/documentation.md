@@ -1,6 +1,6 @@
 # Documentation
 
-This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases. Cor is a language designed with web development in mind. Programs are constructed from packages and modules, whose properties allow management of dependencies.
+This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases. Cor is a language designed with large web development in mind. Hence, is possible to develop your software without to execute any command to compile the source code, CLI tools are only needed to make the product able for production environments.
 
 <toc/>
 
@@ -233,6 +233,23 @@ summary = article.summary ?? article.content ?? '(no content)'
 This returns the articles's summary if exists, otherwise returns the content of the article if exists, otherwise retuns `(no content)`.
 
 
+### Exist Conditional
+
+Sometimes code tends to drown a bit in existence-checking. The exist-conditional operator lets you access members and elements only when the receiver exists, providing an empty result otherwise:
+
+Example:
+```
+someFunc?()
+```
+
+The above example should be translated to: *if `someFunc` exists, call it*. It also can be used with indexes, selectors and slices.
+```
+len  = customers?.length;
+frst = customers?[0];
+copy = customers?[:];
+```
+
+
 ### Arrays
 
 An array is a collection of ordered values. It may be defined using literal constructor with expressions as elements. Example:
@@ -252,7 +269,7 @@ color2 = colors[1]
 
 ### Slices
 
-Slice expression construct an array from an existing array.
+Slice expression constructs an array from an existing array.
 ```
 colors = ['red', 'green', 'blue']
 
@@ -329,6 +346,20 @@ client = &Client[
 ]
 ```
 
+`me` keyword always references the internal scope of the class regardless its actual scope:
+```
+class Foo {
+    func bar() { }    
+    func baz() {
+        f = func() {
+            me.bar() // call bar method of Foo class
+        }
+    }
+}
+```
+Tn the above example `me` keyword is used inside a lambda scope, however it references the instance object of the `Foo` class.
+
+> The `this` keyword is intact, you can use it as in javascript, however it may lead to unsafe code, use `this` at your own risk.
 
 ### Initialization
 
@@ -366,7 +397,7 @@ class Animal : Model {
 // a = &Animal['snake', 'slithering']
 ```
 
-> You can use eiter, `init` method of property-set, but not both.
+> You can use eiter, `init` method or property-set, but not both.
 
 
 ### Inheritance
@@ -463,53 +494,38 @@ func init() {
 ```
 Once this module is initialized, `http` variable will have an instance of `HttpServer` class.
 
-There are three types of modules.
-1. **Main Module:** Is the module which has the same name as its package with `.cor` suffix.
-2. **Exposed Module:** Are modules that the first letter of its name is uppercased and it can be accessed from any other module outside or inside of it's package, but just can be used the construction (variable, class or function) which has the name equal to the module name. It is an attempt to be compliant with coding standards which enforces to have a class per file.
-3. **Inner Module:** Is a module which can be only used in other modules inside the same package. It is a inner module if it is not a main module and is not exposed.
-
 > A module may only contain variable declarations, functions, classes, and `use` statements.
+
+Modules which the first letter of its name is uppercased only exports the construction (variable, class or function) which has the name equal to the module name. This convention replaces `CommonJS` `module.exports` however is completely compatible whith it.
 
 Example:
 
+Let's suppose we have the following project structure:
 ```
-app                       
-  |── app.cor             // main module
-  |── model               
-  |     |── Client.cor    // exposed module
-  |     |── Account.cor   // exposed module
-  |     └── util.cor      // inner module
-  ...
-  |
-  |── controller  
-  └── view
-        
+app
+  |── app.cor
+  └── model
+        └── User.cor
 ```
 
-
-## Packages
-
-A package is a directory containing one or several modules and/or subpackages. The name of the package is equal to the name of the directory. The `main module` is module located inside a package with equal name to the package followed `.cor` suffix. That is the right place to write API for humans. Once a package is required through `use` keyword the main module will be loaded and exported variables, classes and functions will be available for usage.
-
-Example of a package named `math`:
+In `model/User.cor`
 ```
-math              // package
-  |── math.cor    // main package module
-  └── util.cor    // module
-
+class User {
+    username
+    password    
+}
 ```
+There is a class named equal to the `filename`, so it will be exported by default. Any other function or variable defined in the module wil not be exported.
 
-With a supackage named `finance`:
+In `app.cor`
 ```
-math                      // package
-  |── math.cor            // main package module
-  |── util.cor            // module
-  └── finance             // subpackage
-        |── finance.cor   // main package module
-        └── Loan.cor      // module
-```
+use 'model/User'
 
-In above examples you could see a basic package structure where each directory is a package and every `.cor` file located inside is a module.
+func init() {
+    u = &User['ragnar', 'secretpass']
+}
+```
+Don't need to qualify the name when importing throwgh `use` statement because the class `User` will be exported as default.
 
 
 ## Statements
@@ -699,10 +715,11 @@ b = a++
 
 ### Use
 
-Use statement requests modules previously defined. It is possible to achieve by using `use` keyword which behaves ruled by some conventions.
+Use statement imports modules previously defined. The `use` keyword behaves ruled by some conventions.
 
-Example. Using a subpackage:
+Example:
 ```
+// importing math.cor
 use './math'
 
 func init() {
@@ -721,96 +738,35 @@ func init() {
 
 ```
 
-Use a module located in the same package
+You may see [Modules](#modules) and [Configuration](#configuration) as a complement.
+
+### Catch/Error
+
+Cor has a simple exception model that works very well with javascript exceptions, it guarantees full interoperability between both languages. The `catch` statement executes a defined block of instructions if a exception is thrown by a watched expression.
 ```
-use '.util'
-
-func init() {
-    util.square(3)
-}
-// 9
-```
-
-
-Notice the `.` just in the beginning of the module name in the route of above example. As you can see, there is an important difference between `./` and `.` prefixes, `./` can be translated as *"package relative to the current path"* and `.` can be translated to *"module located in the same package"*.
-
-Module routes which base name starts with uppercased letter, example: `./model/Client`, that imports a defined variable, class or function having the name equal to the route base name. Consider the following example:
-
-`Project structure`
-```
-app
-  |── controller
-  |      |── Client.cor
-  |      └── ...
-  └── model
-         |── Client.cor
-         └── ...
-```
-
-`app/store/Client.cor`
-```
-class Client : Store {
-    func findAll() {
-        // return a promise
-    }
+catch WatchedExpression {
+    // ... instructions
 }
 ```
 
-`app/controller/Client.cor`
-
-Using a module with base name having first letter uppercased
+Example:
 ```
-use '../model/Client' ClientStore
-
-class Client : Controller {
-    func index() {
-        store = &ClientStore
-        store.findAll().then(func(){
-            //...
-        })
-    }
+catch someFunc() {
+    console.log(error())
 }
 ```
+if `error()` builtin function is used as a value it will return the thrown error. It should throw otherwise.
 
-
-## Exceptions (*Experimental)
-
-Cor has an exception model similar to that javascript to guarantee interoperability between both languages. So, `try/catch/finally` syntax is very close to javascript syntax.
+Example:
 ```
-// just try
-try {
-
-}
-
-// try/catch/finally
-try {
-
-} catch errVar {
-
-} finally {
-
-}
-
-```
-
-`errVar` is an identifier which contains the throwed error, it can be avoided:
-```
-try {
-
-} catch {
-
+catch someFunc() {
+    // throw catched error
+    error()
+    
+    // throw custom error
+    error(&TypeError)
 }
 ```
-
-to `throw` an expression will cause a program error.
-```
-try {
-    throw 'Bang!'
-} catch {
-    console.log('Explosion silenced')
-}
-```
-
 
 ## Commands
 
@@ -840,7 +796,7 @@ Prints documentation about `cor compile` command
 
 ### Build
 
-`build` command compiles packages and its dependencies, the resulting javascript code will be packed and written to a standalone `.js` file inside the specified package. CRL will be embedded in the head of the resulting file. The `build` command supports four types of packages: AMD, CommonJS, Global and DOM Ready.
+`build` command compiles `.cor` files and its dependencies, the resulting javascript code will be packed and written to a standalone `.js`. The CRL will be embedded in the head of the resulting file unless you use `-no-crl` oprtion. The `build` command supports four types of packages: AMD, CommonJS, Global and DOM Ready.
 
 Usage:
 ```
@@ -852,7 +808,7 @@ cor build <path> [build options]
         <tr><td colspan="2">Arguments:</td></tr>
         <tr>
             <td class="cmd-arg"><code>path</code></td>
-            <td>Specifies the path to the entry file or package to compile.</td>
+            <td>Specifies the path to the entry file to build.</td>
         </tr>
         <tr><td colspan="2">Options:</td></tr>
         <tr>
@@ -860,12 +816,12 @@ cor build <path> [build options]
             <td>Specifies the name of the file where the resulting javascript code will be written, if not specified the file name will be the base name of the entry file with <code>.js</code> suffix.</td>
         </tr>
         <tr>
-            <td class="cmd-arg"><code>-env</code></td>
-            <td>Specifies the path to the <code>.json</code> file to use as environment configuration.</td>
+            <td class="cmd-arg"><code>-conf</code></td>
+            <td>Specifies the path to the <code>.json</code> file to use as configuration.</td>
         </tr>
         <tr>
             <td class="cmd-arg"><code>-type</code></td>
-            <td>Specifies the type of the resulting package. The supported types are <code>domready</code>, <code>commonjs</code>, <code>amd</code> and <code>global</code>. It must be provided separated by <code>,</code>(<i>do not write spaces between</i>). <code>domready</code> type will be used by default if <code>-type</code> option is omitted.</td>
+            <td>Specifies the type of the resulting bundle. The supported types are <code>domready</code>, <code>commonjs</code>, <code>amd</code> and <code>global</code>. It must be provided separated by <code>,</code>(<i>do not write spaces between</i>). <code>domready</code> type will be used by default if <code>-type</code> option is omitted.</td>
         </tr>
         <tr>
             <td class="cmd-arg"><code>-no-crl</code></td>
@@ -881,28 +837,28 @@ cor build <path> [build options]
 
 Example:
 ```
-cor build myapp
+cor build myapp.cor
 ```
-Builds `myapp` package and its dependencies and creates a file named `myapp.cor.js` inside `myapp` directory containing the resulting javascript code.
+Builds `myapp` program and its dependencies and creates a file named `myapp.cor.js` inside `myapp` directory containing the resulting javascript code.
 
 ```
-cor build myapp -crl -o=app.js
+cor build myapp.cor -crl -o=app.js
 ```
 In this case the output file is named `app.js` and CRL will be embedded in the beginning of the file.
 
 ```
 cor build myapp -env=myapp/env.json
 ```
-Builds `myapp` package and tells compiler the environment file is located at `myapp/env.json`.
+Builds `myapp.cor` program and tells compiler the environment file is located at `myapp/env.json`.
 
 ```
-cor build ./mylib -type=amd,commonjs,global
+cor build ./mylib.cor -type=amd,commonjs,global
 ```
-Build `./mylib` package making it available through AMD, CommonJS and Global api.
+Build `./mylib.cor` file making it available through AMD, CommonJS and Global api.
 
 ### Compile
 
-`compile` command compiles packages and put the result in the specified directory. Every file contained in the source package will be copied to the destination directory as they are, except `.cor` or any other file processed by the loader extensions. These files will be compiled and written to the file system as `.js`.
+`compile` command compiles source contained in a directory and put the result in the specified output directory. Every file contained in the source dir will be copied to the destination preserving the original directory structure as they are, except `.cor` or any other file processed by the loader. These files will be compiled and written to the file system as `.js`.
 
 Usage:
 ```
@@ -914,12 +870,12 @@ cor compile <path> [compile options]
         <tr><td colspan="2">Arguments:</td></tr>
         <tr>
             <td class="cmd-arg"><code>path</code></td>
-            <td>Specifies the path to the package to compile.</td>
+            <td>Specifies the path to the directory which contains files to compile.</td>
         </tr>
         <tr><td colspan="2">Options:</td></tr>
         <tr>
             <td class="cmd-arg"><code>-o</code></td>
-            <td>Specifies the path to the directory where the compiled package will be written. The default name has the format: <code>compiled_{timestamp}<code></td>
+            <td>Specifies the path to the directory where the compiled files will be written. The default name has the format: <code>compiled_{timestamp}<code></td>
         </tr>
         <tr>
             <td class="cmd-arg"><code>-v</code></td>
@@ -933,7 +889,7 @@ Example:
 ```
 cor compile ./mylib
 ```
-Compiles `mylib` package creates a directory named `mylib_js_` followed by a timestamp, here is where the compiled content will be written.
+Compiles source inside `mylib` directory and creates a directory named `mylib_js_` followed by a timestamp, here is where the compiled content will be written.
 
 ```
 cor compile mylib -o=../delivery_dir/mylib
@@ -975,26 +931,95 @@ Using `8790` port.
 
 ## The Loader
 
-The loader is a component which manages dependencies and dynamically loads files into the browser by using Ajax. It is extensible, so, it is possible to add support for any processor, for example, markdown, or mustache templates. It expects every requested file to be `CommonJS` compliant. It is intended to be used just for development, so, once the cource is compiled and packed the loader is not needed any more.
+The loader is a component which manages dependencies and dynamically loads files into the browser by using Ajax and using `fs` library on Node.js. It is extensible, so, it is possible to add support for any processor, for example, Markdown, or Mustache. It expects every requested file to be `CommonJS` compliant. It is intended to be used just for development, so, once the cource is compiled and packed the loader is not needed any more.
 
-The loader supports `.js` files loading out of the box, if you need to write some javascript code do not hesitate, put down the source taking into account `module`, `exports` and `require` objects, parts of `CommonJS` specification.
+The loader supports `.js` files loading out of the box, hence it is possible to use thirth party javascript libraries compliant with `CommonJS` specifications.
 
 This is a valid Cor project:
 ```
 // filename: app.cor
 
-use './util.js'     util
+use './jquery.js'   jquery
 use './template.js' tpl
 
-func show(){
-    util.ajax('http://server.com/api.php').then(func(r) tpl.render(r))
+func show() {
+    jquery.get('http://server.com/api.php', func(r) tpl.render(r))
 }
 
 func init() {
     show()
 }
+```
+
+### Configuration
+
+The configuration file must be in JSON format, but not javascript object literal, it will affect the behavior of the loader beeing used to resolve dependencies. This file should be named `conf.json` just for convention, however you can choose de name you prefer. It must be used with `-conf` option in `cor build` command or with `data-conf` in HTML pages. All relative paths defined are relative to the configuration file. The file might look like this:
+```
+{    
+    "paths" : {
+        "jquery"     : "node_modules/jquery/dist/jquery.js",
+        "underscore" : "node_modules/underscore/underscore.js",
+        "backbone"   : "node_modules/backbone/backbone.js"
+    },
+    
+    "ignore"         : ["fs", "child_process"]
+}
+```
+
+Values:
+
+* **paths**: The mapping from routes (used with `use` statement in Cor or with `require` function in javascript) to file paths.
+
+* **ignore**: The routes to be ignored.
+
+With the above example we could write:
+```
+// Backbone.js requires jQuery and Underescore.js
+// the loader will handle it
+
+use 'backbone' bbone
+
+class TodoModel : bbone.Model {
+    // ...
+}
+```
+
+
+#### Dependence injection
+
+If you have not catched on, the configuration file is good resource for dependence injection. Check the following configuration:
+```
+{
+    
+    "paths" : {
+        "jquery" : "node_modules/zepto/zepto.js"
+    }
+}
+```
+In the above case we inject Zepto.js to be used used as `jquery` replacement under the same route.
+
+
+## Cor in the Browser
+
+Cor library (located at `cor/dist/cor.js`) should be inlcuded using a script `tag` inside a html page for development environments:
+```
+<html>
+    <script type="text/javascript" src="cor/dist/cor.js"></script>
+</html>
+```
+Once the DOM is ready the Loader will look for a script tag containig the `data-entry` or `data-conf` attribute, or both to boot the application. Example:
 
 ```
+<script data-entry="myapp.cor"></script>
+```
+In the above example was setted `myapp.cor` module as the entry of  the application.
+
+Example using a `.js` module as entry:
+```
+<script data-entry="./myapp.js" data-conf="./conf.json"></script>
+```
+
+> The browser way to use Cor is recomended for development to take advantage of the hot-realod and to avoid coding/compile/run/test handicap. However you must use the `build` command for production environments, example: `cor build ./myapp -conf=./conf.json` and utilize the resulting standalone `.js` file which will contain all the bundled source code of your application including its dependences.
 
 
 ## The CRL (Cor Runtime Library)

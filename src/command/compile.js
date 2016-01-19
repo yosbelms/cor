@@ -110,8 +110,8 @@ function write(outPath) {
 }
 
 var
-cmd = new cor.CliCommand('compile', 'compile packages');
-cmd.addArgument('path', 'path to the package to be compiled', true);
+cmd = new cor.CliCommand('compile', 'compile sources');
+cmd.addArgument('path', 'path to the directory which contains source files to be compiled', true);
 
 cmd.addOption('o', 'name of the directory to write the compiling result');
 cmd.addOption('v',   'print file names as the are compiled');

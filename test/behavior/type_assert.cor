@@ -12,12 +12,12 @@ func init() {
     describe('Type Assertion', func() {
 
         it('Work for classes', func() {
-            p = @Person
+            p = &Person
             expect(p.(Person)).toBeTruthy()
         })
 
         it('Work for combined classes', func() {
-            c = @Client
+            c = &Client
             expect(c.(Person)).toBeTruthy()
             expect(c.(Client)).toBeTruthy()
         })
@@ -78,8 +78,8 @@ func init() {
             })
 
             it('Object', func() {
-                o = @[1, 2]
-                p = @Person
+                o = &[1, 2]
+                p = &Person
 
                 expect(o.(Object)).toBeTruthy()
                 expect(p.(Object)).toBeTruthy()
