@@ -1,3 +1,29 @@
+# 0.4.0
+
+Interesting features has been added to Cor this time, the exception handling has been revamped with simplified syntax while remains fully compatible with javascript exceptions model. The Cor syntax now supports the *exist* (`?`) operator, which is a good replacement for the `If` statement to check for existence, it makes `Cor` more expressive but still sober and readable.
+
+
+Let's see this example of error handling with `0.4.0`:
+```
+// throwing errors
+func explode() { error('Booooom!') }
+
+// handling error
+func handleError() {
+    catch horror() {
+        console.log(error())
+    }
+}
+```
+
+* Syntax
+    * Add Exist Operator `?`, example: `customers[0]?.accounts?.length`
+    * Change the old try/catch/finally for the `catch/error` statement
+* Remove the package system in favor of well known modules
+* Add social icons and links to Documentation
+
+
+
 # 0.3.0
 
 This release brings important language additions in order to look modern allowing to write less code without loosing readability. Was added the coalesce operator (`??`), also the `&` symbol now should be used as a replacement of `@` to create new objects. Now the lambda function has a convenient shorter syntax to fill some use cases, however, the new syntax does not replaces the classic one.
