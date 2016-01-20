@@ -233,6 +233,24 @@ summary = article.summary ?? article.content ?? '(no content)'
 This returns the articles's summary if exists, otherwise returns the content of the article if exists, otherwise retuns `(no content)`.
 
 
+### Existential Operator
+
+Existential operator is a convenient way to replace `if` statements that checks for a value existence to access or call the tested value.
+
+Example:
+```
+someFunc?()
+```
+The above example should be translated to: *if `someFunc` exists, call it*. It also can be used with indexes, selectors and slices.
+```
+arr?[0]
+obj?.prop
+arr?[0:5]
+
+// complex usage
+obj.arr?[0]?.someFunc?()
+```
+
 ### Arrays
 
 An array is a collection of ordered values. It may be defined using literal constructor with expressions as elements. Example:
@@ -329,6 +347,20 @@ client = &Client[
 ]
 ```
 
+`me` keyword always references the internal scope of the class regardless its actual scope:
+```
+class Foo {
+    func bar() { }    
+    func baz() {
+        f = func() {
+            me.bar() // call bar method of Foo class
+        }
+    }
+}
+```
+Tn the above example `me` keyword is used inside a lambda scope, however it references the instance object of the `Foo` class.
+
+> The `this` keyword is intact, you can use it as in javascript, however it may lead to unsafe code, use `this` at your own risk.
 
 ### Initialization
 
@@ -709,44 +741,33 @@ func init() {
 
 You may see [Modules](#modules) and [Configuration](#configuration) as a complement.
 
-## Exceptions (*Experimental)
+## Catch/Error
 
-Cor has an exception model similar to that javascript to guarantee interoperability between both languages. So, `try/catch/finally` syntax is very close to javascript syntax.
+Cor has a simple exception model that works very well with the javascript exceptions, it guarantees interoperability between both languages. The `catch` statement executes a defined block instructions is a exception is thrown by a expression.
 ```
-// just try
-try {
-
-}
-
-// try/catch/finally
-try {
-
-} catch errVar {
-
-} finally {
-
-}
-
-```
-
-`errVar` is an identifier which contains the throwed error, it can be avoided:
-```
-try {
-
-} catch {
-
+catch expression {
+    // ... instructions
 }
 ```
 
-to `throw` an expression will cause a program error.
+Example:
 ```
-try {
-    throw 'Bang!'
-} catch {
-    console.log('Explosion silenced')
+catch someFunc() {
+    console.log(error())
 }
 ```
+if `error()` builtin function is used as a value it will return the thrown error. It should throw otherwise.
 
+Example:
+```
+catch someFunc() {
+    // throw catched error
+    error()
+    
+    // throw custom error
+    error(&TypeError)
+}
+```
 
 ## Commands
 
