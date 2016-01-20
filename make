@@ -61,10 +61,11 @@ target.all = function() {
 
 // runs all clean tasks
 // usage: make clean
-target.clean = function() {
+target.clean = function() {	
     target.cleandist();
     target.cleandocs();
     target.cleantest();
+    target.cleanparser();
 }
 
 // clean `dist` directory
@@ -87,6 +88,13 @@ target.cleandocs = function() {
 target.cleantest = function() {
     echo(' + cleaning test');
     rm('-rf', 'test/test*.js');
+}
+
+// remove the `parser`
+// usage: make cleanparser
+target.cleanparser = function() {
+    echo(' + removing parser');
+    rm('-rf', 'src/parser.js');
 }
 
 // to run test from nodejs
