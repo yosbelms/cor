@@ -8,6 +8,7 @@ var
 buildCmd   = require('../src/command/build.js');
 compileCmd = require('../src/command/compile.js');
 httpCmd    = require('../src/command/http.js');
+runCmd     = require('../src/command/run.js');
 
 cli = new cor.CliApp();
 cli.setup('cor');
@@ -15,5 +16,6 @@ cli.setup('cor');
 cli.addCommand(buildCmd);
 cli.addCommand(compileCmd);
 cli.addCommand(httpCmd);
+cli.addCommand(runCmd);
 
 cli.run();
