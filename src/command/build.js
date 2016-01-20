@@ -53,6 +53,10 @@ cor.Loader.prototype.onLoaderReady = function() {
 
     print('\nCompiling:\n');
 
+    if (! outFilename) {
+        outFilename = sourcePath + '.js';
+    }
+
     for (name in this.moduleCache) {
         print('    ' + name);
 
@@ -79,6 +83,7 @@ cor.Loader.prototype.onLoaderReady = function() {
         temp = [];
         for (name in dependences[i]) {
             depPath = dependences[i][name];
+
             if (cor.path.ext(depPath) === '') {
                 filename = fileNameTable[depPath + cor.path.ext(filenames[i])];
             }
@@ -115,7 +120,7 @@ cor.Loader.prototype.onLoaderReady = function() {
             throw packageType[i] + ' not supported';
         }
 
-        src += content.replace('{package_name}', /^([a-zA-Z_]+)/.exec(path.basename(this.entryModulePath))[1]);
+        src += content.replace('{package_name}', /^([a-zA-Z_]+)/.exec(path.basename(outFilename))[1]);
     }
     
     src += '})([\n' +
@@ -123,10 +128,6 @@ cor.Loader.prototype.onLoaderReady = function() {
           '\n],[\n' +
           programs.join(',') +
           '\n]);';
-    
-    if (! outFilename) {
-        outFilename = sourcePath + '.js';
-    }
     
     outFilename = path.resolve(cwd, outFilename);
     
