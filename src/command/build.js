@@ -38,7 +38,7 @@ function getHeadStub() {
 }
 
 
-cor.Loader.prototype.onLoaderReady = function() {
+function onLoaderReady() {
     var
     name, i, len, content,
     filename, temp, dep,
@@ -136,6 +136,8 @@ cor.Loader.prototype.onLoaderReady = function() {
 };
 
 function build() {
+    cor.Loader.prototype.onLoaderReady = onLoaderReady;
+
     var
     spath, last,
     path = cor.path.sanitize(sourcePath);

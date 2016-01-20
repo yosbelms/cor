@@ -220,6 +220,10 @@ var Loader = Class({
         for (i = 0,  len = required.length; i < len; i++) {
             requiredPath = required[i];
 
+            if (this.ignoredPaths[requiredPath]) {
+                continue;
+            }
+            
             if (path.isAbsolute(requiredPath)) {
                 absolutePath = path.sanitize(requiredPath);
             }
@@ -263,7 +267,7 @@ var Loader = Class({
     },
 
     requireModule: function(srcPath, from) {
-        if ((! this.ignoredPaths[srcPath]) && (! this.moduleCache[srcPath])) {
+        if (! (this.ignoredPaths[srcPath] || this.moduleCache[srcPath])) {
             this.ignorePath(srcPath);
 
             var ext = path.ext(srcPath);
@@ -384,7 +388,7 @@ var Program = Class({
                 if (module) {
                     return module.getExports();
                 }
-                else {
+                else if (! me.loader.ignoredPaths[srcPath]) {
                     throw me.loader.error("Can not find module '" + srcPath + "'", me.filename);
                 }
             }
