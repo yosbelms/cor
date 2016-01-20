@@ -10,7 +10,46 @@ nodePath = require('path'),
 path     = cor.path,
 loader   = cor.loader = new cor.Loader(),
 oRequire = Module.prototype.require,
-oRequireModule = cor.Loader.prototype.requireModule;
+oRequireModule = cor.Loader.prototype.requireModule,
+nativeModules  = [
+    'assert',
+    'buffer',
+    'cuild_process',
+    'cluester',
+    'console',
+    'constants',
+    'crypto',
+    'dgram',
+    'dns',
+    'domain',
+    'events',
+    'freelist',
+    'fs',
+    'http',
+    'https',
+    'module',
+    'net',
+    'os',
+    'path',
+    'punycode',
+    'querystring',
+    'readline',
+    'repl',
+    'stream',
+    'string_decoder',
+    'sys',
+    'timer',
+    'tls',
+    'tty',
+    'url',
+    'util',
+    'vm',
+    'zlib'
+];
+
+cor.Loader.prototype.isNativeModule = function(name) {
+    return nativeModules.indexOf(name) != -1;
+};
 
 cor.Loader.prototype.readFile = function(path, from, onLoad, onError) {    
     var ret;
@@ -34,39 +73,39 @@ cor.Loader.prototype.readFile = function(path, from, onLoad, onError) {
     }
 };
 
+
 Module.prototype.require = function(filename) {
-    //console.log(filename);
     var
-    plugin, nodeAnswer, corAnswer,
-    mod, ret, absPath,
+    nodeAnswer, corAnswer, absPath,
     ext = nodePath.extname(filename);
+    
+    if (loader.isNativeModule(filename)){
+        return oRequire.apply(this, arguments);
+    }
     
     if (ext === '') {
         ext       = nodePath.extname(this.filename);
         absPath   = nodePath.resolve(nodePath.dirname(this.filename), filename + ext);        
         corAnswer = loader.moduleCache[path.sanitize(absPath)];
-
-        //console.log('noext : ', path.sanitize(absPath, filename + ext));
+                
         try {
             nodeAnswer = oRequire.apply(this, arguments);
         } catch (e){}
         
         if (nodeAnswer) {
-            //console.log('node : ', filename);
             return nodeAnswer;
         }
-        else if (corAnswer) {
-            //console.log('cor  : ', filename);
+        
+        if (corAnswer) {
             return corAnswer.getExports(this);
         }
     }
     
-    //console.log('none :', this.filename);
     return oRequire.apply(this, arguments);
 }
 
 cor.Program.prototype.getExports = function(parent) {
-    var js = this.toJs();
+    var mod, js = this.toJs();
     
     mod = new Module(this.filename, parent);
     

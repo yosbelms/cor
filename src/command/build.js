@@ -77,6 +77,7 @@ function onLoaderReady() {
     }
 
     //console.log(fileNameTable);
+    //console.log('===========')
     //console.log(dependences);
 
     for (i = 0, len = filenames.length; i < len; i++) {
