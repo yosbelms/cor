@@ -1,6 +1,6 @@
 # Documentation
 
-This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases. Cor is a language designed with web development in mind. Programs are constructed from modules, whose properties allow management of dependencies.
+This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases. Cor is a language designed with large web development in mind.
 
 <toc/>
 
@@ -797,7 +797,7 @@ Prints documentation about `cor compile` command
 
 ### Build
 
-`build` command compiles packages and its dependencies, the resulting javascript code will be packed and written to a standalone `.js` file inside the specified package. CRL will be embedded in the head of the resulting file. The `build` command supports four types of packages: AMD, CommonJS, Global and DOM Ready.
+`build` command compiles `.cor` files and its dependencies, the resulting javascript code will be packed and written to a standalone `.js`. The CRL will be embedded in the head of the resulting file unless you use `-no-crl` oprtion. The `build` command supports four types of packages: AMD, CommonJS, Global and DOM Ready.
 
 Usage:
 ```
@@ -809,7 +809,7 @@ cor build <path> [build options]
         <tr><td colspan="2">Arguments:</td></tr>
         <tr>
             <td class="cmd-arg"><code>path</code></td>
-            <td>Specifies the path to the entry file or package to compile.</td>
+            <td>Specifies the path to the entry file to build.</td>
         </tr>
         <tr><td colspan="2">Options:</td></tr>
         <tr>
@@ -822,7 +822,7 @@ cor build <path> [build options]
         </tr>
         <tr>
             <td class="cmd-arg"><code>-type</code></td>
-            <td>Specifies the type of the resulting package. The supported types are <code>domready</code>, <code>commonjs</code>, <code>amd</code> and <code>global</code>. It must be provided separated by <code>,</code>(<i>do not write spaces between</i>). <code>domready</code> type will be used by default if <code>-type</code> option is omitted.</td>
+            <td>Specifies the type of the resulting bundle. The supported types are <code>domready</code>, <code>commonjs</code>, <code>amd</code> and <code>global</code>. It must be provided separated by <code>,</code>(<i>do not write spaces between</i>). <code>domready</code> type will be used by default if <code>-type</code> option is omitted.</td>
         </tr>
         <tr>
             <td class="cmd-arg"><code>-no-crl</code></td>
@@ -838,28 +838,28 @@ cor build <path> [build options]
 
 Example:
 ```
-cor build myapp
+cor build myapp.cor
 ```
-Builds `myapp` package and its dependencies and creates a file named `myapp.cor.js` inside `myapp` directory containing the resulting javascript code.
+Builds `myapp` program and its dependencies and creates a file named `myapp.cor.js` inside `myapp` directory containing the resulting javascript code.
 
 ```
-cor build myapp -crl -o=app.js
+cor build myapp.cor -crl -o=app.js
 ```
 In this case the output file is named `app.js` and CRL will be embedded in the beginning of the file.
 
 ```
 cor build myapp -env=myapp/env.json
 ```
-Builds `myapp` package and tells compiler the environment file is located at `myapp/env.json`.
+Builds `myapp.cor` program and tells compiler the environment file is located at `myapp/env.json`.
 
 ```
-cor build ./mylib -type=amd,commonjs,global
+cor build ./mylib.cor -type=amd,commonjs,global
 ```
-Build `./mylib` package making it available through AMD, CommonJS and Global api.
+Build `./mylib.cor` file making it available through AMD, CommonJS and Global api.
 
 ### Compile
 
-`compile` command compiles packages and put the result in the specified directory. Every file contained in the source package will be copied to the destination directory as they are, except `.cor` or any other file processed by the loader extensions. These files will be compiled and written to the file system as `.js`.
+`compile` command compiles source contained in a directory and put the result in the specified output directory. Every file contained in the source dir will be copied to the destination preserving the original directory structure as they are, except `.cor` or any other file processed by the loader. These files will be compiled and written to the file system as `.js`.
 
 Usage:
 ```
@@ -871,12 +871,12 @@ cor compile <path> [compile options]
         <tr><td colspan="2">Arguments:</td></tr>
         <tr>
             <td class="cmd-arg"><code>path</code></td>
-            <td>Specifies the path to the package to compile.</td>
+            <td>Specifies the path to the directory which contains files to compile.</td>
         </tr>
         <tr><td colspan="2">Options:</td></tr>
         <tr>
             <td class="cmd-arg"><code>-o</code></td>
-            <td>Specifies the path to the directory where the compiled package will be written. The default name has the format: <code>compiled_{timestamp}<code></td>
+            <td>Specifies the path to the directory where the compiled files will be written. The default name has the format: <code>compiled_{timestamp}<code></td>
         </tr>
         <tr>
             <td class="cmd-arg"><code>-v</code></td>
@@ -890,7 +890,7 @@ Example:
 ```
 cor compile ./mylib
 ```
-Compiles `mylib` package creates a directory named `mylib_js_` followed by a timestamp, here is where the compiled content will be written.
+Compiles source inside `mylib` directory and creates a directory named `mylib_js_` followed by a timestamp, here is where the compiled content will be written.
 
 ```
 cor compile mylib -o=../delivery_dir/mylib
@@ -1018,11 +1018,6 @@ In the above example was setted `myapp.cor` module as the entry of  the applicat
 Example using a `.js` module as entry:
 ```
 <script data-entry="./myapp.js" data-conf="./conf.json"></script>
-```
-
-Example using a Cor package as entry:
-```
-<script data-entry="./myapp" data-conf="./conf.json"></script>
 ```
 
 > The browser way to use Cor is recomended for development to take advantage of the hot-realod and to avoid coding/compile/run/test handicap. However you must use the `build` command for production environments, example: `cor build ./myapp -conf=./conf.json` and utilize the resulting standalone `.js` file which will contain all the bundled source code of your application including its dependences.
