@@ -1,6 +1,6 @@
 ---
 The playground of Cor
-Author: Yosbel Marín
+Author: Yosbel Marin
 ---
 
 ElSource  = nil
@@ -43,13 +43,12 @@ func when(el, evtName, fn) {
 Compiles source code in the editor and show the compiling
 result to the output element which is the right panel
 ---
-func compile() {
-    try {
-        corSource      = ElSource.value
-        ElBtnLink.setAttribute('href', '#link:' + encodeURIComponent(corSource))
-        ElOutput.value = cor.compile(corSource)
-    } catch e {
-        ElOutput.value = e.toString()
+func compile() {    
+    corSource = ElSource.value
+    ElBtnLink.setAttribute('href', '#link:' + encodeURIComponent(corSource))
+    
+    catch ElOutput.value = cor.compile(corSource) {
+        ElOutput.value = String(error())
     }
 }
 
@@ -76,11 +75,9 @@ Get source code in the editor, compiles and run it in the
 browser scope
 ---
 func run() {
-    try {
-        cor.run(ElSource.value)
-    } catch e {
-        ElOutput.value = e.toString()
-        throw e
+    catch cor.run(ElSource.value) {
+        ElOutput.value = String(error())
+        error()
     }
 }
 
