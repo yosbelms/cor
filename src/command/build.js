@@ -90,12 +90,12 @@ function onLoaderReady() {
             else {
                 filename = fileNameTable[depPath];
             }
-
+            
             if (filename) {
                 temp.push("'" + name + "':" + filename);
             }
             else {
-                console.log('could not locate dependence ' + name + ' for: ' + filenames[i]);
+                console.log('Could not locate dependence \'' + name + '\' for: ' + filenames[i]);
                 global.process.exit(1);
             }
         }
