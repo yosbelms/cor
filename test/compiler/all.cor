@@ -1,5 +1,5 @@
 
-use '../util'
+use '../utils'
 
 shouldNotThrowList = [
     'compiler/empty_program',
@@ -43,13 +43,13 @@ shouldThrowList = [
 
 func getNotThrowExpectation(filename) {
     return func() {
-        expect(util.fileCompiler(filename)).not.toThrow()
+        expect(utils.fileCompiler(filename)).not.toThrow()
     }
 }
 
 func getThrowExpectation(filename) {
     return func() {
-        expect(util.fileCompiler(filename)).toThrow()
+        expect(utils.fileCompiler(filename)).toThrow()
     }
 }
 
