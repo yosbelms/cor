@@ -3,54 +3,15 @@ require('../scope/env.js');
 require('../scope/scope.js');
 require('../compiler.js');
 require('../loader/node.js');
+require('../crl.js');
 
 var
 confFilename,
 entryPath,
-
-Module   = require('module'),
-fs       = require('fs'),
-nodePath = require('path'),
-path     = cor.path,
-loader   = cor.loader = new cor.Loader(),
-origRequire = Module.prototype.require;
-
-Module.prototype.require = function(filename) {
-    var
-    plugin, mod,
-    ext = nodePath.extname(filename);
-    
-    if (ext === '') {
-        ext = nodePath.extname(this.filename);
-        mod = loader.moduleCache[path.sanitize(nodePath.resolve(filename + ext))];
-    }
-    
-    if (mod) {
-        return mod.getExports();
-    }
-    else {
-        return origRequire.apply(this, arguments);    
-    }
-}
-
-cor.Program.prototype.getExports = function(parent) {    
-    var js,
-    mod = new Module(this.filename, parent);
-    
-    mod.filename = this.filename;
-    mod.paths    = Module._nodeModulePaths(nodePath.dirname(this.filename));
-    mod.loaded   = true;
-    mod._contextLoad = true;
-        
-    js = this.toJs();
-    
-    mod._compile(js.src, this.filename);
-    
-    return mod.exports || {};
-}
+path = cor.path;
 
 function run() {
-    loader.setEntry(path.sanitize(entryPath || ''), path.sanitize(confFilename || ''));    
+    cor.loader.setEntry(path.sanitize(entryPath || ''), path.sanitize(confFilename || ''));    
 }
 
 var
