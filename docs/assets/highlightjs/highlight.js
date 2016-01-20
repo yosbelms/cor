@@ -772,7 +772,7 @@ https://highlightjs.org/
 
 /*
 Language: Cor
-Author: Yosbel Marín @yosbelm
+Author: Yosbel Marin @yosbelms
 Description: Cor is a language that compiles to javascript, for info about language see http://yosbelms.github.io/cor
 Category: common, scripting
 */
@@ -786,7 +786,7 @@ hljs.registerLanguage('cor', function(hljs) {
         literal:
             'true false nil',
         built_in:
-            'super len copy'
+            'super len copy error'
     };
 
     return {
