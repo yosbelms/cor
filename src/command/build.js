@@ -162,8 +162,8 @@ function build() {
 }
 
 var
-cmd = new cor.CliCommand('build', 'compile packages and dependecies');
-cmd.addArgument('path', 'path to the entry file or package to be compiled whith it dependences', true);
+cmd = new cor.CliCommand('build', 'compile source files and dependecies');
+cmd.addArgument('path', 'path to the entry file to be compiled whith it dependences', true);
 
 cmd.addOption('o', 'name of the file to write the compiling result');
 cmd.addOption('type', 'type of the resulting package (domready, commonjs, amd and global)');
