@@ -4,7 +4,7 @@
 
 Cor is an opensource language that compiles to plain javascript. It is designed to make easy to write, build, and maintain large software for the web.
 
-> Cor is a work in process, if you are interested you can help by using it and reporting bugs or requesting improvement or new features. See the links at the end of this page.
+> Cor is a work in process, if you are interested you can help by trying it and reporting bugs or requesting improvement or new features. See the links at the end of this page.
 
 ## Installation
 
