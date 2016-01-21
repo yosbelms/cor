@@ -63,7 +63,7 @@ func select() {
     playEl = pick(name)
 
     if playEl {
-        ElSource.value = playEl.innerText
+        ElSource.value = playEl.innerHTML
     } else {
         ElSource.value = ''
     }
