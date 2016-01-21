@@ -241,8 +241,8 @@ n = 3e-10
 // 6 - Binary Shift
 &lt;&lt;  &gt;&gt;  &gt;&gt;&gt;
 
-// 7 - Other
-??
+// 7 - Existential
+??  ?
 </code></pre>
 
 <p>The operators <code>==</code> and <code>!=</code> are translated to <code>===</code> and <code>!==</code> in the same order.</p>
@@ -1043,9 +1043,7 @@ class TodoModel : bbone.Model {
 <pre><code>&lt;script data-entry="./myapp.js" data-conf="./conf.json"&gt;&lt;/script&gt;
 </code></pre>
 
-<blockquote>
-  <p>The browser way to use Cor is recomended for development to take advantage of the hot-realod and to avoid coding/compile/run/test handicap. However you must use the <code>build</code> command for production environments, example: <code>cor build ./myapp -conf=./conf.json</code> and utilize the resulting standalone <code>.js</code> file which will contain all the bundled source code of your application including its dependences.</p>
-</blockquote>
+<p>The Cor distribution for browsers is recomended only for development purpose, to take advantage of the hot-realod avoiding the <em>compile</em> step in the <em>coding/compile/run/test</em> worflow. However you must use the <code>build</code> command before to put an application in production, example: <code>cor build ./myapp.cor -conf=./conf.json</code> and utilize the resulting standalone <code>.js</code> file which will contain all the application and its dependences.</p>
 
 <h2 id="thecrlcorruntimelibrary">The CRL (Cor Runtime Library)</h2>
 
