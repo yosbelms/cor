@@ -58,6 +58,26 @@ func init() {
                 expect(obj.arr?[:]).toEqual(arr)
             })
         })
+        
+        
+        describe('In operantions', func() {
+            a = &[b: &[c: 0]]
+            
+            it('Should work in operation', func() {
+                expect(a?.b.c + 1).toBe(1)
+            })
+            
+            it('Should work in plusequal', func() {
+                a?.b.c += 1
+                expect(a.b.c).toBe(1)
+            })
+            
+            it('Should work in inc-dec statement', func() {
+                a?.b.c++
+                expect(a.b.c).toBe(2)
+            })
+            
+        })
 
     })
 }
