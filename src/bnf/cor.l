@@ -132,7 +132,7 @@ reactiveTerms = {
     'FINALLY' : true,
     'THROW'   : true,
 
-    '@'       : true,
+    '&'       : true,
     ']'       : true,
     '}'       : true,
     ')'       : true

@@ -213,8 +213,8 @@ Operators are the following:
 // 6 - Binary Shift
 <<  >>  >>>
 
-// 7 - Other
-??
+// 7 - Existential
+??  ?
 ```
 
 The operators `==` and `!=` are translated to `===` and `!==` in the same order.
@@ -1019,7 +1019,7 @@ Example using a `.js` module as entry:
 <script data-entry="./myapp.js" data-conf="./conf.json"></script>
 ```
 
-> The browser way to use Cor is recomended for development to take advantage of the hot-realod and to avoid coding/compile/run/test handicap. However you must use the `build` command for production environments, example: `cor build ./myapp -conf=./conf.json` and utilize the resulting standalone `.js` file which will contain all the bundled source code of your application including its dependences.
+The Cor distribution for browsers is recomended only for development purpose, to take advantage of the hot-realod avoiding the *compile* step in the *coding/compile/run/test* worflow. However you must use the `build` command before to put an application in production, example: `cor build ./myapp.cor -conf=./conf.json` and utilize the resulting standalone `.js` file which will contain all the application and its dependences.
 
 
 ## The CRL (Cor Runtime Library)

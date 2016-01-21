@@ -1,9 +1,9 @@
 # 0.4.0
 
-Interesting features has been added to Cor this time, the exception handling has been revamped with simplified syntax while remains fully compatible with javascript exceptions model. The Cor syntax now supports the *exist* (`?`) operator, which is a good replacement for the `If` statement to check for existence, it makes `Cor` more expressive but still sober and readable.
+Interesting features has been added to Cor this time, the exception handling has been revamped with simplified syntax while it remains fully compatible with javascript exceptions model. The Cor syntax now supports the *exist* (`?`) operator, which is a good replacement for the `if` statement to check for existence, it makes `Cor` more expressive but still sober and readable.
 
 
-Let's see this example of error handling with `0.4.0`:
+Let's see an example of error handling in `0.4.0`:
 ```
 // throwing errors
 func explode() { error('Booooom!') }

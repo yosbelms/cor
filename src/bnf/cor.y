@@ -415,7 +415,6 @@ TypeAssertExpr
 
 Expr
     : OperationExpr
-    //| OperationExpr '?'
     | AssignmentExpr
     | CoalesceExpr
     ;

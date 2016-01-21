@@ -86,8 +86,8 @@ yy.parseError = function parseError (msg, hash, replaceMsg) {
     //is non recoverable parser error?
     if (hash && hasProp.call(hash, 'loc') && hash.expected) {
         switch (hash.text) {
-            case '\n': hash.text = 'NEW_LINE';       break;
-            case ''  : hash.text = 'END_OF_PROGRAM'; break;
+            case '\n': hash.text = 'end of line';  break;
+            case ''  : hash.text = 'end of input'; break;
         }
         msg = replaceMsg ? msg : 'unexpected ' + hash.text;
     }
