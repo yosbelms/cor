@@ -1,5 +1,6 @@
 test:
     pre:
+        - sudo chmod u+x ./make
         - ./make
     override:
         - ./make test
