@@ -1548,11 +1548,14 @@ yy.ExistenceNode = Class(yy.Node, {
     
     init: function(sub) {
         this.subject = sub;
+        if (sub instanceof yy.Lit) {
+            this.error('Invalid operation with ' + sub.children, sub.lineno);
+        }
         this.base('init', sub.children);
     },
     
-    initNode: function() {        
-        if (this.children[0] instanceof yy.VarNode) {            
+    initNode: function() {
+        if (this.children[0] instanceof yy.VarNode ) {            
             this.ref = this.children[0].name;
         }
         else {             
@@ -1568,10 +1571,14 @@ yy.ExistenceNode = Class(yy.Node, {
         ref = this.ref,
         ch  = this.children;
         
+        if (this.subject instanceof yy.VarNode) {
+            ref = this.ref = this.subject.name = this.subject.name;
+        }
+        
         // if call node
         if (this.subject instanceof yy.CallNode) {
             condition = ' !== \'function\' ? ';
-        }
+        }        
         // otherwise
         else {
             condition = ' === \'undefined\' || '+ ref + ' === null ? ';
@@ -1589,6 +1596,13 @@ yy.ExistenceNode = Class(yy.Node, {
         
         // optimize resulting code avoiding ref generation
         if (ch[0] instanceof yy.VarNode) {
+            this.children = [
+                new yy.Lit('typeof ' + ref + condition, ch[0].lineno),
+                new yy.Lit('void 0 : ' + ref, this.subject.lineno),
+                this.subject,
+            ];
+        }
+        else if (ch[0] instanceof yy.Lit) {
             this.children = [
                 new yy.Lit('typeof ' + ref + condition, ch[0].lineno),
                 new yy.Lit('void 0 : ' + ref, this.subject.lineno),

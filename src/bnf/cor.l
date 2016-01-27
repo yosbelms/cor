@@ -134,7 +134,8 @@ reactiveTerms = {
     '&'       : true,
     ']'       : true,
     '}'       : true,
-    ')'       : true
+    ')'       : true,
+    '?'       : true,
 };
 
 lexer.dlex = lexer.lex;
