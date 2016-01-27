@@ -195,6 +195,11 @@ target.docs = function() {
     }
 }
 
+// run tests
+target.test = function() {    
+    exec('node ./bin/cor run ./test/node.cor');
+}
+
 // make a release, publishing a new tag
 // usage: make release
 target.release = function() {
