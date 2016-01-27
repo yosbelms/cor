@@ -1,7 +1,5 @@
-dependencies:
-    post:
-        - make
-
 test:
+    pre:
+        - ./make
     override:
-        - make test
+        - ./make test
