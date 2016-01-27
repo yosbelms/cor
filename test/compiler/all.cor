@@ -39,6 +39,8 @@ shouldThrowList = [
     'compiler/wrong_incdec_used_as_expr',
 
     'compiler/super_call_autside_method',
+    
+    'compiler/wrong_existential_op',
 ]
 
 func getNotThrowExpectation(filename) {

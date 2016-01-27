@@ -11,6 +11,20 @@ func fn() { return true }
 
 func init() {
     describe('Existential Operator', func() {
+        
+        describe('For unary expressions', func() {
+            it('Should work for simple call', func() {
+                expect(obj?).toBeTruthy()
+                expect(undefObj?).toBeUndefined()
+            })
+            
+            it('Should work for expressions', func() {
+                expect(obj.fn()?).toBe(true)
+                expect(arr[0]()?).toBe(true)
+                expect(obj.nfn?).toBeUndefined()
+            })    
+        })
+
 
         describe('For call', func() {
             it('Should work if simple call', func() {
@@ -24,6 +38,7 @@ func init() {
                 expect(obj.nfn?()).toBeUndefined()
             })    
         })
+
         
         describe('For selector', func() {
             it('Should work if simple selector', func() {
@@ -35,7 +50,7 @@ func init() {
                 expect(obj.arr?.length).toBe(2)
             })
         })
-        
+
         
         describe('For index', func() {
             it('Should work if simple index', func() {
