@@ -6,7 +6,8 @@ func fileCompiler(path) {
 }
 
 func file(path) {
-    return cor.loader.readFile(path);
+    if! (window?) { path = __dirname + '/' + path }
+    return cor.loader.readFile(path)
 }
 
 func compile(src) {
