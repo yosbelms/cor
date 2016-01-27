@@ -1,0 +1,13 @@
+test:
+    pre:
+        - make
+    override:
+        - make test
+
+deployment:
+    staging:
+        branch: master
+    pre:
+        - ./npm_login.sh
+    override:
+        - npm publish .
