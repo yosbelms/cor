@@ -1,0 +1,37 @@
+
+
+func init() {
+    
+    arr = ['foo', 'bar', 'baz']
+    
+    describe('ForIn Statement shouls work with ranges', func() {
+
+        it('using numeric range', func() {
+            stack = []
+            for i in 0:3 {
+                stack.push(i)
+            }
+            expect(stack).toEqual([0, 1, 2])
+
+            stack = []
+            for i in 0:arr.length {
+                stack.push(arr[i])
+            }
+            expect(stack).toEqual(arr)
+        })
+
+        it('using just "to"', func() {
+            stack = []
+            for i in :4 {
+                stack.push(i)
+            }
+            expect(stack).toEqual([0, 1, 2, 3])
+        })
+
+        it('using just "from"', func() {
+            for i in 9e9-10: { }
+            expect(i).toBe(9e9)
+        })
+    })
+    
+}

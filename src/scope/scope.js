@@ -552,11 +552,11 @@ yy.FunctionNode = Class(yy.ContextAwareNode, {
         if (ch[1]) {
             this.name = ch[1].children;
             this.nameLineno = ch[1].lineno;
-        }        
+        }
         if (!(this.children[5] instanceof yy.BlockNode)) {
             this.children[5] = new yy.BlockNode(
                 new yy.Lit('{', ch[4].lineno),
-                new yy.Lit('return', ch[5].loc.first_line),
+                new yy.Lit('return', getLesserLineNumber(ch[5])),
                 new yy.List(ch[5]),
                 new yy.Lit('}', ch[5].lineno)
             );
@@ -1476,6 +1476,36 @@ yy.ForInNode = Class(yy.Node, {
             ch.splice(3, 0, new yy.Lit(str2, ch[2].lineno));
             ch[4].children.splice(1, 0, new yy.Lit(str3, ch[4].children[0].lineno));
         }
+    }
+
+});
+
+yy.ForInRangeNode = Class(yy.Node, {
+
+    type: 'ForInRangeNode',
+
+    compile: function() {
+        var
+        ctx = yy.env.context(),
+        ch = this.children, i, from, to;
+
+        i = ch[1].children[0].children;
+        from = ch[3] || new yy.Lit('0', ch[0].lineno);
+        to   = ch[5] || new yy.Lit('9e9', ch[0].lineno);
+
+        /*
+        for i in n:m { }
+        for (var i = n; i < m; i++) { }
+        */
+        this.children = [
+            new yy.Lit('for (var ' + i + ' = ', ch[0].lineno),
+            from,
+            new yy.Lit('; ' + i + ' < ', from.lineno),
+            to,
+            new yy.Lit('; ' + i + '++) ', to.lineno),
+            ch[6],
+        ]
+                
     }
 
 });

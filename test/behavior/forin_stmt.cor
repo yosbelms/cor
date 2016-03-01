@@ -13,7 +13,7 @@ func init() {
     arrKeys   = [0, 1, 2]
     //arrValues = ['001', 'yosbel', 28]
 
-    describe('ForIn Statement shouls work', func() {
+    describe('ForIn Statement should work', func() {
 
         describe('With objects', func() {
             it('using just value', func() {

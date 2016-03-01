@@ -219,6 +219,49 @@ ForInStmt
         }
     ;
 
+ForInRangeStmt
+    : FOR IDENT IN Value ':' Value Block  {
+            $$= new yy.ForInRangeNode(
+                new yy.Lit($1, @1),
+                new yy.VarNode(new yy.Lit($2, @2)),
+                new yy.Lit($3, @3),
+                $4,
+                new yy.Lit($5, @5),
+                $6, $7
+            )
+        }
+    | FOR IDENT IN Value ':' Block {
+            $$= new yy.ForInRangeNode(
+                new yy.Lit($1, @1),
+                new yy.VarNode(new yy.Lit($2, @2)),
+                new yy.Lit($3, @3),
+                $4,
+                new yy.Lit($5, @5),
+                null, $6
+            )
+        }
+    | FOR IDENT IN ':' Value Block {
+            $$= new yy.ForInRangeNode(
+                new yy.Lit($1, @1),
+                new yy.VarNode(new yy.Lit($2, @2)),
+                new yy.Lit($3, @3),
+                null,
+                new yy.Lit($4, @4),
+                $5, $6
+            )
+        }
+    | FOR IDENT IN ':' Block {
+            $$= new yy.ForInRangeNode(
+                new yy.Lit($1, @1),
+                new yy.VarNode(new yy.Lit($2, @2)),
+                new yy.Lit($3, @3),
+                null,
+                new yy.Lit($4, @4),
+                null, $5
+            )
+        }
+    ;
+
 
 SwitchStmt
     : SWITCH OperationExpr? CaseBlock       { $$= new yy.SwitchNode(new yy.Lit($1, @1), $2, $3) }
@@ -273,11 +316,13 @@ Stmt
     | IfStmt
     | ForStmt
     | ForInStmt
+    | ForInRangeStmt
     | SwitchStmt
     | ReturnStmt
     | BreakStmt
     | ContinueStmt
     | CatchStmt
+    | FunctionStmt
     ;
 
 StmtNotSemicolon
@@ -303,7 +348,7 @@ PrimaryExpr
     | BOOLEAN                { $$= new yy.Lit($1, @1) }
     | NUMBER                 { $$= new yy.Lit($1, @1) }
     | NIL                    { $$= new yy.Lit($1, @1) }
-    | '(' OperationExpr ')'  { $$= new yy.AssociationNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3)) }
+    | '(' Value ')'          { $$= new yy.AssociationNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3)) }
     | SliceExpr
     | CallExpr
     | TypeAssertExpr
