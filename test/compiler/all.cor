@@ -36,6 +36,7 @@ shouldNotThrowList = [
 shouldThrowList = [
     'compiler/module_members_with_equal_name1',
     'compiler/module_members_with_equal_name2',
+    'compiler/incorrect_nameless_functions_use',
 
     'compiler/wrong_incdec_used_as_expr',
 

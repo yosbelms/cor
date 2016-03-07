@@ -458,6 +458,9 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
         for (i = 0; i < len; i++) {
             item = ls.children[i];
             if (item instanceof yy.FunctionNode) {
+                if (typeof item.name === 'undefined') {
+                    this.error('nameless function', getLesserLineNumber(item));
+                }
                 name       = item.name;
                 nameLineno = item.nameLineno;
                 if (name === this.initializerName) {
@@ -516,7 +519,26 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
 
 // Node for function and class blocks
 yy.BlockNode = Class(yy.Node, {
-    type: 'BlockNode'
+    type: 'BlockNode',
+
+    init: function() {
+        this.base('init', arguments);
+
+        var node, i, ch, len;
+
+        if (this.children[1] instanceof yy.List) {
+            ch = this.children[1].children;
+            len = ch.length;
+
+            for (i = 0; i < len; i++) {
+                node = ch[i];
+                if (node instanceof yy.FunctionNode && typeof node.name === 'undefined') {
+                    this.error('nameless function', getLesserLineNumber(node));
+                }
+            }    
+        }
+        
+    }
 });
 
 // Node for dot-expression syntax: `a.b.c`

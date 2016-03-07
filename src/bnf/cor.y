@@ -90,7 +90,7 @@ PropertyDecl
     ;
 
 FunctionStmt
-    : FUNC IDENT '(' FunctionArgs? ')' Block {
+    : FUNC IDENT? '(' FunctionArgs? ')' (Block|Value) {
             $$= new yy.FunctionNode(
                 new yy.Lit($1, @1),
                 new yy.Lit($2, @2),
@@ -322,7 +322,7 @@ Stmt
     | BreakStmt
     | ContinueStmt
     | CatchStmt
-    | FunctionStmt
+    | FunctionStmt ';'
     ;
 
 StmtNotSemicolon
@@ -330,6 +330,7 @@ StmtNotSemicolon
     | ReturnStmtNotSemicolon
     | BreakStmtNotSemicolon
     | ContinueStmtNotSemicolon
+    | FunctionStmt
     ;
 
 
@@ -531,28 +532,11 @@ ArrayItems
         }
     ;
 
-LambdaConstructor
-    : FUNC '(' FunctionArgs? ')' (Block|Value) {
-            $$= new yy.FunctionNode(
-                new yy.Lit($1, @1),
-                null,
-                new yy.Lit($2, @2),
-                $3,
-                new yy.Lit($4, @4),
-                $5
-            )
-        }
-    ;
-
-Constructor
-    : ObjectConstructor
-    | ArrayConstructor
-    | LambdaConstructor
-    ;
-
 Value
     : Expr
-    | Constructor
+    | ObjectConstructor
+    | ArrayConstructor
+    | FunctionStmt
     ;
 
 ValueList

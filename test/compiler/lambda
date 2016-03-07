@@ -4,4 +4,16 @@ func a() {
         return x
     }
 	a = func() 1
+
+	a = func () [
+        1, 2,
+    ]
+
+    a = func f() x
+
+    func d() { }
 }
+
+func b() x
+
+func c() func() func() c

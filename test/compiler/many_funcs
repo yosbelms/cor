@@ -6,3 +6,14 @@ func a() {
 func b() {
     return false
 }
+
+func c() {
+	func a() {	}
+}
+
+func d() {
+	return func a() {	}
+}
+
+
+func e(x) x

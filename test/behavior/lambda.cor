@@ -11,6 +11,16 @@ func init() {
             f = func(x) x + 5
             expect(f(5)).toBe(10)
         })
+
+
+        it('Should work with expression', func() {
+            f = func () [
+                1, 2,
+            ]
+                
+            expect(f()).toEqual([1, 2])
+        })
+        
         
     })
 }
