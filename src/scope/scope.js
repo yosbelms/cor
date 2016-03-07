@@ -293,6 +293,10 @@ yy.List = Class(yy.Node, {
 
     addFront: function() {
         this.children = slice.call(arguments).concat(this.children);
+    },
+
+    last: function() {
+        return this.children[this.children.length - 1];
     }
 
 });
@@ -1389,8 +1393,8 @@ yy.CaseNode = Class(yy.Node, {
 
         //if is not "default"
         if (ch[3]) {
-            ls = ch[3].children[0].children;
-            ls.push(new yy.Lit(' break; ', ls[ls.length - 1].lineno));
+            ls = ch[3];
+            ls.children.push(new yy.Lit(' break; ', ls.last().lineno - 1));
         }
     },
 
