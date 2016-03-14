@@ -4,3 +4,12 @@ test:
         - ./make
     override:
         - ./make test
+
+deployment:
+    release:
+        tag: /v[0-9]+(\.[0-9]+)*/
+        owner: yosbelms
+        commands:
+            - ./npm_login.sh
+            - npm install publish
+            - publish
