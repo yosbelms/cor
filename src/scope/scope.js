@@ -611,12 +611,10 @@ yy.SliceNode = Class(yy.Node, {
     
     compile: function() {
         var
-        num, lit,
-        openParen  = '(',
-        closeParen = ')',
-        from       = this.from,
-        to         = this.to,
-        ch         = this.children;
+        lit,
+        from = this.from,
+        to   = this.to,
+        ch   = this.children;
 
         if (from === undefined) {
             from = new yy.Lit('0', ch[1].lineno);
@@ -635,37 +633,13 @@ yy.SliceNode = Class(yy.Node, {
                 to      = lit;
             }
 
-            if (to instanceof yy.Lit) {
-                to.children =  this.transformLiteral(to.children);
-                this.children.push(
-                    new yy.Lit(', ', ch[3].lineno),
-                    to
-                );
-            }
-            else {
-                if (to instanceof yy.AssociationNode) {
-                    openParen  = '';
-                    closeParen = '';
-                }
-                this.children.push(
-                    new yy.Lit(', +' + openParen, ch[3].lineno),
-                    to, 
-                    new yy.Lit(closeParen + ' + 1 || 9e9', to.lineno)
-                );
-            }
+            this.children.push(
+                new yy.Lit(', ', ch[3].lineno),
+                to
+            );
         }
 
         this.children.push(new yy.Lit(')', ch[5].lineno));
-    },    
-
-    transformLiteral: function(l) {
-        var num = parseInt(l);
-        if (! isNaN(num)) {
-            return String(+(num)+1);
-        }
-        else {
-            return l;
-        }
     }
 
 });
