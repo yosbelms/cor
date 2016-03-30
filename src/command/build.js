@@ -38,7 +38,7 @@ function getHeadStub() {
 }
 
 
-cor.Loader.prototype.onLoaderReady = function() {
+function onLoaderReady() {
     var
     name, i, len, content,
     filename, temp, dep,
@@ -52,6 +52,10 @@ cor.Loader.prototype.onLoaderReady = function() {
     moduleName    = '';
 
     print('\nCompiling:\n');
+
+    if (! outFilename) {
+        outFilename = sourcePath + '.js';
+    }
 
     for (name in this.moduleCache) {
         print('    ' + name);
@@ -73,24 +77,26 @@ cor.Loader.prototype.onLoaderReady = function() {
     }
 
     //console.log(fileNameTable);
+    //console.log('===========')
     //console.log(dependences);
 
     for (i = 0, len = filenames.length; i < len; i++) {
         temp = [];
         for (name in dependences[i]) {
             depPath = dependences[i][name];
+
             if (cor.path.ext(depPath) === '') {
                 filename = fileNameTable[depPath + cor.path.ext(filenames[i])];
             }
             else {
                 filename = fileNameTable[depPath];
             }
-
+            
             if (filename) {
                 temp.push("'" + name + "':" + filename);
             }
             else {
-                console.log('could not locate dependence ' + name + ' for: ' + filenames[i]);
+                console.log('Could not locate dependence \'' + name + '\' for: ' + filenames[i]);
                 global.process.exit(1);
             }
         }
@@ -115,7 +121,7 @@ cor.Loader.prototype.onLoaderReady = function() {
             throw packageType[i] + ' not supported';
         }
 
-        src += content.replace('{package_name}', /^([a-zA-Z_]+)/.exec(path.basename(this.entryModulePath))[1]);
+        src += content.replace('{package_name}', /^([a-zA-Z_]+)/.exec(path.basename(outFilename))[1]);
     }
     
     src += '})([\n' +
@@ -124,10 +130,6 @@ cor.Loader.prototype.onLoaderReady = function() {
           programs.join(',') +
           '\n]);';
     
-    if (! outFilename) {
-        outFilename = sourcePath + '.js';
-    }
-    
     outFilename = path.resolve(cwd, outFilename);
     
     cliApp.print('\nWriting package to: ' + outFilename);
@@ -135,6 +137,8 @@ cor.Loader.prototype.onLoaderReady = function() {
 };
 
 function build() {
+    cor.Loader.prototype.onLoaderReady = onLoaderReady;
+
     var
     spath, last,
     path = cor.path.sanitize(sourcePath);

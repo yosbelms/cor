@@ -2,3 +2,13 @@
 ---
 Run jasmine tests for nodejs
 ---
+
+use 'jasrunner/node' node
+use './compiler/all'
+use './behavior/all'
+use './coverage/all'
+
+
+func init() {
+    node.jasEnv.execute()
+}

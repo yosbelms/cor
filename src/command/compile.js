@@ -19,6 +19,19 @@ function print() {
     //
 }
 
+function getStats(path) {
+    var stats;
+    
+    try {
+        return fs.statSync(path);
+    } catch (e) {
+        if (e.code === 'ENOENT') {
+            console.log('No such file or directory ' + path);
+            return;
+        }
+    }
+}
+
 function read(srcPath, base) {
     var
     files, i, len,
@@ -27,16 +40,8 @@ function read(srcPath, base) {
     if (base) {
         srcPath = path.join(base, srcPath);
     }
-
-    try {
-        stats = fs.statSync(srcPath);
-    }
-    catch (e) {
-        if (e.code === 'ENOENT') {
-            console.log('No such file or directory ' + srcPath);
-            return;
-        }
-    }
+    
+    stats = getStats(srcPath);
 
     key = path.relative(sourcePath, cor.path.sanitize(srcPath));
 
@@ -72,10 +77,31 @@ function makePath(sDirPath) {
     }
 }
 
-function write(outPath) {
+function writeFile(src, srcPath, outPath) {
     var
-    i, len, parsed,
-    content, plugin, src,
+    parsed, content,
+    plugin = cor.loader.plugins[cor.path.ext(srcPath)];
+
+    //console.log(srcPath); return;
+
+    if (plugin) {
+        print('    from: ' + srcPath);
+
+        parsed  = cor.path.parse(outPath);
+        content = plugin.toJs(src, outPath).src;
+
+        print('    to:   ' + outPath + '\n');
+    }
+    else {
+        content = src;
+    }
+
+    fs.writeFileSync(outPath, content);
+}
+
+function writeAll(outPath) {
+    var
+    i, len,plugin, src,
     srcPath, absPath;
 
     for (i = 0, len = sourceDirs.length; i < len; i++) {
@@ -86,27 +112,28 @@ function write(outPath) {
     print('Compiling:\n');
 
     for (srcPath in sourceCode) {
-        src     = sourceCode[srcPath];
-        plugin  = cor.loader.plugins[cor.path.ext(srcPath)];
-        absPath = cor.path.sanitize(path.join(outPath, srcPath));
-
-        if (plugin) {
-            print('    from: ' + absPath);
-
-            parsed  = cor.path.parse(absPath);
-            absPath = parsed.root + parsed.dir + cor.path.basename(absPath, cor.path.ext(absPath)) + '.js';
-            content = plugin.toJs(src, absPath).src;
-
-            print('    to:   ' + absPath + '\n');
-        }
-        else {
-            content = src;
-        }
-
-        fs.writeFileSync(absPath, content);
+        writeFile(sourceCode[srcPath], srcPath, outPath);
     }
 
     console.log('\nOutput in ' + path.resolve(outPath));
+}
+
+function compile(sourcePath, outPath) {
+    var stats = getStats(sourcePath), parsed;
+    
+    if (! stats) { return; }
+    
+    read(sourcePath);
+        
+    if (stats.isFile()) {
+        parsed = cor.path.parse(sourcePath);        
+        outPath = outPath || parsed.root + parsed.dir + cor.path.basename(sourcePath, cor.path.ext(sourcePath)) + '.js';        
+        writeFile(sourceCode[''], sourcePath, outPath);
+    }
+    else if (stats.isDirectory()) {
+        outPath = outPath || cor.path.basename(sourcePath) + ('js_' + (new Date()).getTime());        
+        write(outPath);
+    }
 }
 
 var
@@ -122,16 +149,13 @@ cmd.setAction(function (input, app) {
     sourcePath = cor.path.sanitize(cliInput.getArgument('path'));
 
     var
-    defaultOut = cor.path.basename(sourcePath) + ('js_' + (new Date()).getTime()),
     basePath   = cor.path.cwd();
 
     if (input.getOption('v')) {
         print = app.print;
     }
 
-    read(sourcePath);
-    write(cliInput.getOption('o') || defaultOut);
-
+    compile(sourcePath, cliInput.getOption('o'));
 });
 
 module.exports = cmd;

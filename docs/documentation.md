@@ -4,6 +4,198 @@ This is a reference manual for the Cor programming language. It will guide you i
 
 <toc/>
 
+
+## Quick recap
+### Inlcuding modules
+```
+use '../jquery.js'
+use './module'
+```
+
+### Functions
+```
+// as a statement
+func sum(a, b) {
+    return a + b
+}
+
+// simplified statement
+func sums(a, b) a + b
+
+// as expression
+mult = func(a, b) {
+    return a * b
+}
+
+// simplified expression
+mults = func(a, b) a * b
+
+
+// module initializer
+func init() {
+    jquery('.panel').html(render())
+}
+```
+
+### Slices/CoalesceOperator/ConditionalOperator
+```
+---
+Coalesce operator
+---
+// if `null` or `undefined` then be an empty array
+panels = getPanels() ?? []
+
+---
+Slice
+---
+// first 5 panels
+five = panels[0:5]
+
+---
+Conditional operator
+---
+five.forEach(func(pan) pan.maximize?())
+
+pan.maximize?()
+h = pan?.height
+c = pan.children?[0]
+```
+
+### Classes
+```
+---
+classes are prototype based underlaying
+---
+
+class Model {
+    // property with default value
+    id = genId()
+    conn
+
+    // initializer
+    func init() {}
+
+    // method
+    func save() {}
+}
+```
+
+### Inheritance
+```
+---
+fully compatible with javascript prototypal inheritance
+---
+class Person : Model {
+    name
+    age
+    func getName() me.name
+    func getAge()  me.age
+
+    // method overriding
+    func save() {
+        me.beforeSave()
+        // super call
+        super()
+    }
+}
+```
+
+### Instances
+```
+---
+use `&` symbol to create instances
+---
+
+// empty object
+obj = &[]
+
+// new instance
+person = &Person
+
+// instance and properties setting
+person = &Person[
+    name : 'John',
+    age  : 23,
+]
+
+// positional properties setting
+person = &Person['John', 23]
+
+// person.name == 'John'
+// person.age == 23
+```
+
+### If/For/Switch
+```
+// module initializer
+func init() {
+    // if
+    if foo == 'bar' {
+        sum()
+    }
+
+    // infinite for
+    for { }
+
+    // like `while (a) { ... }`
+    for a { }
+
+    // for-in, works for arrays and objects own properties
+    for value in array { }
+    for key, value in array { }
+
+    // for-in-range
+    for i in 0:10 {
+        val = arr[i]
+    }
+
+    // classic for
+    for i = 0; i < arr.length; i++ { }
+
+    // switch
+    switch foo {
+        case 1     : doOne()
+        case 2     : doTwo()
+        // multiple cases
+        case 3,4,5 : doThreeFourFive()
+        // default case
+        default    : doOtherwise()
+    }
+}
+```
+
+### TypeAssertion/Errors
+```
+func init() {
+
+    // type assertion `expression.(Class/Constructor)`
+    func isString(obj) {
+        return obj.(String)
+    }
+    
+    isPerson = obj.(Person)
+
+    func launchError() {
+        // throw an error
+        error('Error launched')
+    }
+    
+    ---
+    catch evaluates a expression and executes a block
+    of code if an error happends
+    ---
+    catch launchError() {
+        // the builtin `error()` function returns the error object
+        console.log(error())
+
+        // also can be used to throw an error
+        // it rethrows the caught error if no parametter is passed
+        error()
+    }
+
+}
+```
+
 ## Semicolon Insertion
 
 Cor grammar uses semicolon to terminate statements, but those semicolons doesn't need to appear in the source. Instead, the lexer applies a simple rule to insert semicolons automatically as it scans, so you can avoid write it. **The rule is:** If the last token before a newline is an identifier (which includes keywords), a basic literal such as a number or string constant, or one of the tokens: `++ -- ) }` the lexer always inserts a semicolon after the token.
@@ -14,28 +206,29 @@ Cor grammar uses semicolon to terminate statements, but those semicolons doesn't
 
 Functions may be defined using syntax such as the following:
 ```
+// as a statement
 func sum(a, b) {
     return a + b
 }
-```
 
-
-### Lambda
-
-Lambdas are functions that can be used as values, hence, they are assignables.
-
-```
+// as expression
 mult = func(a, b) {
     return a * b
 }
 ```
 
-With simplified syntax:
+It can be used in a simplified way.
 ```
-mult = func(a, b) a * b
+func sums(a, b) a + b
 
-// usage
-console.log(mult(2, 3)) // echoes 6
+mults = func(a, b) a * b
+```
+The body of the simplified way is an expression to be returned. This kind of syntax is usefull for callbacks passing, functional nuances ors compact code style.
+
+```
+func init() {
+    array.map(func(o) o.id).filter(func(o) o.age >= 18)
+}
 ```
 
 
@@ -269,12 +462,12 @@ color2 = colors[1]
 
 ### Slices
 
-Slice expression constructs an array from an existing array.
+Slice expression is a syntactic sugar for the javascript `slice` method, in most of the cases it constructs an array from an existing array.
 ```
 colors = ['red', 'green', 'blue']
 
-sliced = colors[1:2] // sliced is ['green', 'blue']
-sliced = colors[:1]  // sliced is ['red', 'green']
+sliced = colors[1:3] // sliced is ['green', 'blue']
+sliced = colors[:1]  // sliced is ['red']
 sliced = colors[1:]  // sliced is ['green', 'blue']
 ```
 
@@ -357,7 +550,7 @@ class Foo {
     }
 }
 ```
-Tn the above example `me` keyword is used inside a lambda scope, however it references the instance object of the `Foo` class.
+In the above example `me` keyword is used inside a lambda scope, however it references the instance object of the `Foo` class.
 
 > The `this` keyword is intact, you can use it as in javascript, however it may lead to unsafe code, use `this` at your own risk.
 
@@ -644,7 +837,21 @@ for index, value in obj {
 // name Bill
 // age 50
 ```
-> For-In statements does not iterates through the object prototype.
+> For-In statements iterates through the object own prototype.
+
+### For/In/Range
+
+The For/in/range flavor is a convenient syntanctic sugar that regards most of the iteration use cases.
+```
+for i in [0:100] {
+	// ...
+}
+
+// is the same to
+for i = 0; i < 100 ;i++ {
+
+}
+```
 
 
 ### If/Else

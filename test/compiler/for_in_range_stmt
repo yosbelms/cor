@@ -1,0 +1,17 @@
+func a () {
+    for i in n:m {
+
+    }
+
+    for i in n: {
+
+    }
+
+    for i in :m {
+
+    }
+
+    for i in : {
+
+    }
+}

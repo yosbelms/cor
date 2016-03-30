@@ -57,6 +57,7 @@ target.all = function() {
     target.parser();
     target.dist();
     target.docs();
+    target.test();
 }
 
 // runs all clean tasks
@@ -99,9 +100,9 @@ target.cleanparser = function() {
 
 // to run test from nodejs
 // usage: make test
-// still unused
 target.test = function() {
-    require('./test/run_node.js');
+    echo(' + testing');
+    exec(__dirname + '/bin/cor ' + __dirname + '/test/node.cor');
 }
 
 // generates the parser using Jison(jison.org) library
@@ -193,6 +194,12 @@ target.docs = function() {
 
         echo('   ' + outPath);
     }
+}
+
+// run tests
+target.test = function() {
+	echo(' + testing')
+    exec('node ./bin/cor run ./test/node.cor');
 }
 
 // make a release, publishing a new tag

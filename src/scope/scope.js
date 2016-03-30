@@ -6,12 +6,12 @@ var EcmaReservedKeywords = [
     'case', 'else', 'new', 'var',
     'catch', 'finally', 'return', 'void',
     'continue', 'for', 'switch', 'while',
-    'debugger', 'function', 'this', 'with',
+    'debugger', 'function', 'with',
     'default', 'if', 'throw',
     'delete', 'in', 'try',
 
     // Ecma-262 FutureReservedWord
-    'class', 'enum', 'extends', 'super',
+    'class', 'enum', 'extends',
     'const', 'export', 'import',
 
     // Ecma-262 FutureReservedWord (in strict mode)
@@ -293,6 +293,10 @@ yy.List = Class(yy.Node, {
 
     addFront: function() {
         this.children = slice.call(arguments).concat(this.children);
+    },
+
+    last: function() {
+        return this.children[this.children.length - 1];
     }
 
 });
@@ -458,6 +462,9 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
         for (i = 0; i < len; i++) {
             item = ls.children[i];
             if (item instanceof yy.FunctionNode) {
+                if (typeof item.name === 'undefined') {
+                    this.error('nameless function', getLesserLineNumber(item));
+                }
                 name       = item.name;
                 nameLineno = item.nameLineno;
                 if (name === this.initializerName) {
@@ -516,7 +523,26 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
 
 // Node for function and class blocks
 yy.BlockNode = Class(yy.Node, {
-    type: 'BlockNode'
+    type: 'BlockNode',
+
+    init: function() {
+        this.base('init', arguments);
+
+        var node, i, ch, len;
+
+        if (this.children[1] instanceof yy.List) {
+            ch = this.children[1].children;
+            len = ch.length;
+
+            for (i = 0; i < len; i++) {
+                node = ch[i];
+                if (node instanceof yy.FunctionNode && typeof node.name === 'undefined') {
+                    this.error('nameless function', getLesserLineNumber(node));
+                }
+            }    
+        }
+        
+    }
 });
 
 // Node for dot-expression syntax: `a.b.c`
@@ -552,11 +578,11 @@ yy.FunctionNode = Class(yy.ContextAwareNode, {
         if (ch[1]) {
             this.name = ch[1].children;
             this.nameLineno = ch[1].lineno;
-        }        
+        }
         if (!(this.children[5] instanceof yy.BlockNode)) {
             this.children[5] = new yy.BlockNode(
                 new yy.Lit('{', ch[4].lineno),
-                new yy.Lit('return', ch[5].loc.first_line),
+                new yy.Lit('return', getLesserLineNumber(ch[5])),
                 new yy.List(ch[5]),
                 new yy.Lit('}', ch[5].lineno)
             );
@@ -585,12 +611,10 @@ yy.SliceNode = Class(yy.Node, {
     
     compile: function() {
         var
-        num, lit,
-        openParen  = '(',
-        closeParen = ')',
-        from       = this.from,
-        to         = this.to,
-        ch         = this.children;
+        lit,
+        from = this.from,
+        to   = this.to,
+        ch   = this.children;
 
         if (from === undefined) {
             from = new yy.Lit('0', ch[1].lineno);
@@ -609,37 +633,13 @@ yy.SliceNode = Class(yy.Node, {
                 to      = lit;
             }
 
-            if (to instanceof yy.Lit) {
-                to.children =  this.transformLiteral(to.children);
-                this.children.push(
-                    new yy.Lit(', ', ch[3].lineno),
-                    to
-                );
-            }
-            else {
-                if (to instanceof yy.AssociationNode) {
-                    openParen  = '';
-                    closeParen = '';
-                }
-                this.children.push(
-                    new yy.Lit(', +' + openParen, ch[3].lineno),
-                    to, 
-                    new yy.Lit(closeParen + ' + 1 || 9e9', to.lineno)
-                );
-            }
+            this.children.push(
+                new yy.Lit(', ', ch[3].lineno),
+                to
+            );
         }
 
         this.children.push(new yy.Lit(')', ch[5].lineno));
-    },    
-
-    transformLiteral: function(l) {
-        var num = parseInt(l);
-        if (! isNaN(num)) {
-            return String(+(num)+1);
-        }
-        else {
-            return l;
-        }
     }
 
 });
@@ -792,6 +792,10 @@ yy.VarNode = Class(yy.Node, {
         this.base('initNode', arguments);
         this.context = this.yy.env.context();
         this.name = this.children[0].children;
+
+        if (EcmaReservedKeywords.indexOf(this.name) !== -1) {
+            this.children[0].children = this.name += '_';
+        }
     },
 
     markAsUsedVar: function() {
@@ -1367,8 +1371,8 @@ yy.CaseNode = Class(yy.Node, {
 
         //if is not "default"
         if (ch[3]) {
-            ls = ch[3].children[0].children;
-            ls.push(new yy.Lit(' break; ', ls[ls.length - 1].lineno));
+            ls = ch[3];
+            ls.children.push(new yy.Lit(' break; ', ls.last().lineno - 1));
         }
     },
 
@@ -1480,6 +1484,36 @@ yy.ForInNode = Class(yy.Node, {
 
 });
 
+yy.ForInRangeNode = Class(yy.Node, {
+
+    type: 'ForInRangeNode',
+
+    compile: function() {
+        var
+        ctx = yy.env.context(),
+        ch = this.children, i, from, to;
+
+        i = ch[1].children[0].children;
+        from = ch[3] || new yy.Lit('0', ch[0].lineno);
+        to   = ch[5] || new yy.Lit('9e9', ch[0].lineno);
+
+        /*
+        for i in n:m { }
+        for (var i = n; i < m; i++) { }
+        */
+        this.children = [
+            new yy.Lit('for (var ' + i + ' = ', ch[0].lineno),
+            from,
+            new yy.Lit('; ' + i + ' < ', from.lineno),
+            to,
+            new yy.Lit('; ' + i + '++) ', to.lineno),
+            ch[6],
+        ]
+                
+    }
+
+});
+
 
 yy.CatchNode = Class(yy.Node, {
 
@@ -1548,11 +1582,14 @@ yy.ExistenceNode = Class(yy.Node, {
     
     init: function(sub) {
         this.subject = sub;
+        if (sub instanceof yy.Lit) {
+            this.error('Invalid operation with ' + sub.children, sub.lineno);
+        }
         this.base('init', sub.children);
     },
     
-    initNode: function() {        
-        if (this.children[0] instanceof yy.VarNode) {            
+    initNode: function() {
+        if (this.children[0] instanceof yy.VarNode ) {            
             this.ref = this.children[0].name;
         }
         else {             
@@ -1568,10 +1605,14 @@ yy.ExistenceNode = Class(yy.Node, {
         ref = this.ref,
         ch  = this.children;
         
+        if (this.subject instanceof yy.VarNode) {
+            ref = this.ref = this.subject.name = this.subject.name;
+        }
+        
         // if call node
         if (this.subject instanceof yy.CallNode) {
             condition = ' !== \'function\' ? ';
-        }
+        }        
         // otherwise
         else {
             condition = ' === \'undefined\' || '+ ref + ' === null ? ';
@@ -1589,6 +1630,13 @@ yy.ExistenceNode = Class(yy.Node, {
         
         // optimize resulting code avoiding ref generation
         if (ch[0] instanceof yy.VarNode) {
+            this.children = [
+                new yy.Lit('typeof ' + ref + condition, ch[0].lineno),
+                new yy.Lit('void 0 : ' + ref, this.subject.lineno),
+                this.subject,
+            ];
+        }
+        else if (ch[0] instanceof yy.Lit) {
             this.children = [
                 new yy.Lit('typeof ' + ref + condition, ch[0].lineno),
                 new yy.Lit('void 0 : ' + ref, this.subject.lineno),

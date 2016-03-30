@@ -1,7 +1,7 @@
 (function(cor){
 
 var
-loader = cor.loader;
+loader = cor.loader,
 path   = cor.path;
 
 //Custom plugin for .js files

@@ -1,5 +1,5 @@
 
-use '../util'
+use '../utils'
 
 shouldNotThrowList = [
     'compiler/empty_program',
@@ -24,6 +24,7 @@ shouldNotThrowList = [
 
     'compiler/for_stmt',
     'compiler/for_in_stmt',
+    'compiler/for_in_range_stmt',
     'compiler/if_stmt',
     'compiler/switch_stmt',
     'compiler/use_stmt',
@@ -35,21 +36,24 @@ shouldNotThrowList = [
 shouldThrowList = [
     'compiler/module_members_with_equal_name1',
     'compiler/module_members_with_equal_name2',
+    'compiler/incorrect_nameless_functions_use',
 
     'compiler/wrong_incdec_used_as_expr',
 
     'compiler/super_call_autside_method',
+    
+    'compiler/wrong_existential_op',
 ]
 
 func getNotThrowExpectation(filename) {
     return func() {
-        expect(util.fileCompiler(filename)).not.toThrow()
+        expect(utils.fileCompiler(filename)).not.toThrow()
     }
 }
 
 func getThrowExpectation(filename) {
     return func() {
-        expect(util.fileCompiler(filename)).toThrow()
+        expect(utils.fileCompiler(filename)).toThrow()
     }
 }
 

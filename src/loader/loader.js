@@ -31,7 +31,7 @@ in the source code. It resolve module dependencies
 */
 var Loader = Class({
     // the path of the .json file containig the environment variables
-    confPath                : null,
+    confPath               : null,
     // the modules are astored here once compiled
     moduleCache            : {},
     // path ignored by the loader
@@ -175,7 +175,6 @@ var Loader = Class({
         else {
             this.ignoredPaths[path] = true;
         }
-        
     },
 
     resolveMappedPath: function(srcPath) {
@@ -217,9 +216,13 @@ var Loader = Class({
             throw this.error("Extension '" + ext + "' is not supported");
         }
 
-        for (i = 0,  len = required.length; i < len; i++) {
+        for (i = 0, len = required.length; i < len; i++) {
             requiredPath = required[i];
 
+            if (this.ignoredPaths[requiredPath]) {
+                continue;
+            }
+            
             if (path.isAbsolute(requiredPath)) {
                 absolutePath = path.sanitize(requiredPath);
             }
@@ -263,7 +266,7 @@ var Loader = Class({
     },
 
     requireModule: function(srcPath, from) {
-        if ((! this.ignoredPaths[srcPath]) && (! this.moduleCache[srcPath])) {
+        if (! (this.ignoredPaths[srcPath] || this.moduleCache[srcPath])) {
             this.ignorePath(srcPath);
 
             var ext = path.ext(srcPath);
@@ -341,9 +344,7 @@ var Program = Class({
         if (this.environment === null) {
 
             js = this.toJs();
-            if (typeof js === 'string') {
-                js = {src: js};
-            }
+
             prog = (new Function('return function(require,module,exports){' +
                   (js.prefix  || '') +
                   (js.src     || '') + '\n}' +
@@ -384,7 +385,7 @@ var Program = Class({
                 if (module) {
                     return module.getExports();
                 }
-                else {
+                else if (! me.loader.ignoredPaths[srcPath]) {
                     throw me.loader.error("Can not find module '" + srcPath + "'", me.filename);
                 }
             }
@@ -395,11 +396,16 @@ var Program = Class({
 
     toJs: function() {
         var
+        js,
         ext    = path.ext(this.filename),
         plugin = this.loader.plugins[ext];
 
-        if (plugin) {
-            return plugin.toJs(this.src, this.filename);
+        if (plugin) {            
+            js = plugin.toJs(this.src, this.filename)
+            if (typeof js === 'string') {
+                js = {src: js};
+            }            
+            return js;
         }
         else {
             throw this.error('Can not translate to javascript files \'.' + ext + "'", this.filename);
