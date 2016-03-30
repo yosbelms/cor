@@ -36,7 +36,199 @@
 
 <p>This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases. Cor is a language designed with large web development in mind. Hence, is possible to develop your software without to execute any command to compile the source code, CLI tools are only needed to make the product able for production environments.</p>
 
-<p><h2>Table of Content</h2><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#expressions">Expressions</a><a class="toclink toclink-3" href="#functions">Functions</a><a class="toclink toclink-3" href="#lambda">Lambda</a><a class="toclink toclink-3" href="#comments">Comments</a><a class="toclink toclink-3" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-3" href="#objects">Objects</a><a class="toclink toclink-3" href="#literalconstructors">Literal Constructors</a><a class="toclink toclink-3" href="#strings">Strings</a><a class="toclink toclink-3" href="#numbers">Numbers</a><a class="toclink toclink-3" href="#operators">Operators</a><a class="toclink toclink-3" href="#coalesce">Coalesce</a><a class="toclink toclink-3" href="#existconditional">Exist Conditional</a><a class="toclink toclink-3" href="#arrays">Arrays</a><a class="toclink toclink-3" href="#slices">Slices</a><a class="toclink toclink-3" href="#typeassertion">Type Assertion</a><a class="toclink toclink-3" href="#classes">Classes</a><a class="toclink toclink-3" href="#initialization">Initialization</a><a class="toclink toclink-3" href="#inheritance">Inheritance</a><a class="toclink toclink-3" href="#superbuiltinfunction">Super (Builtin Function)</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#statements">Statements</a><a class="toclink toclink-3" href="#forloop">For loop</a><a class="toclink toclink-3" href="#forin">For/In</a><a class="toclink toclink-3" href="#ifelse">If/Else</a><a class="toclink toclink-3" href="#switchcasedefault">Switch/Case/Default</a><a class="toclink toclink-3" href="#incdec">Inc/Dec</a><a class="toclink toclink-3" href="#use">Use</a><a class="toclink toclink-3" href="#catcherror">Catch/Error</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#theloader">The Loader</a><a class="toclink toclink-3" href="#configuration">Configuration</a><a class="toclink toclink-4" href="#dependenceinjection">Dependence injection</a><a class="toclink toclink-2" href="#corinthebrowser">Cor in the Browser</a><a class="toclink toclink-2" href="#thecrlcorruntimelibrary">The CRL (Cor Runtime Library)</a></p>
+<p><h2>Table of Content</h2><a class="toclink toclink-2" href="#quickrecap">Quick recap</a><a class="toclink toclink-3" href="#inlcudingmodules">Inlcuding modules</a><a class="toclink toclink-3" href="#functions">Functions</a><a class="toclink toclink-3" href="#slicescoalesceoperatorconditionaloperator">Slices/CoalesceOperator/ConditionalOperator</a><a class="toclink toclink-3" href="#classes">Classes</a><a class="toclink toclink-3" href="#inheritance">Inheritance</a><a class="toclink toclink-3" href="#instances">Instances</a><a class="toclink toclink-3" href="#ifforswitch">If/For/Switch</a><a class="toclink toclink-3" href="#typeassertionerrors">TypeAssertion/Errors</a><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#expressions">Expressions</a><a class="toclink toclink-3" href="#comments">Comments</a><a class="toclink toclink-3" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-3" href="#objects">Objects</a><a class="toclink toclink-3" href="#literalconstructors">Literal Constructors</a><a class="toclink toclink-3" href="#strings">Strings</a><a class="toclink toclink-3" href="#numbers">Numbers</a><a class="toclink toclink-3" href="#operators">Operators</a><a class="toclink toclink-3" href="#coalesce">Coalesce</a><a class="toclink toclink-3" href="#existconditional">Exist Conditional</a><a class="toclink toclink-3" href="#arrays">Arrays</a><a class="toclink toclink-3" href="#slices">Slices</a><a class="toclink toclink-3" href="#typeassertion">Type Assertion</a><a class="toclink toclink-3" href="#initialization">Initialization</a><a class="toclink toclink-3" href="#superbuiltinfunction">Super (Builtin Function)</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#statements">Statements</a><a class="toclink toclink-3" href="#forloop">For loop</a><a class="toclink toclink-3" href="#forin">For/In</a><a class="toclink toclink-3" href="#forinrange">For/In/Range</a><a class="toclink toclink-3" href="#ifelse">If/Else</a><a class="toclink toclink-3" href="#switchcasedefault">Switch/Case/Default</a><a class="toclink toclink-3" href="#incdec">Inc/Dec</a><a class="toclink toclink-3" href="#use">Use</a><a class="toclink toclink-3" href="#catcherror">Catch/Error</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#theloader">The Loader</a><a class="toclink toclink-3" href="#configuration">Configuration</a><a class="toclink toclink-4" href="#dependenceinjection">Dependence injection</a><a class="toclink toclink-2" href="#corinthebrowser">Cor in the Browser</a><a class="toclink toclink-2" href="#thecrlcorruntimelibrary">The CRL (Cor Runtime Library)</a></p>
+
+<h2 id="quickrecap">Quick recap</h2>
+
+<h3 id="inlcudingmodules">Inlcuding modules</h3>
+
+<pre><code>use '../jquery.js'
+use './module'
+</code></pre>
+
+<h3 id="functions">Functions</h3>
+
+<pre><code>// as a statement
+func sum(a, b) {
+    return a + b
+}
+
+// simplified statement
+func sums(a, b) a + b
+
+// as expression
+mult = func(a, b) {
+    return a * b
+}
+
+// simplified expression
+mults = func(a, b) a * b
+
+
+// module initializer
+func init() {
+    jquery('.panel').html(render())
+}
+</code></pre>
+
+<h3 id="slicescoalesceoperatorconditionaloperator">Slices/CoalesceOperator/ConditionalOperator</h3>
+
+<pre><code>---
+Coalesce operator
+---
+// if `null` or `undefined` then be an empty array
+panels = getPanels() ?? []
+
+---
+Slice
+---
+// first 5 panels
+five = panels[0:5]
+
+---
+Conditional operator
+---
+five.forEach(func(pan) pan.maximize?())
+
+pan.maximize?()
+h = pan?.height
+c = pan.children?[0]
+</code></pre>
+
+<h3 id="classes">Classes</h3>
+
+<pre><code>---
+classes are prototype based underlaying
+---
+
+class Model {
+    // property with default value
+    id = genId()
+    conn
+
+    // initializer
+    func init() {}
+
+    // method
+    func save() {}
+}
+</code></pre>
+
+<h3 id="inheritance">Inheritance</h3>
+
+<pre><code>---
+fully compatible with javascript prototypal inheritance
+---
+class Person : Model {
+    name
+    age
+    func getName() me.name
+    func getAge()  me.age
+
+    // method overriding
+    func save() {
+        me.beforeSave()
+        // super call
+        super()
+    }
+}
+</code></pre>
+
+<h3 id="instances">Instances</h3>
+
+<pre><code>---
+use `&amp;` symbol to create instances
+---
+
+// empty object
+obj = &amp;[]
+
+// new instance
+person = &amp;Person
+
+// instance and properties setting
+person = &amp;Person[
+    name : 'John',
+    age  : 23,
+]
+
+// positional properties setting
+person = &amp;Person['John', 23]
+
+// person.name == 'John'
+// person.age == 23
+</code></pre>
+
+<h3 id="ifforswitch">If/For/Switch</h3>
+
+<pre><code>// module initializer
+func init() {
+    // if
+    if foo == 'bar' {
+        sum()
+    }
+
+    // infinite for
+    for { }
+
+    // like `while (a) { ... }`
+    for a { }
+
+    // for-in, works for arrays and objects own properties
+    for value in array { }
+    for key, value in array { }
+
+    // for-in-range
+    for i in 0:10 {
+        val = arr[i]
+    }
+
+    // classic for
+    for i = 0; i &lt; arr.length; i++ { }
+
+    // switch
+    switch foo {
+        case 1     : doOne()
+        case 2     : doTwo()
+        // multiple cases
+        case 3,4,5 : doThreeFourFive()
+        // default case
+        default    : doOtherwise()
+    }
+}
+</code></pre>
+
+<h3 id="typeassertionerrors">TypeAssertion/Errors</h3>
+
+<pre><code>func init() {
+
+    // type assertion `expression.(Class/Constructor)`
+    func isString(obj) {
+        return obj.(String)
+    }
+
+    isPerson = obj.(Person)
+
+    func launchError() {
+        // throw an error
+        error('Error launched')
+    }
+
+    ---
+    catch evaluates a expression and executes a block
+    of code if an error happends
+    ---
+    catch launchError() {
+        // the builtin `error()` function returns the error object
+        console.log(error())
+
+        // also can be used to throw an error
+        // it rethrows the caught error if no parametter is passed
+        error()
+    }
+
+}
+</code></pre>
 
 <h2 id="semicoloninsertion">Semicolon Insertion</h2>
 
@@ -44,30 +236,33 @@
 
 <h2 id="expressions">Expressions</h2>
 
-<h3 id="functions">Functions</h3>
+<h3 id="functions-1">Functions</h3>
 
 <p>Functions may be defined using syntax such as the following:</p>
 
-<pre><code>func sum(a, b) {
+<pre><code>// as a statement
+func sum(a, b) {
     return a + b
 }
-</code></pre>
 
-<h3 id="lambda">Lambda</h3>
-
-<p>Lambdas are functions that can be used as values, hence, they are assignables.</p>
-
-<pre><code>mult = func(a, b) {
+// as expression
+mult = func(a, b) {
     return a * b
 }
 </code></pre>
 
-<p>With simplified syntax:</p>
+<p>It can be used in a simplified way.</p>
 
-<pre><code>mult = func(a, b) a * b
+<pre><code>func sums(a, b) a + b
 
-// usage
-console.log(mult(2, 3)) // echoes 6
+mults = func(a, b) a * b
+</code></pre>
+
+<p>The body of the simplified way is an expression to be returned. This kind of syntax is usefull for callbacks passing, functional nuances ors compact code style.</p>
+
+<pre><code>func init() {
+    array.map(func(o) o.id).filter(func(o) o.age &gt;= 18)
+}
 </code></pre>
 
 <h3 id="comments">Comments</h3>
@@ -292,12 +487,12 @@ color2 = colors[1]
 
 <h3 id="slices">Slices</h3>
 
-<p>Slice expression constructs an array from an existing array.</p>
+<p>Slice expression is a syntactic sugar for the javascript <code>slice</code> method, in most of the cases it constructs an array from an existing array.</p>
 
 <pre><code>colors = ['red', 'green', 'blue']
 
-sliced = colors[1:2] // sliced is ['green', 'blue']
-sliced = colors[:1]  // sliced is ['red', 'green']
+sliced = colors[1:3] // sliced is ['green', 'blue']
+sliced = colors[:1]  // sliced is ['red']
 sliced = colors[1:]  // sliced is ['green', 'blue']
 </code></pre>
 
@@ -320,7 +515,7 @@ isRunner = rnr.(Runner) // true
 isRunner = obj.(Runner) // false
 </code></pre>
 
-<h3 id="classes">Classes</h3>
+<h3 id="classes-1">Classes</h3>
 
 <p>A class is a "blueprint" for objects, Cor has its own approach and keeps compatibility with javascript. Unlike javascript's <code>this</code> which references the execution scope, Cor's <code>me</code> identifier is available as a reference to the class  instance.</p>
 
@@ -379,7 +574,7 @@ client = &amp;Client[
 }
 </code></pre>
 
-<p>Tn the above example <code>me</code> keyword is used inside a lambda scope, however it references the instance object of the <code>Foo</code> class.</p>
+<p>In the above example <code>me</code> keyword is used inside a lambda scope, however it references the instance object of the <code>Foo</code> class.</p>
 
 <blockquote>
   <p>The <code>this</code> keyword is intact, you can use it as in javascript, however it may lead to unsafe code, use <code>this</code> at your own risk.</p>
@@ -425,7 +620,7 @@ client = &amp;Client[
   <p>You can use eiter, <code>init</code> method or property-set, but not both.</p>
 </blockquote>
 
-<h3 id="inheritance">Inheritance</h3>
+<h3 id="inheritance-1">Inheritance</h3>
 
 <p>Cor supports single inheritance by using <code>:</code> operator. It embraces javascript prototype chain, so it is safe to use it along with any javascript libraries.</p>
 
@@ -669,8 +864,22 @@ for index, value in obj {
 </code></pre>
 
 <blockquote>
-  <p>For-In statements does not iterates through the object prototype.</p>
+  <p>For-In statements iterates through the object own prototype.</p>
 </blockquote>
+
+<h3 id="forinrange">For/In/Range</h3>
+
+<p>The For/in/range flavor is a convenient syntanctic sugar that regards most of the iteration use cases.</p>
+
+<pre><code>for i in [0:100] {
+    // ...
+}
+
+// is the same to
+for i = 0; i &lt; 100 ;i++ {
+
+}
+</code></pre>
 
 <h3 id="ifelse">If/Else</h3>
 
@@ -1072,19 +1281,16 @@ class TodoModel : bbone.Model {
 
     <!--start clicky stub-->
     
-        <a title="Google Analytics Alternative" href="http://clicky.com/100894043" style="display: none;"><img alt="Google Analytics Alternative" src="//static.getclicky.com/media/links/badge.gif" border="0" /></a>
-        <script type="text/javascript">
-        var clicky_site_ids = clicky_site_ids || [];
-        clicky_site_ids.push(100894043);
-        (function() {
-          var s = document.createElement('script');
-          s.type = 'text/javascript';
-          s.async = true;
-          s.src = '//static.getclicky.com/js';
-          ( document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0] ).appendChild( s );
-        })();
-        </script>
-        <noscript><p><img alt="Clicky" width="1" height="1" src="//in.getclicky.com/100894043ns.gif" /></p></noscript>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-73271106-1', 'auto');
+      ga('send', 'pageview');
+
+    </script>
         
     <!--end of clicky stub-->
     
