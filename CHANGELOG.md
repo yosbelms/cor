@@ -1,3 +1,14 @@
+# 0.6.0
+
+0.6.0 Is one of the major releases since the first Cor release. This release brings automatic testing with CircleCI and `run` command is now available, so you can now do `cor run path/to/file.cor` in node.js
+
+* Add more tests
+* Fix a bug in the playground that din't let it work properly in firefox
+* `compile` command now works properly whaen compiling a single file
+* The node Loader was refoctored
+* Function now can be written in compact mode, e.g `func sum(a, b) a + b`
+
+
 # 0.4.0
 
 Interesting features has been added to Cor this time, the exception handling has been revamped with simplified syntax while it remains fully compatible with javascript exceptions model. The Cor syntax now supports the *exist* (`?`) operator, which is a good replacement for the `if` statement to check for existence, it makes `Cor` more expressive but still sober and readable.
