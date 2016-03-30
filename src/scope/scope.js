@@ -6,12 +6,12 @@ var EcmaReservedKeywords = [
     'case', 'else', 'new', 'var',
     'catch', 'finally', 'return', 'void',
     'continue', 'for', 'switch', 'while',
-    'debugger', 'function', 'this', 'with',
+    'debugger', 'function', 'with',
     'default', 'if', 'throw',
     'delete', 'in', 'try',
 
     // Ecma-262 FutureReservedWord
-    'class', 'enum', 'extends', 'super',
+    'class', 'enum', 'extends',
     'const', 'export', 'import',
 
     // Ecma-262 FutureReservedWord (in strict mode)
@@ -792,6 +792,10 @@ yy.VarNode = Class(yy.Node, {
         this.base('initNode', arguments);
         this.context = this.yy.env.context();
         this.name = this.children[0].children;
+
+        if (EcmaReservedKeywords.indexOf(this.name) !== -1) {
+            this.children[0].children = this.name += '_';
+        }
     },
 
     markAsUsedVar: function() {
