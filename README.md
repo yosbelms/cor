@@ -1,23 +1,39 @@
 # Cor
 
-**The language of the Web**
+**making the web great again**
 
-Cor is an opensource language that compiles to plain javascript. It is designed to make easy to write, build, and maintain large software for the web.
+Cor is an opensource language that compiles to plain javascript. It is designed to make easy to write, build, and maintain large software for the web. Cor is an attemp to make myself more productive, it is what I think javascript should have been from the beginning.
 
-> Cor is a work in process, if you are interested you can help by trying it and reporting bugs or requesting improvement or new features. See the links at the end of this page.
+Cor brings a fresh way of programming for web browsers and Node.js platform, it borrows good ideas from well known languages such as Go and C#, but it is a new language. It plays very well with the outer world; with Cor you can take advantage of the huge javascript ecosystem and reuse your preferred libraries.
+
 
 ## Installation
 
-From NPM:
-
+Install globally from npm:
 ```
 npm install -g cor-lang
 ```
 
-Directly from git repository:
-
+Leave off the `-g` if you don't wish to install globally:
 ```
-npm install -g yosbelms/cor
+npm install cor-lang
+```
+
+Also you can install it with Bower:
+```
+bower install cor-lang
+```
+
+## Get Started
+
+Execute a script:
+```
+cor run /path/to/source.cor
+```
+
+Compile a script:
+```
+cor compile /path/to/source.cor
 ```
 
 ## Support
@@ -27,4 +43,4 @@ npm install -g yosbelms/cor
 * To suggest a feature or report a bug: http://github.com/yosbelms/cor/issues
 * Contributors are listed here: http://github.com/yosbelms/cor/contributors
 
-Copyright 2016 (c) Yosbel Marin. This software is licensed under the BSD License.
+Copyright 2015-2016 (c) Yosbel Marin. This software is licensed under the BSD License.
