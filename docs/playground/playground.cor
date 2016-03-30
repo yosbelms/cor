@@ -16,9 +16,7 @@ Find an element is the DOM tree and returns it
 Usage:
     button = pick('my-button')
 ---
-func pick(id) {
-    return document.getElementById(id)
-}
+func pick(id) document.getElementById(id)
 
 
 ---
@@ -109,7 +107,7 @@ func init() {
     if rHash.test(hash) {
         ElSource.value = decodeURIComponent(hash.replace(rHash, ''))
     } else {
-        select()    
+        select()
     }
-    compile()       
+    compile()
 }
