@@ -11,6 +11,7 @@
     font-style: normal;
 }
 
+
 [class^="icon-"], [class*=" icon-"] {
     /* use !important to prevent issues with browser extensions that change fonts */
     font-family: 'icomoon' !important;
@@ -75,6 +76,10 @@ a:hover {
 
 .clear {
     clear: right;
+}
+
+.center {
+    text-align: center;
 }
 
 /* NAV BAR */
@@ -295,28 +300,25 @@ td {
     margin-top: 15px;
 }
 
-.grid p {
-    font-size: 16px;
-}
-
 .grid pre {
     margin-top: 6px;
 }
 
 /* BUTTON */
 a.button {
+    display: inline-block;
+    text-align: center;
     color: #fff;
-    border: 1px solid #fff;
+    border: 0px;
     padding: 10px 20px;
     font-size: 20px;
-    border-radius: 8px;
+    border-radius: 50px;
     font-weight: normal;
-    background-color: transparent;
+    background-color: #01579B;
 }
 
 a.button:hover {
-    color: #204d74;
-    background-color: #fff;
+    background-color: #204d74;
 }
 
 a.button-inverse {
@@ -576,5 +578,33 @@ a.pg-btn-link:hover {
     
     .pg-source {
         border-bottom: 3px dotted #aaa;
+    }
+}
+
+@media print {
+    h1, h2, h3, h4 {
+        text-align: left;
+        border: 0px;
+    }
+
+    h2 {
+        page-break-before: always;
+        page-break-inside: avoid;
+    }
+
+    .hljs {
+        color: #222 !important;
+    }
+
+    .hljs-comment {
+        color: #ddd !important;
+    }
+
+    .toclink {
+        border: 0px;
+    }
+
+    nav.navbar, .footer, .footer-links {
+        display: none;
     }
 }
