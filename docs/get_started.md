@@ -92,10 +92,10 @@ cor http
 The server will publish in port `9000` unless you have chosen a different one.
 
 
-To bootstrap Cor in development mode include Cor library (located at `node_modules/cor/dist/cor.js` if NPM was used to install it locally) inside a HTML file using a `script` tag, then specify the application entry script using `data-entry="path/to/script.cor"` in a separated script tag, for example:
+To bootstrap Cor in development mode include Cor library (located at `node_modules/cor-lang/dist/cor.js` if NPM was used to install it locally) inside a HTML file using a `script` tag, then specify the application entry script using `data-entry="path/to/script.cor"` in a separated script tag, for example:
 ```
 <html>
-    <script type="text/javascript" src="node_modules/cor/dist/cor.js"></script>
+    <script type="text/javascript" src="node_modules/cor-lang/dist/cor.js"></script>
     <script data-entry="hello.cor"></script>
 </html>
 ```
