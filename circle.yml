@@ -10,6 +10,7 @@ deployment:
         tag: /v[0-9]+(\.[0-9]+)*/
         owner: yosbelms
         commands:
+            - sudo chmod u+x ./npm_login.sh
             - ./npm_login.sh
             - npm install publish
             - publish
