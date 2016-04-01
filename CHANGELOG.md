@@ -7,6 +7,7 @@
 * `compile` command now works properly whaen compiling a single file
 * The node Loader was refoctored
 * Function now can be written in compact mode, e.g `func sum(a, b) a + b`
+* New for/in/range loop
 
 
 # 0.4.0
