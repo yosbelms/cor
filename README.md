@@ -1,6 +1,6 @@
 # Cor
 
-**making the web great again**
+**The Language of the Web**
 
 Cor is an opensource language that compiles to plain javascript. It is designed to make easy to write, build, and maintain large software for the web. Cor is an attemp to make myself more productive, it is what I think javascript should have been from the beginning.
 
