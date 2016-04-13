@@ -1000,6 +1000,36 @@ cor help compile
 ```
 Prints documentation about `cor compile` command
 
+### Run
+
+`run` command reads and executes a `.cor` file containing Cor source code.
+
+Usage:
+```
+cor run <path> [run options]
+```
+
+<table>
+    <tbody>
+        <tr><td colspan="2">Arguments:</td></tr>
+        <tr>
+            <td class="cmd-arg"><code>path</code></td>
+            <td>Specifies the path to the file to execute.</td>
+        </tr>
+        <tr><td colspan="2">Options:</td></tr>
+        <tr>
+            <td class="cmd-arg"><code>-conf</code></td>
+            <td>Specifies the path to the <code>.json</code> file to use as configuration.</td>
+        </tr>
+    </tbody>
+</table>
+
+Example:
+```
+cor run path/to/file.cor
+```
+Runs a program located in the specified path.
+
 
 ### Build
 
