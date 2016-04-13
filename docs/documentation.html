@@ -36,7 +36,7 @@
 
 <p>This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases. Cor is a language designed with large web development in mind. Hence, is possible to develop your software without to execute any command to compile the source code, CLI tools are only needed to make the product able for production environments.</p>
 
-<p><h2>Table of Content</h2><a class="toclink toclink-2" href="#quickrecap">Quick recap</a><a class="toclink toclink-3" href="#inlcudingmodules">Inlcuding modules</a><a class="toclink toclink-3" href="#functions">Functions</a><a class="toclink toclink-3" href="#slicescoalesceoperatorconditionaloperator">Slices/CoalesceOperator/ConditionalOperator</a><a class="toclink toclink-3" href="#classes">Classes</a><a class="toclink toclink-3" href="#inheritance">Inheritance</a><a class="toclink toclink-3" href="#instances">Instances</a><a class="toclink toclink-3" href="#ifforswitch">If/For/Switch</a><a class="toclink toclink-3" href="#typeassertionerrors">TypeAssertion/Errors</a><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#expressions">Expressions</a><a class="toclink toclink-3" href="#comments">Comments</a><a class="toclink toclink-3" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-3" href="#objects">Objects</a><a class="toclink toclink-3" href="#literalconstructors">Literal Constructors</a><a class="toclink toclink-3" href="#strings">Strings</a><a class="toclink toclink-3" href="#numbers">Numbers</a><a class="toclink toclink-3" href="#operators">Operators</a><a class="toclink toclink-3" href="#coalesce">Coalesce</a><a class="toclink toclink-3" href="#existconditional">Exist Conditional</a><a class="toclink toclink-3" href="#arrays">Arrays</a><a class="toclink toclink-3" href="#slices">Slices</a><a class="toclink toclink-3" href="#typeassertion">Type Assertion</a><a class="toclink toclink-3" href="#initialization">Initialization</a><a class="toclink toclink-3" href="#superbuiltinfunction">Super (Builtin Function)</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#statements">Statements</a><a class="toclink toclink-3" href="#forloop">For loop</a><a class="toclink toclink-3" href="#forin">For/In</a><a class="toclink toclink-3" href="#forinrange">For/In/Range</a><a class="toclink toclink-3" href="#ifelse">If/Else</a><a class="toclink toclink-3" href="#switchcasedefault">Switch/Case/Default</a><a class="toclink toclink-3" href="#incdec">Inc/Dec</a><a class="toclink toclink-3" href="#use">Use</a><a class="toclink toclink-3" href="#catcherror">Catch/Error</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#theloader">The Loader</a><a class="toclink toclink-3" href="#configuration">Configuration</a><a class="toclink toclink-4" href="#dependenceinjection">Dependence injection</a><a class="toclink toclink-2" href="#corinthebrowser">Cor in the Browser</a><a class="toclink toclink-2" href="#thecrlcorruntimelibrary">The CRL (Cor Runtime Library)</a></p>
+<p><h2>Table of Content</h2><a class="toclink toclink-2" href="#quickrecap">Quick recap</a><a class="toclink toclink-3" href="#inlcudingmodules">Inlcuding modules</a><a class="toclink toclink-3" href="#functions">Functions</a><a class="toclink toclink-3" href="#slicescoalesceoperatorconditionaloperator">Slices/CoalesceOperator/ConditionalOperator</a><a class="toclink toclink-3" href="#classes">Classes</a><a class="toclink toclink-3" href="#inheritance">Inheritance</a><a class="toclink toclink-3" href="#instances">Instances</a><a class="toclink toclink-3" href="#ifforswitch">If/For/Switch</a><a class="toclink toclink-3" href="#typeassertionerrors">TypeAssertion/Errors</a><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#expressions">Expressions</a><a class="toclink toclink-3" href="#comments">Comments</a><a class="toclink toclink-3" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-3" href="#objects">Objects</a><a class="toclink toclink-3" href="#literalconstructors">Literal Constructors</a><a class="toclink toclink-3" href="#strings">Strings</a><a class="toclink toclink-3" href="#numbers">Numbers</a><a class="toclink toclink-3" href="#operators">Operators</a><a class="toclink toclink-3" href="#coalesce">Coalesce</a><a class="toclink toclink-3" href="#existconditional">Exist Conditional</a><a class="toclink toclink-3" href="#arrays">Arrays</a><a class="toclink toclink-3" href="#slices">Slices</a><a class="toclink toclink-3" href="#typeassertion">Type Assertion</a><a class="toclink toclink-3" href="#initialization">Initialization</a><a class="toclink toclink-3" href="#superbuiltinfunction">Super (Builtin Function)</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#statements">Statements</a><a class="toclink toclink-3" href="#forloop">For loop</a><a class="toclink toclink-3" href="#forin">For/In</a><a class="toclink toclink-3" href="#forinrange">For/In/Range</a><a class="toclink toclink-3" href="#ifelse">If/Else</a><a class="toclink toclink-3" href="#switchcasedefault">Switch/Case/Default</a><a class="toclink toclink-3" href="#incdec">Inc/Dec</a><a class="toclink toclink-3" href="#use">Use</a><a class="toclink toclink-3" href="#catcherror">Catch/Error</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#run">Run</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#theloader">The Loader</a><a class="toclink toclink-3" href="#configuration">Configuration</a><a class="toclink toclink-4" href="#dependenceinjection">Dependence injection</a><a class="toclink toclink-2" href="#corinthebrowser">Cor in the Browser</a><a class="toclink toclink-2" href="#thecrlcorruntimelibrary">The CRL (Cor Runtime Library)</a></p>
 
 <h2 id="quickrecap">Quick recap</h2>
 
@@ -1026,6 +1026,37 @@ func init() {
 </code></pre>
 
 <p>Prints documentation about <code>cor compile</code> command</p>
+
+<h3 id="run">Run</h3>
+
+<p><code>run</code> command reads and executes a <code>.cor</code> file containing Cor source code.</p>
+
+<p>Usage:</p>
+
+<pre><code>cor run &lt;path&gt; [run options]
+</code></pre>
+
+<table>
+    <tbody>
+        <tr><td colspan="2">Arguments:</td></tr>
+        <tr>
+            <td class="cmd-arg"><code>path</code></td>
+            <td>Specifies the path to the file to execute.</td>
+        </tr>
+        <tr><td colspan="2">Options:</td></tr>
+        <tr>
+            <td class="cmd-arg"><code>-conf</code></td>
+            <td>Specifies the path to the <code>.json</code> file to use as configuration.</td>
+        </tr>
+    </tbody>
+</table>
+
+<p>Example:</p>
+
+<pre><code>cor run path/to/file.cor
+</code></pre>
+
+<p>Runs a program located in the specified path.</p>
 
 <h3 id="build">Build</h3>
 
