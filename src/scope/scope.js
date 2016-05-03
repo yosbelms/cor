@@ -605,37 +605,37 @@ yy.SliceNode = Class(yy.Node, {
     initNode: function() {
         this.base('initNode', arguments);
 
-        this.from = this.children[2];
-        this.to   = this.children[4];
+        this.start = this.children[2];
+        this.len   = this.children[4];
     },
     
     compile: function() {
         var
         lit,
-        from = this.from,
-        to   = this.to,
-        ch   = this.children;
+        start = this.start,
+        len   = this.len,
+        ch    = this.children;
 
-        if (from === undefined) {
-            from = new yy.Lit('0', ch[1].lineno);
+        if (start === undefined) {
+            start = new yy.Lit('0', ch[1].lineno);
         }
 
         this.children = [
             ch[0],
             new yy.Lit('.slice(', ch[1].lineno),
-            from
+            start
         ];
 
-        if (to !== undefined) {
-            if (to instanceof yy.UnaryExprNode && typeof to.children[1].children === 'string') {
-                lit     = new yy.Lit(stringifyNode(to), to.lineno);
-                lit.loc = to.children[1].loc;
-                to      = lit;
+        if (len !== undefined) {
+            if (len instanceof yy.UnaryExprNode && typeof len.children[1].children === 'string') {
+                lit     = new yy.Lit(stringifyNode(len), len.lineno);
+                lit.loc = len.children[1].loc;
+                len     = lit;
             }
 
             this.children.push(
                 new yy.Lit(', ', ch[3].lineno),
-                to
+                len
             );
         }
 
