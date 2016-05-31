@@ -132,4 +132,9 @@ CRL.assertType = function assertType(obj, Class) {
     return false;
 };
 
+
+CRL.go = function go(gen) {
+    return gen;
+}
+
 })();

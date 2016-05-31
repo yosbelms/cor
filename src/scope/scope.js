@@ -1656,4 +1656,16 @@ yy.ExistenceNode = Class(yy.Node, {
 })
 
 
+yy.GoExprNode = Class(yy.Node, {
+
+    compile: function() {
+        var
+        ch     = this.children,
+        fnNode = ch[1];
+        ch[0].children = 'CRL.go(function* go()';
+
+        fnNode.children[fnNode.children.length - 1].children += ', this)';
+    }
+})
+
 })(typeof cor === 'undefined' ? {} : cor);

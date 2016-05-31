@@ -353,6 +353,7 @@ PrimaryExpr
     | SliceExpr
     | CallExpr
     | TypeAssertExpr
+    | GoExpr
     ;
 
 UnaryExpr
@@ -457,6 +458,10 @@ TypeAssertExpr
                 new yy.Lit($5, @5)
             )
         }
+    ;
+
+GoExpr
+    : GO Block { $$= new yy.GoExprNode(new yy.Lit($1, @1), $2) }
     ;
 
 Expr
