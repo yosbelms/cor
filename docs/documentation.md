@@ -462,7 +462,7 @@ color2 = colors[1]
 
 ### Slices
 
-Slice expression is a syntactic sugar for the javascript `slice` method, in most of the cases it constructs an array from an existing array.
+Slice expression constructs an array from an existing array, it is a syntactic sugar for the javascript `slice` method. You can use the syntax: `array[start:length]`, start and length are optionals.
 ```
 colors = ['red', 'green', 'blue']
 

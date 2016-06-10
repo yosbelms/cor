@@ -39,8 +39,6 @@ cor compile /path/to/source.cor
 ## Support
 
 * For documentation, and usage, see: http://yosbelms.github.io/cor
-* Search discussions: http://ost.io/@yosbelms/cor
 * To suggest a feature or report a bug: http://github.com/yosbelms/cor/issues
-* Contributors are listed here: http://github.com/yosbelms/cor/contributors
 
 Copyright 2015-2016 (c) Yosbel Marin. This software is licensed under the BSD License.

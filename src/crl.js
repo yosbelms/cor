@@ -21,7 +21,7 @@ CRL.nativeTypes = {
     'Function' : Function
 };
 
-CRL.copyObj = function(from, to, strict) {
+CRL.copyObj = function copyObj(from, to, strict) {
     var name;
     if (strict) {
         for (name in from) {
@@ -39,7 +39,7 @@ CRL.copyObj = function(from, to, strict) {
     return to;
 };
 
-CRL.create = function(Class) {
+CRL.create = function create(Class) {
     var
     instancerArgs,        
     args      = slice.call(arguments, 1),
@@ -62,7 +62,7 @@ CRL.create = function(Class) {
     throw Error('Runtime Error: trying to instanstiate no class');
 };
 
-CRL.extend = function(Cls, baseCls) {
+CRL.extend = function extend(Cls, baseCls) {
     CRL.copyObj(baseCls, Cls, true);
 
     function Proto() {
@@ -74,7 +74,7 @@ CRL.extend = function(Cls, baseCls) {
 }
 
 
-CRL.keys = function(obj) {
+CRL.keys = function keys(obj) {
     var keys, i, len;
 
     if (obj instanceof Array) {            
@@ -102,7 +102,7 @@ CRL.keys = function(obj) {
     return keys;
 };
 
-CRL.assertType = function(obj, Class) {
+CRL.assertType = function assertType(obj, Class) {
     var type;
 
     // Class is a Class?
