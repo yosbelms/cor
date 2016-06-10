@@ -382,6 +382,7 @@ OperationExpr
     : OperationExprNotAdditive
     | OperationExpr '+' OperationExprNotAdditive      { $$= new yy.Node($1, new yy.Lit($2, @2), $3) }
     | OperationExpr '-' OperationExprNotAdditive      { $$= new yy.Node($1, new yy.Lit($2, @2), $3) }
+    | OperationExpr ASYNCOP OperationExprNotAdditive
     ;
 
 AssignmentExpr
@@ -464,10 +465,15 @@ GoExpr
     : GO Block { $$= new yy.GoExprNode(new yy.Lit($1, @1), $2) }
     ;
 
+ReceiveExpr
+    : ASYNCOP Value
+    ;
+
 Expr
     : OperationExpr
     | AssignmentExpr
     | CoalesceExpr
+    | ReceiveExpr
     ;
 
 /* Values */

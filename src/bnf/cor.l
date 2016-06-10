@@ -70,7 +70,9 @@ true\b|false\b              return 'BOOLEAN'
 
 "??"                        return 'COALESCEOP'
 
+
 "*="|"/="|"%="|"+="|"-="|"<<="|">>="|">>>="|"&="|"^="|"|="  return 'ASSIGNMENTOP'
+"<-"                        return 'ASYNCOP'
 "<<"|">>"|">>>"             return 'SHIFTOP'
 "<="|">="|"=="|"!="|"<"|">" return 'COMPARISONOP'
 "&&"|"||"|"^"|"|"           return 'BINARYOP'
