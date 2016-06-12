@@ -133,8 +133,78 @@ CRL.assertType = function assertType(obj, Class) {
 };
 
 
-CRL.go = function go(gen) {
-    return gen;
+// Schedule
+function schedule(fn, time) {
+    if (time === void 0 && typeof global.setImmediate !== 'undefined') {
+        setImmediate(fn);
+    } else {
+        setTimeout(fn, +time);
+    }
 }
+
+// Breakpoint
+function Breakpoint(timeout) {
+    var me = this;
+
+    if (!isNaN(me.timeout)) {
+        schedule(function(){ me.resume() }, timeout);
+    }
+
+    this.resumed = false;
+}
+
+Breakpoint.prototype = {
+    resume: function(value, err) {
+        this.resumed = true;
+        if (this.doneListeners) {
+            this.doneListeners.forEach(function(listener){
+                listener(val, err);
+            });
+        }
+    },
+
+    done: function(fn) {
+        if (! this.doneListeners) { this.doneListeners = [] }
+        this.doneListeners.push(fn);
+        return this;
+    }
+};
+
+Breakpoint.resumeAll = function(array, withValue) {
+    while (array.length) {
+        array.shift().resume(withValue);
+    }
+}
+
+function isBreakpoint(b) {
+    return b instanceof Breakpoint;
+}
+
+CRL.Breakpoint = Breakpoint;
+
+
+// Generator Runner
+CRL.go = function go(genf, ctx) {
+    var state,
+    gen = genf.apply(ctx);
+
+    next(gen);
+
+    function next(gen, value) {
+        state = gen.next(value);
+        value = state.value;
+
+        if (isBreakpoint(value)) {
+            value.done(function(value) {
+                next(value)
+            })
+        }
+
+        if (! state.done) {
+            next(gen, value)
+        }
+    }
+}
+
 
 })();
