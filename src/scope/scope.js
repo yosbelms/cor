@@ -1662,10 +1662,34 @@ yy.GoExprNode = Class(yy.Node, {
         var
         ch     = this.children,
         fnNode = ch[1];
-        ch[0].children = 'CRL.go(function* go()';
+        ch[0].children = this.runtimePrefix + 'go(function* go()';
 
         fnNode.children[fnNode.children.length - 1].children += ', this)';
     }
 })
+
+yy.SendAsyncNode = Class(yy.Node, {
+
+    compile: function() {
+        var
+        ch = this.children;
+        ch[1].children = ',';
+
+        ch.splice(0, 0, new yy.Lit('yield ' + this.runtimeFn('send'), ch[0].lineno));
+        ch.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+    }
+})
+
+yy.ReceiveAsyncNode = Class(yy.Node, {
+
+    compile: function() {
+        var
+        ch = this.children;
+
+        ch[0].children = 'yield ' + this.runtimeFn('receive');
+        ch.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+    }
+})
+
 
 })(typeof cor === 'undefined' ? {} : cor);

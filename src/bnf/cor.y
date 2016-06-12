@@ -382,16 +382,16 @@ OperationExpr
     : OperationExprNotAdditive
     | OperationExpr '+' OperationExprNotAdditive      { $$= new yy.Node($1, new yy.Lit($2, @2), $3) }
     | OperationExpr '-' OperationExprNotAdditive      { $$= new yy.Node($1, new yy.Lit($2, @2), $3) }
-    | OperationExpr ASYNCOP OperationExprNotAdditive
     ;
 
 AssignmentExpr
     : LeftHandExpr ASSIGNMENTOP Value                 { $$= new yy.AssignmentNode($1, new yy.Lit($2, @2), $3) }
     | LeftHandExpr '=' Value                          { $$= new yy.AssignmentNode($1, new yy.Lit($2, @2), $3) }
+    | LeftHandExpr ASYNCOP Value                      { $$= new yy.SendAsyncNode($1, new yy.Lit($2, @2), $3) }
     ;
 
 CoalesceExpr
-    : OperationExpr COALESCEOP Value                   { $$= new yy.CoalesceNode($1, new yy.Lit($2, @2), $3) }
+    : OperationExpr COALESCEOP Value                  { $$= new yy.CoalesceNode($1, new yy.Lit($2, @2), $3) }
     ;
 
 ExprList
@@ -466,7 +466,7 @@ GoExpr
     ;
 
 ReceiveExpr
-    : ASYNCOP Value
+    : ASYNCOP Value { $$= new yy.ReceiveAsyncNode(new yy.Lit($1, @1), $2) }
     ;
 
 Expr
