@@ -1656,4 +1656,32 @@ yy.ExistenceNode = Class(yy.Node, {
 })
 
 
+yy.TemplateLiteralNode = Class(yy.Node, {
+    compile: function() {
+        var str, list, i, len, item,
+        ch = this.children;
+
+        if (ch.length === 1) {
+            // simple template
+            ch[0] = new yy.StringNode(ch[0].children.substr(1), ch[0].loc);
+        } else {
+            // interpolation
+            str = ch[0].children;
+            ch[0] = new yy.StringNode(str.substring(1, str.length-1) + "' + ", ch[0].loc);
+
+            str = ch[2].children;
+            ch[2] = new yy.StringNode(" + '" + str.substring(1), ch[2].loc);
+
+            list = ch[1];
+
+            for (i = -1, len = list.children.length-2; i < len;) {
+                i+=2;
+                item = list.children[i];
+                str  = item.children;
+                list.children[i] = new yy.StringNode(" + '" + str.substring(1, str.length-1) + "' + ", item.loc);
+            }
+        }
+    }
+})
+
 })(typeof cor === 'undefined' ? {} : cor);

@@ -36,6 +36,14 @@
                                 );
                             %}
 
+
+"$'"([^\\']|\\[\s\S])*?"{"   return 'TPL_BEGIN'
+"}"([^\\']|\\[\s\S])*?"{"    return 'TPL_CONTINUATION'
+"}"([^\\']|\\[\s\S])*?"'"    return 'TPL_END'
+
+"$'"([^\\']|\\[\s\S])*"'"    return 'TPL_SIMPLE'
+
+
 "'"([^\\']|\\[\s\S])*"'"    return 'STRING'
 (\r\n|\n)                   return 'EOL'
 "use"                       return 'USE'

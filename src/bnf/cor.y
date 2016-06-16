@@ -353,6 +353,7 @@ PrimaryExpr
     | SliceExpr
     | CallExpr
     | TypeAssertExpr
+    | TemplateLiteral
     ;
 
 UnaryExpr
@@ -456,6 +457,24 @@ TypeAssertExpr
                 $4,
                 new yy.Lit($5, @5)
             )
+        }
+    ;
+
+TemplateLiteral
+    : TPL_BEGIN TemplateLiteralBody TPL_END          { $$= new yy.TemplateLiteralNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3)) }
+    | TPL_SIMPLE                                     { $$= new yy.TemplateLiteralNode(new yy.Lit($1, @1)) }
+    ;
+
+TemplateLiteralBody
+    : Expr                                           { $$= new yy.List($1) }
+    | Expr TPL_CONTINUATION TemplateLiteralBody?     {
+            if ($3 instanceof yy.List)   {
+                $3.addFront($1, new yy.Lit($2, @2))
+                $$= $3
+            }
+            else if ($3){
+                $$= new yy.List($1, new yy.Lit($2, @2), $3)
+            }
         }
     ;
 
