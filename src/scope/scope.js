@@ -698,6 +698,9 @@ yy.ObjectConstructorArgsNode = Class(yy.Node, {
     initNode: function() {
         var ch = this.children;
 
+        if (!ch[1]) {
+            this.keyValue = true;
+        }
         if (ch[3]) { // key-value
             this.keyValue = true;
             this.checkKeyNames(ch[1]);
@@ -729,7 +732,7 @@ yy.ObjectConstructorArgsNode = Class(yy.Node, {
             this.children[2].children = '}';
             if (!this.parent.isLiteral) {
                 this.children.splice(2, 0, new yy.Lit(', _conf: true', this.children[2].lineno))
-            }            
+            }
         }
         else {
             this.children[0].children = '(';
@@ -737,6 +740,17 @@ yy.ObjectConstructorArgsNode = Class(yy.Node, {
         }
     }
 });
+
+yy.ArrayConstructorNode = Class(yy.Node, {
+
+    compile: function() {
+        var ch = this.children[1];
+        if (ch && (ch.children.length % 2) === 0) {
+            ch.children.pop();
+        }
+    }
+
+})
 
 yy.TypeAssertNode = Class(yy.Node, {
 

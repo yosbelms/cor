@@ -467,15 +467,39 @@ Expr
 
 /* Values */
 
-ObjectConstructor    
-    : '&' QualifiedIdent? ObjectConstructorArgs  { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2, $3) }
+ObjectConstructor
+    : '(' ':' ')'                {
+            $$= new yy.ObjectConstructorNode(
+                new yy.Lit('&', @1),
+                null,
+                new yy.ObjectConstructorArgsNode(
+                    new yy.Lit($1, @1),
+                    null,
+                    new yy.Lit($3, @3)
+                )
+            )
+        }
+
+    | '(' KeyValueElementList ')' {
+            $$= new yy.ObjectConstructorNode(
+                new yy.Lit('&', @1),
+                null,
+                new yy.ObjectConstructorArgsNode(
+                    new yy.Lit($1, @1),
+                    $2,
+                    new yy.Lit($3, @3),
+                    true
+                )
+            )
+        }
+    | '&' QualifiedIdent ObjectConstructorArgs   { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2, $3) }
     | '&' QualifiedIdent                         { $$= new yy.ObjectConstructorNode(new yy.Lit($1, @1), $2) }
     ;
 
 ObjectConstructorArgs
-    : '[' ']'                                    { $$= new yy.ObjectConstructorArgsNode(new yy.Lit($1, @1), null, new yy.Lit($2, @2)) }
-    | '[' SimpleElementList ']'                  { $$= new yy.ObjectConstructorArgsNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3)) }
-    | '[' KeyValueElementList ']'                { $$= new yy.ObjectConstructorArgsNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3), true) }
+    : '(' ')'                                    { $$= new yy.ObjectConstructorArgsNode(new yy.Lit($1, @1), null, new yy.Lit($2, @2)) }
+    | '(' SimpleElementList ')'                  { $$= new yy.ObjectConstructorArgsNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3)) }
+    | '(' KeyValueElementList ')'                { $$= new yy.ObjectConstructorArgsNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3), true) }
     ;
 
 QualifiedIdent
@@ -497,7 +521,7 @@ KeyValueElementList
     ;
 
 KeyedElement
-    : IDENT ':' Value                           { $$= new yy.Node(new yy.Lit($1, @1), new yy.Lit($2, @2), $3) }
+    : IDENT  ':' Value                          { $$= new yy.Node(new yy.Lit($1, @1), new yy.Lit($2, @2), $3) }
     | STRING ':' Value                          { $$= new yy.Node(new yy.Str($1, @1), new yy.Lit($2, @2), $3) }
     ;
 
@@ -515,20 +539,31 @@ SimpleElementList
     ;
 
 ArrayConstructor
-    : '[' ArrayItems? ']'                        { $$= new yy.Node(new yy.Lit($1, @1), $2, new yy.Lit($3, @3)) }
+    : '(' ',' ')'                 {
+            $$= new yy.ArrayConstructorNode(
+                new yy.Lit('[', @1),
+                null,
+                new yy.Lit(']', @3)
+            )
+        }
+
+    | '(' ArrayItems Value? ')'   {
+            if ($3) $2.add($3);
+            $$= new yy.ArrayConstructorNode(
+                new yy.Lit('[', @1),
+                $2,
+                new yy.Lit(']', @4)
+            )
+        }
     ;
 
 ArrayItems
-    : Value                                      { $$= new yy.List($1) }
-    | ArrayItems ',' Value?                      {
-            if ($3 instanceof yy.List) {
-                $3.addFront($1, new yy.Lit($2, @2))
-                $$= $3
+    : Value ','                                  { $$= new yy.List($1); $$.add(new yy.Lit($2, @2)) }
+    | ArrayItems Value ','                       {
+            if ($1 instanceof yy.List) {
+                $1.add($2, new yy.Lit($3, @3))
+                $$= $1
             }
-            else if ($3) {
-                $$= new yy.List($1, new yy.Lit($2, @2), $3)
-            }
-
         }
     ;
 
