@@ -32,8 +32,8 @@ func init() {
                 }
             }
 
-            original = [1, 5, 2, 6]
-            copy     = []
+            original = (1, 5, 2, 6)
+            copy     = (,)
 
             iterate  = iterator(original)
 

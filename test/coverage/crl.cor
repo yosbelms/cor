@@ -35,11 +35,11 @@ func init() {
         
         describe('keys', func(){
             it('From Arrays should extract just numeric indexes', func() {
-                arr = ['mango', 'orange', 'guava']
+                arr = ('mango', 'orange', 'guava')
                 arr.someProp = 'Foo'
 
                 keys = CRL.keys(arr)
-                expect(keys).toEqual([0, 1, 2])
+                expect(keys).toEqual((0, 1, 2))
                 expect(keys.someProp).toBeUndefined()
             })
 
@@ -47,7 +47,7 @@ func init() {
                 c = &Client
 
                 keys = CRL.keys(c)
-                expect(keys).toEqual(['name', 'age'])
+                expect(keys).toEqual(('name', 'age'))
                 expect(keys).not.toContain('manuallyInsertedInPrototype')
             })
         })

@@ -14,11 +14,11 @@ func init() {
 
 
         it('Should work with expression', func() {
-            f = func () [
+            f = func () (
                 1, 2,
-            ]
+            )
                 
-            expect(f()).toEqual([1, 2])
+            expect(f()).toEqual((1, 2))
         })
         
         

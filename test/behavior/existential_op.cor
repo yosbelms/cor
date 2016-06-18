@@ -1,10 +1,10 @@
 
-arr = [
+arr = (
     func() true,
     func() true,
-]
+)
 
-obj = &[arr: arr, fn: func() true, ok: true]
+obj = (arr: arr, fn: func() true, ok: true)
 
 func fn() { return true }
 
@@ -66,7 +66,7 @@ func init() {
         describe('For slice', func() {
             it('Should work if simple slice', func() {
                 expect(arr?[:].length).toBe(2)
-                expect(arr?[4:5]).toEqual([])
+                expect(arr?[4:5]).toEqual((,))
             })
             
             it('Should work if index expressions', func() {
@@ -76,7 +76,7 @@ func init() {
         
         
         describe('In operantions', func() {
-            a = &[b: &[c: 0]]
+            a = (b: (c: 0))
             
             it('Should work in operation', func() {
                 expect(a?.b.c + 1).toBe(1)

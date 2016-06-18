@@ -1,23 +1,22 @@
 
 
 func init() {
-    obj = &[
+    obj = (
         id: '001',
         name: 'yosbel',
         age: 28,
-    ]
-    objKeys   = ['id', 'name', 'age']
-    objValues = ['001', 'yosbel', 28]
+    )
+    objKeys   = ('id', 'name', 'age')
+    objValues = ('001', 'yosbel', 28)
 
-    arr       = [1, 5, 10]
-    arrKeys   = [0, 1, 2]
-    //arrValues = ['001', 'yosbel', 28]
+    arr       = (1, 5, 10)
+    arrKeys   = (0, 1, 2)
 
     describe('ForIn Statement should work', func() {
 
         describe('With objects', func() {
             it('using just value', func() {
-                stack = []
+                stack = (,)
                 for v in obj {
                     stack.push(v)
                 }
@@ -25,7 +24,7 @@ func init() {
             })
 
             it('using keys and value', func() {
-                stack = &[]
+                stack = (:)
                 for k, v in obj {
                     stack[k] = v
                 }
@@ -36,7 +35,7 @@ func init() {
 
         describe('With arrays', func() {
             it('using just value', func() {
-                stack = []
+                stack = (,)
                 for v in arr {
                     stack.push(v)
                 }
@@ -44,7 +43,7 @@ func init() {
             })
 
             it('using keys and value', func() {
-                stack = []
+                stack = (,)
                 for k, v in arr {
                     stack[k] = v
                 }

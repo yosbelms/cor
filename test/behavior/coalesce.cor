@@ -2,7 +2,7 @@ class Foo {}
 
 func init() {
     describe('Coalesce operator', func() {
-        obj = &[]
+        obj = (:)
         one = 1
         nilValue = nil
         
