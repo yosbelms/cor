@@ -77,7 +77,7 @@ func fib(n) {
 
 func init() {
     gen = fib()
-    res = []
+    res = (,)
     for f in 0:10 {
         res.push(gen())
     }
@@ -114,7 +114,7 @@ func size(ls) {
 func fromArray(arr) {
     ls = current = &List
     for item in arr {
-        node = &Node[item]
+        node = &Node(item)
         switch current.constructor {
             case List : current.head = node
             case Node : current.next = node
@@ -126,71 +126,17 @@ func fromArray(arr) {
 
 func toArray(ls) {
     iter = iterate(ls)
-    ret  = []
+    ret  = (,)
     for i = iter() { ret.push(i.data) }
     return ret
 }
 
 
 func init() {
-    ls = fromArray(['horse', 'snake', 'cat'])
+    ls = fromArray(('horse', 'snake', 'cat'))
     alert('size:  ' + size(ls) + '\ndata: ' + toArray(ls))
 }
 </script>
-<!--script id="play-list" type="text/cor">// simple linked list
-
-class Node {
-    data
-    next
-}
-
-class List {
-    head
-}
-
-func iterate(list) {
-    node = list.head
-    return func() {
-        ret = node
-        if node { node = node.next }
-        return ret
-    }
-}
-
-func size(ls) {
-    iter  = iterate(ls)
-    count = 0
-    for i = iter() { count++ }
-    return count
-}
-
-func fromArray(arr) {
-    ls = current = &List
-    for item in arr {
-        node = &Node[item]
-        switch current.constructor {
-            case List : current.head = node
-            case Node : current.next = node
-        }
-        current = node
-    }
-    return ls
-}
-
-func toArray(ls) {
-    iter = iterate(ls)
-    ret  = []
-    for i = iter() { ret.push(i.data) }
-    return ret
-}
-
-
-func init() {
-    ls = fromArray(['horse', 'snake', 'cat'])
-    alert('size:  ' + size(ls) + '\ndata: ' + toArray(ls))
-}
-</script-->
-
 <script id="play-class" type="text/cor">// Show inheritance and literal object contructions
 
 idSeed = 0
@@ -201,7 +147,7 @@ func genId() {
 
 class Model {
     id = genId()
-    func toJSON() &[id: me.id]
+    func toJSON() (id: me.id)
 }
 
 class Todo : Model {
@@ -217,9 +163,9 @@ class Todo : Model {
 
 func init() {
     ls = [
-        &Todo['Buy a battery'],
-        &Todo['Clean the fan'],
-        &Todo['Make a push'],
+        &Todo('Buy a battery'),
+        &Todo('Clean the fan'),
+        &Todo('Make a push'),
     ]
     alert(JSON.stringify(ls, 0, 4))
 }
@@ -235,7 +181,7 @@ class View {
 }
 
 func init() {
-    view = &View[elem: document.getElementById('btn-run')]
+    view = &View(elem: document.getElementById('btn-run'))
     view.move()
     setTimeout(func() view.restore(), 1000)
 }

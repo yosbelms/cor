@@ -43,7 +43,7 @@ func init() {
 Coalesce operator
 ---
 // if `null` or `undefined` then be an empty array
-panels = getPanels() ?? []
+panels = getPanels() ?? (,)
 
 ---
 Slice
@@ -106,20 +106,17 @@ class Person : Model {
 use `&` symbol to create instances
 ---
 
-// empty object
-obj = &[]
-
 // new instance
 person = &Person
 
 // instance and properties setting
-person = &Person[
+person = &Person(
     name : 'John',
     age  : 23,
-]
+)
 
 // positional properties setting
-person = &Person['John', 23]
+person = &Person('John', 23)
 
 // person.name == 'John'
 // person.age == 23
@@ -287,10 +284,9 @@ In above fragment, `outer` variable will be declared in a local scope by **annou
 ### Objects
 
 Objects are a collection of variables and functions. It may be created using `&` operator.
-> In previous versions it was possible to use `@` operator, but is now deprecated.
 ```
 // creates an empty object
-obj = &[]
+obj = &Object
 
 // filling properties
 obj.name = 'Aaron'
@@ -300,14 +296,14 @@ obj.age  = 20
 
 Object properties can be assigned in more declarative way by using `Literal Constructors`
 ```
-client = &[
+client = (
     name : 'Aaron',
     age  : 20,
-    pet  : &[
+    pet  : (
         name : 'Kitty',
         kind : 'Cat',
-    ],
-]
+    ),
+)
 ```
 
 There is two ways to access object properties, by using `.` symbol or by using `[` `]` wrappers.
@@ -322,21 +318,41 @@ console.log(client['age'])
 ```
 
 
-### Literal Constructors
+### Paren Expressions
 
-A literal constructor is a list of elements bounded by `[` and `]` symbols, used for creating objects and arrays. An element can be either, expression or a key-value pair. If one element is key-value type, all other elements has to be key-value in the same declaration.
+A paren expression is bouded by `(` and `)` symbols, it evaluates depending on what is inside, followig the rules:
 
-Example using key-value pair elements:
+1. If there is just one value it evaluates to that value.
+2. If at least a `:` it returns an object.
+3. If at least a `,` it return an array.
+
+If one element inside is key-value type, all other elements has to be key-value in the same declaration.
+
 ```
-walter = &Client[
+// rule #1, expression
+expr = (4)
+
+// rule #2, object
+obj  = (:)
+obj  = (name: 'john')
+
+// rule #3, array
+arr  = (,)
+arr  = (1,)
+arr  = (1, 2, 3)
+```
+
+Example using key-value pair list:
+```
+walter = &Client(
     name : 'Walter',
     age  : 12,
-]
+)
 ```
 
-Example using expression elements:
+Example using expression list:
 ```
-aaron = &Client['Aaron', 20]
+aaron = &Client('Aaron', 20)
 
 // aaron.name = 'Aaron'
 // aaron.age  = 20
@@ -447,9 +463,9 @@ copy = customers?[:];
 
 An array is a collection of ordered values. It may be defined using literal constructor with expressions as elements. Example:
 ```
-empty  = []
-colors = ['red', 'green', 'blue']
-foo    = [bar(), 56, 'baz']
+empty  = (,)
+colors = ('red', 'green', 'blue')
+foo    = (bar(), 56, 'baz')
 
 // accessing
 color1 = colors[0]
@@ -464,11 +480,11 @@ color2 = colors[1]
 
 Slice expression constructs an array from an existing array, it is a syntactic sugar for the javascript `slice` method. You can use the syntax: `array[start:length]`, start and length are optionals.
 ```
-colors = ['red', 'green', 'blue']
+colors = ('red', 'green', 'blue')
 
-sliced = colors[1:3] // sliced is ['green', 'blue']
-sliced = colors[:1]  // sliced is ['red']
-sliced = colors[1:]  // sliced is ['green', 'blue']
+sliced = colors[1:3] // sliced is ('green', 'blue')
+sliced = colors[:1]  // sliced is ('red')
+sliced = colors[1:]  // sliced is ('green', 'blue')
 ```
 
 
@@ -527,16 +543,16 @@ class Account {
     ammount
 }
 
-client = &Client[
+client = &Client(
     firstName : 'Aaron',
     lastName  : 20,
-    accounts  : [
-        &Account[
+    accounts  : (
+        &Account(
             code    : '3980-121970',
             ammount : 5000,
-        ],
-    ],
-]
+        ),
+    ),
+)
 ```
 
 `me` keyword always references the internal scope of the class regardless its actual scope:
@@ -566,11 +582,11 @@ class Animal {
 }
 
 
-// a = &Animal['snake', 'slithering']
-// a = &Animal[
+// a = &Animal('snake', 'slithering')
+// a = &Animal(
 //      name:     'snake',
 //      movement: 'slithering',
-//  ]
+//  )
 ```
 
 The second one is by declaring `init` as the first member of the class. You should use this way case of inheriting from a class defined in a javascript library which relays in `constructor` e.g: views and models of Backbone.js. Using this approach does not mean there is a `init` method in the compiled `js`, it will be translated to `constructor`, so that if you use `super` builtin function, it will call the constructor of the super class, see [Super (Builtin Function)](#superbuiltinfunction).
@@ -587,7 +603,7 @@ class Animal : Model {
     // methods...
 }
 
-// a = &Animal['snake', 'slithering']
+// a = &Animal('snake', 'slithering')
 ```
 
 > You can use eiter, `init` method or property-set, but not both.
@@ -715,7 +731,7 @@ In `app.cor`
 use 'model/User'
 
 func init() {
-    u = &User['ragnar', 'secretpass']
+    u = &User('ragnar', 'secretpass')
 }
 ```
 Don't need to qualify the name when importing throwgh `use` statement because the class `User` will be exported as default.
@@ -735,7 +751,7 @@ for Start; Continuation; Statement {
 
 Example:
 ```
-fruits = ['orange', 'apple', 'pear']
+fruits = ('orange', 'apple', 'pear')
 
 for i = 0, len = fruits.length; i < len; i++ {
     console.log(fruits[i])
@@ -787,8 +803,8 @@ for {
 If you need to jump to the next iteration or to get out of the current curl, `break` and `continue` are there for you, it behaves exactly as in javascript.
 
 ```
-array = [4, 3, 'Cor', 'PHP', 5, 'Go', 1, 7, 'Python']
-langs = []
+array = (4, 3, 'Cor', 'PHP', 5, 'Go', 1, 7, 'Python')
+langs = (,)
 
 for item = array.shift() {
     if item.(Number) { continue }
@@ -803,8 +819,8 @@ A for/in loop provides the easiest way to iterate collections. There are two syn
 
 The first syntax gives access to the current value in each iteration.
 ```
-arr = [1, 2, 3]
-sum   = 0
+arr = (1, 2, 3)
+sum = 0
 
 for value in arr {
     sum += value
@@ -815,7 +831,7 @@ for value in arr {
 
 The second way is similar but exposes the current index and value in each iteration.
 ```
-arr = ['Jeremy', 'Nolan', 'Brendan']
+arr = ('Jeremy', 'Nolan', 'Brendan')
 
 for index, value in arr {
     console.log(index + ' ' + value)
@@ -828,7 +844,7 @@ for index, value in arr {
 
 For-In can be used to iterate over object properties
 ```
-obj = &[name: 'Bill', age: 50]
+obj = (name: 'Bill', age: 50)
 
 for index, value in obj {
     console.log(index + ' ' + value)
