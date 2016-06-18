@@ -1052,7 +1052,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         ];
 
         if (this.superClassName) {
-            this.methodSet.children[0].children[1].children += this.runtimeFn('extend') + this.className + extendsStr +');';
+            this.methodSet.children[0].children[1].children += this.runtimeFn('subclass') + this.className + extendsStr +');';
         }
     },
 
@@ -1093,7 +1093,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         this.children.push(new yy.Lit('};', this.propertySet.lineno));
 
         if (this.superClassName) {
-            newNode = new yy.Lit(this.runtimeFn('extend') + this.className + extendsStr +');', this.propertySet.lineno);
+            newNode = new yy.Lit(this.runtimeFn('subclass') + this.className + extendsStr +');', this.propertySet.lineno);
             newNode.loc = ch[2].loc;
             this.children.push(newNode);
         }
