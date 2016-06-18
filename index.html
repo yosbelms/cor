@@ -46,7 +46,7 @@ use 'backbone' bb
 use 'storage'  Storage
 
 class TodoList : bb.Collection {
-    localStorage    = &Storage['todos-backbone']
+    localStorage    = &Storage('todos-backbone')
     model           = Todo
     func getModel() me.model
 }
