@@ -743,6 +743,8 @@ yy.ObjectConstructorArgsNode = Class(yy.Node, {
 
 yy.ArrayConstructorNode = Class(yy.Node, {
 
+    type: 'ArrayConstructorNode',
+
     compile: function() {
         var ch = this.children[1];
         if (ch && (ch.children.length % 2) === 0) {
