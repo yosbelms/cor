@@ -1,0 +1,51 @@
+
+func init() {
+    describe('Corourines', func() {
+
+        it('Should break on promise', func(done) {
+            p = &CRL.Promise[func(resolve, reject) setTimeout(func() resolve(0), 100)]
+
+            go {
+                val = <- p
+                expect(val).toBe(0)
+                done()
+            }
+            
+        })
+
+
+        it('Should allow comunication between', func(done) {
+            go {
+                p = &CRL.Promise[func(resolve, reject) setTimeout(func() resolve(0), 100)]
+            }
+
+            go {
+                val = <- p
+                expect(val).toBe(0)
+                done()
+            }
+            
+        })
+
+
+        it('Can be chained', func(done) {
+            // explicit
+            g = go {
+                return 0
+            }
+
+            go {
+                expect(<- g).toBe(0)
+                done()
+            }
+
+            // succint
+            go {
+                expect(<- go { return 0 }).toBe(0)
+                done()
+            }
+            
+        })
+
+    })
+}
