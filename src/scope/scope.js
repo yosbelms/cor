@@ -1657,6 +1657,9 @@ yy.ExistenceNode = Class(yy.Node, {
 
 
 yy.TemplateLiteralNode = Class(yy.Node, {
+
+    type: 'TemplateLiteralNode',
+
     compile: function() {
         var str, list, i, len, item,
         ch = this.children;
