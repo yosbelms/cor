@@ -132,6 +132,94 @@ CRL.assertType = function assertType(obj, Class) {
     return false;
 };
 
+})();
+
+
+(function() {
+
+// Lightweight non standard compliant Promise
+function Promise(resolverFn) {
+    CRL.Promise.initialize(this, resolverFn);
+}
+
+Promise.prototype = {
+
+    then: function(fn) {
+        if (! this.thenListeners) { this.thenListeners = [] }
+        this.thenListeners.push(fn);
+        if (this.completed) {
+            CRL.Promise.resolve(this, this.value);
+        }
+        return this;
+    },
+
+    catch: function(fn) {
+        if (! this.catchListeners) { this.catchListeners = [] }
+        this.catchListeners.push(fn);
+        if (this.completed) {
+            CRL.Promise.reject(this, this.reason);
+        }
+        return this;
+    }
+};
+
+Promise.initialize = function initialize(p, resolverFn) {
+    if (typeof resolverFn !== 'function') {
+        throw 'provided resolver must be a function';
+    }
+    p.completed = false;
+
+    delete p.thenListeners;
+    delete p.catchListeners;
+    delete p.value;
+    delete p.reason;
+
+    resolverFn(
+        function resolve(value){
+            CRL.Promise.resolve(p, value);
+        },
+        function reject(reson) {
+            CRL.Promise.reject(p, reason);
+        }
+    );
+
+    return p;
+}
+
+Promise.resolve = function resolve(p, value) {
+    if (p.thenListeners) {
+        p.thenListeners.forEach(function(listener){
+            listener(value);
+        })
+    }
+    this.completed = true;
+    this.value     = value;
+    Promise.pool.push(p);
+};
+
+Promise.reject = function reject(p, reason) {
+    if (p.catchListeners) {
+        p.catchListeners.forEach(function(listener){
+            listener(reason);
+        })
+    }
+    this.completed = true;
+    this.reason    = reason;
+    Promise.pool.push(p);
+};
+
+Promise.pool = [];
+CRL.Promise  = Promise;
+
+})();
+
+// Coroutines
+(function(global) {
+
+// polyfill Promise
+if (typeof Promise !== 'function') {
+    Promise = CRL.Promise;
+}
 
 // Schedule
 function schedule(fn, time) {
@@ -142,69 +230,55 @@ function schedule(fn, time) {
     }
 }
 
-// Breakpoint
-function Breakpoint(timeout) {
-    var me = this;
-
-    if (!isNaN(me.timeout)) {
-        schedule(function(){ me.resume() }, timeout);
+// promise factory
+function newPromise(resolver) {
+    var pool = CRL.Promise.pool;
+    if (pool && pool.length) {
+        return CRL.Promise.initialize(pool.shift(), resolver);
     }
-
-    this.resumed = false;
+    return new CRL.Promise(resolver);
 }
 
-Breakpoint.prototype = {
-    resume: function(value, err) {
-        this.resumed = true;
-        if (this.doneListeners) {
-            this.doneListeners.forEach(function(listener){
-                listener(val, err);
-            });
-        }
-    },
-
-    done: function(fn) {
-        if (! this.doneListeners) { this.doneListeners = [] }
-        this.doneListeners.push(fn);
-        return this;
-    }
-};
-
-Breakpoint.resumeAll = function(array, withValue) {
-    while (array.length) {
-        array.shift().resume(withValue);
-    }
+function isPromise(p) {
+    return p && typeof p.then === 'function';
 }
-
-function isBreakpoint(b) {
-    return b instanceof Breakpoint;
-}
-
-CRL.Breakpoint = Breakpoint;
-
 
 // Generator Runner
 CRL.go = function go(genf, ctx) {
-    var state,
-    gen = genf.apply(ctx);
+    var state, gen = genf.apply(ctx || {});
 
-    next(gen);
+    return newPromise(function(resolve, reject) {
+        schedule(next);
+        //next();
 
-    function next(gen, value) {
-        state = gen.next(value);
-        value = state.value;
+        function next(value) {
+            state = gen.next(value);
+            value = state.value;
 
-        if (isBreakpoint(value)) {
-            value.done(function(value) {
-                next(value)
-            })
+            if (isPromise(value)) {
+                value.then(function(value) {
+                    next(value);
+                })
+                return;
+            }
+
+            if (state.done) {
+                resolve(value);
+            } else {
+                next(value);
+            }
         }
-
-        if (! state.done) {
-            next(gen, value)
-        }
-    }
+    })
 }
 
+// receiver
+CRL.receive = function receive(value) {
+    return value;
+}
 
-})();
+// sender
+CRL.send = function send(channel, value) {
+    return channel.send(value);
+}
+
+})(this);
