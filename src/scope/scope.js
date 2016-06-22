@@ -1655,8 +1655,15 @@ yy.ExistenceNode = Class(yy.Node, {
     }
 })
 
+// TODO: Check if a AsyncExpr is inside a GoExpr
+// Due to the children rebuild on compiling is not possible
+// to traverse the tree in leaf-root mode
+// probably re-adopting children after children rebild
+// will allow leaf-root traversing
 
 yy.GoExprNode = Class(yy.Node, {
+
+    type: 'GoExprNode',
 
     compile: function() {
         var
@@ -1670,6 +1677,8 @@ yy.GoExprNode = Class(yy.Node, {
 
 yy.SendAsyncNode = Class(yy.Node, {
 
+    type: 'SendAsyncNode',
+
     compile: function() {
         var
         ch = this.children;
@@ -1681,6 +1690,8 @@ yy.SendAsyncNode = Class(yy.Node, {
 })
 
 yy.ReceiveAsyncNode = Class(yy.Node, {
+
+    type: 'ReceiveAsyncNode',
 
     compile: function() {
         var
