@@ -12,9 +12,7 @@
                             %}
 
 // comments must begin and end with a new line
-"---"([\s\S]*?)"---"
-
-                            %{
+"---"([\s\S]*?)"---"        %{
                                 var
                                 strBefore, strAfter,
                                 rBegin = /(\r\n|\n|^)\s*$/,
@@ -37,9 +35,38 @@
                             %}
 
 
-"$'"([^\\']|\\[\s\S])*?"{"   return 'TPL_BEGIN'
-"}"([^\\']|\\[\s\S])*?"{"    return 'TPL_CONTINUATION'
-"}"([^\\']|\\[\s\S])*?"'"    return 'TPL_END'
+"$'"([^\\']|\\[\s\S])*?"{"  %{
+                                // track template state
+                                if (this.tplState) {
+                                    throw yy.parseError('unexpected ' + yytext, {loc: {first_line: yylloc.first_line }}, true);
+                                }
+
+                                this.tplState = true;
+                                return 'TPL_BEGIN'
+                            %}
+
+"}"([^\\']|\\[\s\S])*?"{"   %{
+                                if (this.tplState) {
+                                    return 'TPL_CONTINUATION'
+                                }
+                                else {
+                                    // return just a `}` char
+                                    this.unput(this.match.substr(1))
+                                    return '}'
+                                }
+                            %}
+
+"}"([^\\']|\\[\s\S])*?"'"   %{
+                                if (this.tplState) {
+                                    this.tplState = false;
+                                    return 'TPL_END'
+                                }
+                                else {
+                                    // return just a `}` char
+                                    this.unput(this.match.substr(1))
+                                    return '}'
+                                }
+                            %}
 
 "$'"([^\\']|\\[\s\S])*"'"    return 'TPL_SIMPLE'
 
