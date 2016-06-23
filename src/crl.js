@@ -139,77 +139,66 @@ CRL.assertType = function assertType(obj, Class) {
 
 // Lightweight non standard compliant Promise
 function Promise(resolverFn) {
-    CRL.Promise.initialize(this, resolverFn);
+    if (typeof resolverFn !== 'function') {
+        throw 'provided resolver must be a function';
+    }
+
+    var p = this;
+
+    // this.value;
+    // this.reason;
+    this.completed      = false;
+    this.thenListeners  = [];
+    this.catchListeners = [];
+
+    resolverFn(
+        function resolve(value){
+            Promise.resolve(p, value);
+        },
+        function reject(reson) {
+            Promise.reject(p, reason);
+        }
+    );
 }
 
 Promise.prototype = {
 
     then: function(fn) {
-        if (! this.thenListeners) { this.thenListeners = [] }
         this.thenListeners.push(fn);
         if (this.completed) {
-            CRL.Promise.resolve(this, this.value);
+            Promise.resolve(this, this.value);
         }
         return this;
     },
 
     catch: function(fn) {
-        if (! this.catchListeners) { this.catchListeners = [] }
         this.catchListeners.push(fn);
         if (this.completed) {
-            CRL.Promise.reject(this, this.reason);
+            Promise.reject(this, this.reason);
         }
         return this;
     }
 };
 
-Promise.initialize = function initialize(p, resolverFn) {
-    if (typeof resolverFn !== 'function') {
-        throw 'provided resolver must be a function';
-    }
-    p.completed = false;
-
-    delete p.thenListeners;
-    delete p.catchListeners;
-    delete p.value;
-    delete p.reason;
-
-    resolverFn(
-        function resolve(value){
-            CRL.Promise.resolve(p, value);
-        },
-        function reject(reson) {
-            CRL.Promise.reject(p, reason);
-        }
-    );
-
-    return p;
-}
-
 Promise.resolve = function resolve(p, value) {
-    if (p.thenListeners) {
-        p.thenListeners.forEach(function(listener){
-            listener(value);
-        })
-    }
-    this.completed = true;
-    this.value     = value;
-    Promise.pool.push(p);
+    p.thenListeners.forEach(function(listener) {
+        listener(value);
+    })
+
+    p.completed = true;
+    p.value     = value;
 };
 
 Promise.reject = function reject(p, reason) {
-    if (p.catchListeners) {
-        p.catchListeners.forEach(function(listener){
-            listener(reason);
-        })
-    }
-    this.completed = true;
-    this.reason    = reason;
-    Promise.pool.push(p);
+    p.catchListeners.forEach(function(listener){
+        listener(reason);
+    })
+
+    p.completed = true;
+    p.reason    = reason;
 };
 
-Promise.pool = [];
-CRL.Promise  = Promise;
+CRL.Promise = Promise;
 
 })();
 
@@ -230,15 +219,6 @@ function schedule(fn, time) {
     }
 }
 
-// promise factory
-function newPromise(resolver) {
-    var pool = CRL.Promise.pool;
-    if (pool && pool.length) {
-        return CRL.Promise.initialize(pool.shift(), resolver);
-    }
-    return new CRL.Promise(resolver);
-}
-
 function isPromise(p) {
     return p && typeof p.then === 'function';
 }
@@ -247,7 +227,7 @@ function isPromise(p) {
 CRL.go = function go(genf, ctx) {
     var state, gen = genf.apply(ctx || {});
 
-    return newPromise(function(resolve, reject) {
+    return new CRL.Promise(function(resolve, reject) {
         schedule(next);
         //next();
 
