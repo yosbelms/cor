@@ -359,6 +359,19 @@ query = '
 ```
 
 
+### String Interpolation
+
+A string interpolation is a string literal with trailing `$` symbol and curly braces to define the bounds of the expressions within the string, example:
+```
+str  = $'Hello {person.name}!'
+```
+
+It is possible to use string delimiters inside the expressions:
+```
+str  = $'Hello {person['name']}!'
+```
+
+
 ### Numbers
 
 Numbers can be specified using any of the following syntaxes:
