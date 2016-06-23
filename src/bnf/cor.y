@@ -1,5 +1,6 @@
 %nonassoc IDENT
-%nonassoc ',' IN
+%nonassoc ',' IN '&'
+%left '(' '.'
 
 
 %start Module
@@ -353,6 +354,8 @@ PrimaryExpr
     | SliceExpr
     | CallExpr
     | TypeAssertExpr
+    | ObjectConstructor
+    | ArrayConstructor
     ;
 
 UnaryExpr
@@ -569,8 +572,6 @@ ArrayItems
 
 Value
     : Expr
-    | ObjectConstructor
-    | ArrayConstructor
     | FunctionStmt
     ;
 
