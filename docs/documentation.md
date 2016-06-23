@@ -651,6 +651,15 @@ class DialogBox : Window {
 ```
 
 
+### Regex (Builtin Function)
+The `regex` function enables to use regular expressions in Cor. The regular expression syntax is equal to JavaScript regular expressions.
+```
+reg  = regex('pla[a-z]?')
+// with flags
+regf = regex('gi(t)+', 'ig')
+```
+
+
 ## Modules
 
 A module is a `.cor` file containing definitions and declarations that can be used by other modules. Variables, classes and functions defined in a module are all exported without needing a keyword or a special statement. The name of the file is the name of the module with `.cor` suffix.
