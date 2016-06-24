@@ -140,6 +140,9 @@ terminals     = parser.terminals_,
 yy            = parser.yy,
 SEMICOLON     = parseInt(findTerminal(';')),
 reactiveTerms = {
+    'TPL_END'    : true,
+    'TPL_SIMPLE' : true,
+
     'INCDECOP': true,
     'NUMBER'  : true,
     'STRING'  : true,
