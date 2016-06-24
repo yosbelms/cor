@@ -162,11 +162,11 @@ class Todo : Model {
 
 
 func init() {
-    ls = [
+    ls = (
         &Todo('Buy a battery'),
         &Todo('Clean the fan'),
         &Todo('Make a push'),
-    ]
+    )
     alert(JSON.stringify(ls, 0, 4))
 }
 </script>
