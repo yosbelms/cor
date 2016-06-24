@@ -1355,7 +1355,7 @@ yy.CallNode = Class(yy.Node, {
         regEnd    = /\'$/,
         regDelim  = /\//g,
         strDelim  = "\\'",
-        newLine   = /\n\s+/g,
+        newLine   = /\n(\s+)?/g,
         rFlags    = /[gimy]+/,
         rEscape   = /\\(?=[bBdDsSwW])/g;
 
@@ -1377,7 +1377,7 @@ yy.CallNode = Class(yy.Node, {
             if (flagsNode) {
                 flags = flagsNode.children.replace(regStart, '').replace(regEnd, '');
 
-                if (flags !== '' & !rFlags.test(flags)) {
+                if (flags !== '' && !rFlags.test(flags)) {
                     this.error('invalid regular expression flags', flagsNode.lineno);
                 }
 
