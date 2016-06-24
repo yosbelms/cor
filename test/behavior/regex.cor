@@ -1,0 +1,17 @@
+
+func init() {
+    describe('Regex', func() {
+
+        it('allow string delimiter escaping', func() {
+            test = regex('\'').test('\'')
+            expect(test).toBe(true)
+        })
+
+
+        it('automatic escapes slash', func() {
+            test = regex('/').test('/')
+            expect(test).toBe(true)
+        })
+
+    })
+}

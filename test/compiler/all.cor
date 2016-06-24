@@ -32,8 +32,8 @@ shouldNotThrowList = (
     'compiler/catch_error_stmt',
     
     'compiler/existential_op',
-
     'compiler/template',
+    'compiler/regex',
 )
 
 shouldThrowList = (
@@ -46,6 +46,7 @@ shouldThrowList = (
     'compiler/super_call_autside_method',
     
     'compiler/wrong_existential_op',
+    'compiler/wrong_regex',
 )
 
 func getNotThrowExpectation(filename) func() {
