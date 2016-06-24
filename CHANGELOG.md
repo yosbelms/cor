@@ -1,3 +1,13 @@
+# 0.9.0
+
+Many pending features were added to Cor in this version, example, the new builtin function for regular expressions, also some syntax has changed, read the docs form more information about it.
+
+* Add template literals (string interpolation)
+* Square brackets '[ and ']' is no longer part of the syntax in object constructors and arrays, now it uses parenthesis '(' and ')'
+* Add `regex` builtin function
+* Object and array constructors are now primary expressions
+
+
 # 0.6.0
 
 0.6.0 Is one of the major releases since the first Cor release. This release brings automatic testing with CircleCI and `run` command is now available, so you can now do `cor run path/to/file.cor` in node.js
