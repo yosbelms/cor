@@ -375,9 +375,9 @@ query = '
 ```
 
 
-### String Interpolation
+### Templates (String Interpolation)
 
-A string interpolation is a string literal with trailing `$` symbol and curly braces to define the bounds of the expressions within the string, example:
+Templates or string interpolation is a string literal with trailing `$` symbol and curly braces to define the bounds of the expressions within the string, example:
 ```
 str  = $'Hello {person.name}!'
 ```
