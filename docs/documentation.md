@@ -688,6 +688,14 @@ reg  = regex('pla[a-z]?')
 regf = regex('gi(t)+', 'ig')
 ```
 
+Furthemore, it can be multilined:
+```
+r = regex('
+    pla
+    [a-z]?
+')
+```
+
 
 ## Modules
 
