@@ -936,6 +936,14 @@ switch num {
 }
 ```
 
+Switch statement is even more generic, one can omit the main expression, the `true` value will be evaluated in place of the omitted expression:
+```
+switch {
+    case x > 2 : doSomething()
+    case x < 2 : doOtherThing()
+}
+```
+
 
 ### Inc/Dec
 
