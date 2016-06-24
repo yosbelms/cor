@@ -32,6 +32,8 @@ shouldNotThrowList = (
     'compiler/catch_error_stmt',
     
     'compiler/existential_op',
+
+    'compiler/template',
 )
 
 shouldThrowList = (

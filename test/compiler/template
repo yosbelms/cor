@@ -1,0 +1,7 @@
+a = $'simple'
+b = $'complex {a}'
+c = $'complex {a} interp {a+b}'
+d = $'complex {a()}
+        interp
+        {a()}'
+e = $'complex {person['name']}'
