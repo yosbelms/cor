@@ -28,7 +28,7 @@ class ClientB : Emitter  {
 
 class ClientC : ClientA {
     func init(name, age) {
-        super(&[name: name, age: age, _conf: true])
+        super((name: name, age: age, _conf: true))
     }
 }
 
@@ -36,11 +36,11 @@ func init() {
 
     describe('Class Initializer', func(){
         
-        p  = &Person['peter', 10]
-        c  = &Client['gladys', 50]
-        ca = &ClientA[name: 'gleidys', age: 25]
-        cb = &ClientB['emanuel', 18]
-        cc = &ClientC['lliliam', 28]
+        p  = &Person('peter', 10)
+        c  = &Client('gladys', 50)
+        ca = &ClientA(name: 'gleidys', age: 25)
+        cb = &ClientB('emanuel', 18)
+        cc = &ClientC('lliliam', 28)
 
         it('Should replace default constructor behavior', func() {
             expect(p.name).toBe('peter')

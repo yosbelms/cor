@@ -1,7 +1,7 @@
 
 use '../utils'
 
-shouldNotThrowList = [
+shouldNotThrowList = (
     'compiler/empty_program',
 
     'compiler/single_decl',
@@ -17,6 +17,7 @@ shouldNotThrowList = [
     'compiler/call_expr',
     'compiler/index_expr',
     'compiler/obj_constructors',
+    'compiler/array_constructors',
     'compiler/strings',
     'compiler/lambda',
     'compiler/assignment',
@@ -31,9 +32,9 @@ shouldNotThrowList = [
     'compiler/catch_error_stmt',
     
     'compiler/existential_op',
-]
+)
 
-shouldThrowList = [
+shouldThrowList = (
     'compiler/module_members_with_equal_name1',
     'compiler/module_members_with_equal_name2',
     'compiler/incorrect_nameless_functions_use',
@@ -43,23 +44,17 @@ shouldThrowList = [
     'compiler/super_call_autside_method',
     
     'compiler/wrong_existential_op',
-]
+)
 
-func getNotThrowExpectation(filename) {
-    return func() {
-        expect(utils.fileCompiler(filename)).not.toThrow()
-    }
+func getNotThrowExpectation(filename) func() {
+    expect(utils.fileCompiler(filename)).not.toThrow()
 }
 
-func getThrowExpectation(filename) {
-    return func() {
-        expect(utils.fileCompiler(filename)).toThrow()
-    }
+func getThrowExpectation(filename) func() {
+    expect(utils.fileCompiler(filename)).toThrow()
 }
 
-func getSpec(filename) {
-    return filename.split('/').pop();
-}
+func getSpec(filename) filename.split('/').pop()
 
 func init() {
     describe('Compiler', func() {

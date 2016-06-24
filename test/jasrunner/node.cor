@@ -8,7 +8,7 @@ use '../../node_modules/jasmine/lib/jasmine.js' Jasmine
 jasEnv = &Jasmine
 
 func init() {
-    jasEnv.configureDefaultReporter(&[
+    jasEnv.configureDefaultReporter((
         showColors: false,
-    ])
+    ))
 }

@@ -814,13 +814,13 @@ hljs.registerLanguage('cor', function(hljs) {
             {
                 className: 'class',
                 beginKeywords: 'class', end: /[{;=]/, excludeEnd: true,
-                illegal: /["\[\]]/,
+                illegal: /["\(\)]/,
                 contains: [hljs.UNDERSCORE_TITLE_MODE]
             },
             {
                 className: 'new',
-                begin: '&', end: /[\[{;,\n]/, excludeEnd: true,
-                illegal: /["\[\]]/,
+                begin: '&', end: /[\({;,\n]/, excludeEnd: true,
+                illegal: /["\(\)]/,
                 contains: [hljs.UNDERSCORE_TITLE_MODE]
             }
         ]
