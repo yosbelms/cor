@@ -81,6 +81,24 @@ translationTable = {
     '^': ' ^ '
 };
 
+var builtinFn = [
+    'error',
+    'super',
+    'regex',
+    'chan',
+    'stream',
+    'close'
+];
+
+function isBuiltinFn(name) {
+    return builtinFn.indexOf(name) !== -1;
+}
+
+
+function isEcmaReservedKeyWord() {
+    return EcmaReservedKeywords.indexOf(name) !== -1;
+}
+
 yy.parseError = function parseError (msg, hash, replaceMsg) {
     var filename = yy.env.filename;
     //is non recoverable parser error?
@@ -809,7 +827,7 @@ yy.VarNode = Class(yy.Node, {
         this.context = this.yy.env.context();
         this.name = this.children[0].children;
 
-        if (EcmaReservedKeywords.indexOf(this.name) !== -1) {
+        if (isEcmaReservedKeyWord(this.name)) {
             this.children[0].children = this.name += '_';
         }
     },
@@ -1252,11 +1270,9 @@ yy.CallNode = Class(yy.Node, {
         var
         ch = this.children, last, builtin;
 
-        if (this.name) {
-            builtin = this[this.name + 'Builtin'];
-            if (builtin) {
-                builtin.call(this);
-            }
+        builtin = this[this.name + 'Builtin'];
+        if (this.name && isBuiltinFn(this.name) && builtin) {
+            builtin.call(this);
         }
 
         this.base('compile', arguments);
@@ -1320,6 +1336,69 @@ yy.CallNode = Class(yy.Node, {
                 new yy.Lit('_error', ch[0].lineno)
             ]
         }
+    },
+
+
+    regexBuiltin: function() {
+
+        if (!this.children[2]) {
+            this.error('invalid regular expression pattern', this.children[0].lineno);
+        }
+
+        var
+        flags,
+        ch      = this.children,
+        params  = ch[2],
+        patternNode = params.children[0],
+        flagsNode   = params.children[2],
+        regStart  = /^\'/,
+        regEnd    = /\'$/,
+        regDelim  = /\//g,
+        strDelim  = "\\'",
+        newLine   = /\n\s+/g,
+        rFlags    = /[gimy]+/,
+        rEscape   = /\\(?=[bBdDsSwW])/g;
+
+        function cleanPattern(p) {
+            return p.replace(newLine, '').replace(regDelim, '\\/');
+        }
+
+        if (patternNode instanceof yy.StringNode && (flagsNode instanceof yy.StringNode || flagsNode == void 0)) {
+
+            patternNode.children = cleanPattern(patternNode.children).replace(regStart, '\/')
+                .replace(regEnd, '\/')
+                .replace(newLine, '\\n')
+                .replace(strDelim, "'");
+
+            if (patternNode.children === '//') {
+                this.error('invalid regular expression pattern', patternNode.lineno);
+            }
+
+            if (flagsNode) {
+                flags = flagsNode.children.replace(regStart, '').replace(regEnd, '');
+
+                if (flags !== '' & !rFlags.test(flags)) {
+                    this.error('invalid regular expression flags', flagsNode.lineno);
+                }
+
+                patternNode.children += flags;
+            }
+
+            this.children = [
+                patternNode
+            ];
+
+            return;
+        } else {
+            ch[0].children[0].children = this.runtimePrefix + 'regex';
+        }
+
+        if (patternNode instanceof yy.StringNode) {
+            // special symbols
+            // bBdDsSwW
+            patternNode.children = cleanPattern(patternNode.children).replace(rEscape, '\\\\');
+        }
+
     }
 
 });

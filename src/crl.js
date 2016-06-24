@@ -143,4 +143,8 @@ CRL.assertType = function assertType(obj, Class) {
     return false;
 };
 
+CRL.regex = function regex(pattern, flags) {
+    return new RegExp(pattern, flags);
+}
+
 })();
