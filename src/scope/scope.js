@@ -95,7 +95,7 @@ function isBuiltinFn(name) {
 }
 
 
-function isEcmaReservedKeyWord() {
+function isEcmaReservedKeyWord(name) {
     return EcmaReservedKeywords.indexOf(name) !== -1;
 }
 
