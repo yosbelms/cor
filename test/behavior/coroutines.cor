@@ -3,7 +3,7 @@ func init() {
     describe('Corourines', func() {
 
         it('Should break on promise', func(done) {
-            p = &CRL.Promise[func(resolve, reject) setTimeout(func() resolve(0), 100)]
+            p = &CRL.Promise(func(resolve, reject) setTimeout(func() resolve(0), 100))
 
             go {
                 val = <- p
@@ -16,7 +16,7 @@ func init() {
 
         it('Should allow comunication between', func(done) {
             go {
-                p = &CRL.Promise[func(resolve, reject) setTimeout(func() resolve(0), 100)]
+                p = &CRL.Promise(func(resolve, reject) setTimeout(func() resolve(0), 100))
             }
 
             go {

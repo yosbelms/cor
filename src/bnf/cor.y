@@ -481,6 +481,7 @@ TemplateLiteralBody
                 $$= new yy.List($1, new yy.Lit($2, @2), $3)
             }
         }
+    ;
 
 GoExpr
     : GO Block { $$= new yy.GoExprNode(new yy.Lit($1, @1), $2) }
