@@ -148,3 +148,132 @@ CRL.regex = function regex(pattern, flags) {
 }
 
 })();
+
+
+(function() {
+
+// Lightweight non standard compliant Promise
+function Promise(resolverFn) {
+    if (typeof resolverFn !== 'function') {
+        throw 'provided resolver must be a function';
+    }
+
+    var p = this;
+
+    // this.value;
+    // this.reason;
+    this.completed      = false;
+    this.thenListeners  = [];
+    this.catchListeners = [];
+
+    resolverFn(
+        function resolve(value){
+            Promise.resolve(p, value);
+        },
+        function reject(reson) {
+            Promise.reject(p, reason);
+        }
+    );
+}
+
+Promise.prototype = {
+
+    then: function(fn) {
+        this.thenListeners.push(fn);
+        if (this.completed) {
+            Promise.resolve(this, this.value);
+        }
+        return this;
+    },
+
+    catch: function(fn) {
+        this.catchListeners.push(fn);
+        if (this.completed) {
+            Promise.reject(this, this.reason);
+        }
+        return this;
+    }
+};
+
+Promise.resolve = function resolve(p, value) {
+    p.thenListeners.forEach(function(listener) {
+        listener(value);
+    })
+
+    p.completed = true;
+    p.value     = value;
+};
+
+Promise.reject = function reject(p, reason) {
+    p.catchListeners.forEach(function(listener){
+        listener(reason);
+    })
+
+    p.completed = true;
+    p.reason    = reason;
+};
+
+CRL.Promise = Promise;
+
+})();
+
+// Coroutines
+(function(global) {
+
+// polyfill Promise
+if (typeof Promise !== 'function') {
+    Promise = CRL.Promise;
+}
+
+// Schedule
+function schedule(fn, time) {
+    if (time === void 0 && typeof global.setImmediate !== 'undefined') {
+        setImmediate(fn);
+    } else {
+        setTimeout(fn, +time);
+    }
+}
+
+function isPromise(p) {
+    return p && typeof p.then === 'function';
+}
+
+// Generator Runner
+CRL.go = function go(genf, ctx) {
+    var state, gen = genf.apply(ctx || {});
+
+    return new CRL.Promise(function(resolve, reject) {
+        schedule(next);
+        //next();
+
+        function next(value) {
+            state = gen.next(value);
+            value = state.value;
+
+            if (isPromise(value)) {
+                value.then(function(value) {
+                    next(value);
+                })
+                return;
+            }
+
+            if (state.done) {
+                resolve(value);
+            } else {
+                next(value);
+            }
+        }
+    })
+}
+
+// receiver
+CRL.receive = function receive(value) {
+    return value;
+}
+
+// sender
+CRL.send = function send(channel, value) {
+    return channel.send(value);
+}
+
+})(this);

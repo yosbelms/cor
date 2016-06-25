@@ -307,10 +307,12 @@ yy.List = Class(yy.Node, {
 
     add: function() {
         this.children = this.children.concat(slice.call(arguments));
+        this.adopt(this.children);
     },
 
     addFront: function() {
         this.children = slice.call(arguments).concat(this.children);
+        this.adopt(this.children);
     },
 
     last: function() {
@@ -408,7 +410,6 @@ yy.ValueList = Class(yy.List, {
                 break;
             }
         }
-        
     }
 
 });
@@ -559,7 +560,6 @@ yy.BlockNode = Class(yy.Node, {
                 }
             }    
         }
-        
     }
 });
 
@@ -1469,6 +1469,7 @@ yy.CaseNode = Class(yy.Node, {
             ls = ch[3];
             ls.children.push(new yy.Lit(' break; ', ls.last().lineno - 1));
         }
+
     },
 
     handleFallThrough: function(exprList) {
@@ -1575,6 +1576,7 @@ yy.ForInNode = Class(yy.Node, {
             ch.splice(3, 0, new yy.Lit(str2, ch[2].lineno));
             ch[4].children.splice(1, 0, new yy.Lit(str3, ch[4].children[0].lineno));
         }
+
     }
 
 });
@@ -1603,8 +1605,7 @@ yy.ForInRangeNode = Class(yy.Node, {
             to,
             new yy.Lit('; ' + i + '++) ', to.lineno),
             ch[6],
-        ]
-                
+        ];
     }
 
 });
@@ -1662,7 +1663,7 @@ yy.CoalesceNode = Class(yy.Node, {
                 ch[2],
                 new yy.Lit(')', ch[2].lineno),
             ];    
-        }        
+        }
     }
 });
 
@@ -1746,7 +1747,79 @@ yy.ExistenceNode = Class(yy.Node, {
                 new yy.Lit('void 0 : ' + ref, ch[ch.length - 1].lineno),
                 this.subject,
             ];    
-        }        
+        }
+
+        // re-adopt
+        this.adopt(this.children);
+    }
+})
+
+
+// check if a node is inside a `go` expression
+function isInGoExpr(node) {
+    var goExprFound = false;
+
+    while(node.parent) {
+        node = node.parent;
+
+        if (node instanceof yy.ContextAwareNode && !goExprFound) {
+            return false;
+        }
+
+        if (node instanceof yy.GoExprNode) {
+            goExprFound = true;
+        }
+    }
+
+    return goExprFound;
+}
+
+yy.GoExprNode = Class(yy.Node, {
+
+    type: 'GoExprNode',
+
+    compile: function() {
+        var
+        ch     = this.children,
+        fnNode = ch[1];
+        ch[0].children = this.runtimePrefix + 'go(function* go()';
+
+        fnNode.children[fnNode.children.length - 1].children += ', this)';
+    }
+})
+
+yy.SendAsyncNode = Class(yy.Node, {
+
+    type: 'SendAsyncNode',
+
+    compile: function() {
+        if (! isInGoExpr(this)) {
+            this.error('unexpected async operation', this.lineno);
+        }
+
+        var
+        ch = this.children;
+        ch[1].children = ',';
+
+        ch.splice(0, 0, new yy.Lit('yield ' + this.runtimeFn('send'), ch[0].lineno));
+        ch.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+    }
+})
+
+yy.ReceiveAsyncNode = Class(yy.Node, {
+
+    type: 'ReceiveAsyncNode',
+
+    compile: function() {
+        if (! isInGoExpr(this)) {
+            this.error('unexpected async operation', this.lineno);
+        }
+
+        var
+        ch = this.children;
+
+        ch[0].children = 'yield ' + this.runtimeFn('receive');
+        ch.push(new yy.Lit(')', ch[ch.length - 1].lineno));
     }
 })
 

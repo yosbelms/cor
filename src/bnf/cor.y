@@ -357,6 +357,7 @@ PrimaryExpr
     | ObjectConstructor
     | ArrayConstructor
     | TemplateLiteral
+    | GoExpr
     ;
 
 UnaryExpr
@@ -390,10 +391,11 @@ OperationExpr
 AssignmentExpr
     : LeftHandExpr ASSIGNMENTOP Value                 { $$= new yy.AssignmentNode($1, new yy.Lit($2, @2), $3) }
     | LeftHandExpr '=' Value                          { $$= new yy.AssignmentNode($1, new yy.Lit($2, @2), $3) }
+    | LeftHandExpr ASYNCOP Value                      { $$= new yy.SendAsyncNode($1, new yy.Lit($2, @2), $3) }
     ;
 
 CoalesceExpr
-    : OperationExpr COALESCEOP Value                   { $$= new yy.CoalesceNode($1, new yy.Lit($2, @2), $3) }
+    : OperationExpr COALESCEOP Value                  { $$= new yy.CoalesceNode($1, new yy.Lit($2, @2), $3) }
     ;
 
 ExprList
@@ -479,12 +481,20 @@ TemplateLiteralBody
                 $$= new yy.List($1, new yy.Lit($2, @2), $3)
             }
         }
+
+GoExpr
+    : GO Block { $$= new yy.GoExprNode(new yy.Lit($1, @1), $2) }
+    ;
+
+ReceiveExpr
+    : ASYNCOP Value { $$= new yy.ReceiveAsyncNode(new yy.Lit($1, @1), $2) }
     ;
 
 Expr
     : OperationExpr
     | AssignmentExpr
     | CoalesceExpr
+    | ReceiveExpr
     ;
 
 /* Values */
