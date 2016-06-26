@@ -17,3 +17,12 @@ func compile(src) {
 func run() {
     return cor.run.apply(cor, arguments)
 }
+
+func testWithPromise(test) {
+    if CRL.Promise == Promise {
+        test('(CRL Promise. This platform don\'t support native promises)', CRL.Promise);
+    } else {
+        test('(CRL Promise)', CRL.Promise);
+        test('(Native Promise)', Promise);
+    }
+}

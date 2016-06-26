@@ -150,7 +150,7 @@ CRL.regex = function regex(pattern, flags) {
 })();
 
 
-(function() {
+(function(global) {
 
 // Lightweight non standard compliant Promise
 function Promise(resolverFn) {
@@ -170,7 +170,7 @@ function Promise(resolverFn) {
         function resolve(value){
             Promise.resolve(p, value);
         },
-        function reject(reson) {
+        function reject(reason) {
             Promise.reject(p, reason);
         }
     );
@@ -213,18 +213,54 @@ Promise.reject = function reject(p, reason) {
     p.reason    = reason;
 };
 
+Promise.all = function(array) {
+    var promise,
+    i          = -1,
+    numPending = 0,
+    result     = [],
+    len        = array.length;
+
+    return new Promise(function(resolve) {
+        while (++i < len) {
+            promise = array[i];
+            if (isPromise(promise)) {
+                setupThen(promise, i);
+            }
+            else {
+                result[i] = array[i];
+                tryToResolve();
+            }
+        }
+
+        function setupThen(promise, i) {
+            numPending++;
+
+            // default value
+            result[i] = void 0;
+
+            promise.then(function(value) {
+                result[i] = value;
+                numPending--;
+                tryToResolve();
+            })
+        }
+
+        function tryToResolve() {
+            if (numPending === 0) {
+                resolve(result)
+            }
+        }
+    })
+}
+
 CRL.Promise = Promise;
-
-})();
-
-// Coroutines
-(function(global) {
 
 // polyfill Promise
 if (typeof Promise !== 'function') {
     Promise = CRL.Promise;
 }
 
+// Coroutines
 // Schedule
 function schedule(fn, time) {
     if (time === void 0 && typeof global.setImmediate !== 'undefined') {
@@ -236,6 +272,18 @@ function schedule(fn, time) {
 
 function isPromise(p) {
     return p && typeof p.then === 'function';
+}
+
+function isFunction(f) {
+    return typeof f === 'function';
+}
+
+function isObject(obj) {
+    return obj && Object == obj.constructor;
+}
+
+function isArray(arr) {
+    return Array.isArray(arr);
 }
 
 // Generator Runner
@@ -266,14 +314,98 @@ CRL.go = function go(genf, ctx) {
     })
 }
 
+// convert to promise as much possible
+function toPromise(obj) {
+    if (isPromise(obj)) {
+        return obj;
+    }
+
+    if (isArray(obj)) {
+        return arrayToPromise(obj);
+    }
+
+    if (isObject(obj)) {
+        return objectToPromise(obj);
+    }
+}
+
+// convert array to promise
+function arrayToPromise(array) {
+    var promise;
+    return CRL.Promise.all(array.map(function(value) {
+        promise = toPromise(value);
+        if (isPromise(promise)) {
+            return promise;
+        }
+
+        return value;
+    }));
+}
+
+// convert object to promise
+function objectToPromise(obj) {
+    var key, promise, ret,
+    promises = [],
+    result   = {},
+    i        = -1,
+    keys     = Object.keys(obj),
+    len      = keys.length;
+
+    ret = new CRL.Promise(function(resolve) {
+
+        while (++i < len) {
+            key     = keys[i];
+            promise = toPromise(obj[key]);
+            if (isPromise(promise)) {
+                setupThen(promise, key);
+            }
+            else {
+                result[key] = obj[key];
+            }
+        }
+
+        CRL.Promise.all(promises).then(function() {
+            resolve(result);
+        })
+
+        function setupThen(promise, key) {
+            // default value
+            result[key] = void 0;
+
+            promise.then(function(value) {
+                result[key] = value;
+            })
+
+            promises.push(promise);
+        }
+
+    })
+
+    return ret;
+}
+
 // receiver
-CRL.receive = function receive(value) {
-    return value;
+CRL.receive = function receive(obj) {
+    var prom;
+
+    if (obj && isFunction(obj.receive)) {
+        return obj.receive();
+    }
+
+    prom = toPromise(obj);
+    if (isPromise(prom)) {
+        return prom;
+    }
+
+    return obj;
 }
 
 // sender
-CRL.send = function send(channel, value) {
-    return channel.send(value);
+CRL.send = function send(obj, value) {
+    if (obj && isFunction(obj.send)) {
+        return obj.send(value);
+    }
+    throw 'unable to receive values';
 }
 
 })(this);
