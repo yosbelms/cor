@@ -1,9 +1,9 @@
 
-func init() {
-    describe('Corourines', func() {
+func test(title, Promise) {
+    describe('Corourines' + title, func() {
 
         it('Should break on promise', func(done) {
-            p = &CRL.Promise(func(resolve, reject) setTimeout(func() resolve(0), 100))
+            p = &Promise(func(resolve, reject) setTimeout(func() resolve(0), 100))
 
             go {
                 val = <- p
@@ -16,7 +16,7 @@ func init() {
 
         it('Should allow comunication between', func(done) {
             go {
-                p = &CRL.Promise(func(resolve, reject) setTimeout(func() resolve(0), 100))
+                p = &Promise(func(resolve, reject) setTimeout(func() resolve(0), 100))
             }
 
             go {
@@ -27,25 +27,35 @@ func init() {
             
         })
 
+        describe('Can be chained', func() {
 
-        it('Can be chained', func(done) {
-            // explicit
-            g = go {
-                return 0
-            }
+            it('- Explicit', func(done) {
+                // explicit
+                g = go {
+                    return 0
+                }
 
-            go {
-                expect(<- g).toBe(0)
-                done()
-            }
+                go {
+                    expect(<- g).toBe(0)
+                    done()
+                }
+            })
 
-            // succint
-            go {
-                expect(<- go { return 0 }).toBe(0)
-                done()
-            }
-            
+            it('- Succint', func(done) {
+                // succint
+                go {
+                    expect(<- go { return 0 }).toBe(0)
+                    done()
+                }
+
+            })
         })
 
     })
+}
+
+
+use '../utils'
+func init() {
+    utils.testWithPromise(test)
 }

@@ -62,14 +62,14 @@ func getSpec(filename) filename.split('/').pop()
 func init() {
     describe('Compiler', func() {
 
-        describe('Should not throw compiling', func(){
+        describe('Should not throw while compiling', func(){
             for filename in shouldNotThrowList {
                 it(getSpec(filename), getNotThrowExpectation(filename))
             }
         })
 
 
-        describe('Should throw compiling', func(){
+        describe('Should throw while compiling', func(){
             for filename in shouldThrowList {
                 it(getSpec(filename), getThrowExpectation(filename))
             }
