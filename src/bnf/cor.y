@@ -1,6 +1,8 @@
 %nonassoc IDENT
 %nonassoc ',' IN '&'
 %left '(' '.'
+%left ASYNCOP
+%left '-' '+'
 
 
 %start Module
@@ -386,12 +388,12 @@ OperationExpr
     : OperationExprNotAdditive
     | OperationExpr '+' OperationExprNotAdditive      { $$= new yy.Node($1, new yy.Lit($2, @2), $3) }
     | OperationExpr '-' OperationExprNotAdditive      { $$= new yy.Node($1, new yy.Lit($2, @2), $3) }
+    | OperationExpr ASYNCOP OperationExpr             { $$= new yy.SendAsyncNode($1, new yy.Lit($2, @2), $3) }
     ;
 
 AssignmentExpr
     : LeftHandExpr ASSIGNMENTOP Value                 { $$= new yy.AssignmentNode($1, new yy.Lit($2, @2), $3) }
     | LeftHandExpr '=' Value                          { $$= new yy.AssignmentNode($1, new yy.Lit($2, @2), $3) }
-    | LeftHandExpr ASYNCOP Value                      { $$= new yy.SendAsyncNode($1, new yy.Lit($2, @2), $3) }
     ;
 
 CoalesceExpr
