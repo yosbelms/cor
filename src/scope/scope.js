@@ -86,8 +86,7 @@ var builtinFn = [
     'super',
     'regex',
     'chan',
-    'stream',
-    'close'
+    'timeout'
 ];
 
 function isBuiltinFn(name) {
@@ -1399,6 +1398,21 @@ yy.CallNode = Class(yy.Node, {
             patternNode.children = cleanPattern(patternNode.children).replace(rEscape, '\\\\');
         }
 
+    },
+
+    chanBuiltin: function() {
+        var ch = this.children;
+        ch[0].children[0].children = this.runtimePrefix + 'chan';
+    },
+
+    timeoutBuiltin: function() {
+        if (! isInGoExpr(this)) {
+            this.error('unexpected timeout operation', this.lineno);
+        }
+
+        var ch = this.children;
+        ch[0].children[0].children = this.runtimePrefix + 'timeout';
+        ch.unshift(new yy.Lit('yield ', getLesserLineNumber(ch[0])))
     }
 
 });
