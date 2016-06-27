@@ -1315,4 +1315,4 @@ The Cor distribution for browsers is recomended only for development purpose, to
 
 ## The CRL (Cor Runtime Library)
 
-The CRL is a small (~3Kb) library which makes possible to take advantage of features such as *for/in statements, inheritance, type assertions, among others*. Without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by the javascript resulting code.
+The CRL is a small (~13Kb unminified and uncompressed) library which makes possible to take advantage of features such as *for/in statements, inheritance, type assertions, among others*. Without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by the javascript resulting code.
