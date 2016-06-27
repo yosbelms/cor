@@ -1,5 +1,6 @@
 
-func test(title, Promise) {
+func test(title) {
+    Promise = CRL.Promise
 
     func asyncVal(val, time) {
         return &Promise(func(resolve) {

@@ -1,5 +1,7 @@
 
-func test(title, Promise) {
+func test(title) {
+    Promise = CRL.Promise
+
     describe('Corourines' + title, func() {
 
         it('Should break on promise', func(done) {
