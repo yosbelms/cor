@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" type="text/css" href="assets/style.css">
-        <link rel="stylesheet" type="text/css" href="assets/highlightjs/cor.css">
+        <link rel="stylesheet" type="text/css" href="assets/highlightjs/cor_light.css">
         <link rel="shortcut icon" href="assets/favicon.ico" />
         <title>Cor - Documentation</title>
     </head>
@@ -24,7 +24,6 @@
                 <li class="inline"><a href="../test/index.html">Run tests</a></li>
             </ul>
 			<ul class="right">
-                <li class="inline"><a class="icon-twitter" href="http://twitter.com/yosbelms" target="_blank"></a></li>
                 <li class="inline"><a class="icon-github" href="https://github.com/yosbelms/cor" target="_blank"></a></li>
             </ul>
         </div>
@@ -34,9 +33,9 @@
 
 <h1 id="documentation">Documentation</h1>
 
-<p>This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases. Cor is a language designed with large web development in mind. Hence, is possible to develop your software without to execute any command to compile the source code, CLI tools are only needed to make the product able for production environments.</p>
+<p>This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts. Cor is a language designed with large web development in mind. Hence, is possible to develop your software without to execute any command to compile the source code, CLI tools are only needed to make the product able for production environments.</p>
 
-<p><h2>Table of Content</h2><a class="toclink toclink-2" href="#quickrecap">Quick recap</a><a class="toclink toclink-3" href="#inlcudingmodules">Inlcuding modules</a><a class="toclink toclink-3" href="#functions">Functions</a><a class="toclink toclink-3" href="#slicescoalesceoperatorconditionaloperator">Slices/CoalesceOperator/ConditionalOperator</a><a class="toclink toclink-3" href="#classes">Classes</a><a class="toclink toclink-3" href="#inheritance">Inheritance</a><a class="toclink toclink-3" href="#instances">Instances</a><a class="toclink toclink-3" href="#ifforswitch">If/For/Switch</a><a class="toclink toclink-3" href="#typeassertionerrors">TypeAssertion/Errors</a><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#expressions">Expressions</a><a class="toclink toclink-3" href="#comments">Comments</a><a class="toclink toclink-3" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-3" href="#objects">Objects</a><a class="toclink toclink-3" href="#literalconstructors">Literal Constructors</a><a class="toclink toclink-3" href="#strings">Strings</a><a class="toclink toclink-3" href="#numbers">Numbers</a><a class="toclink toclink-3" href="#operators">Operators</a><a class="toclink toclink-3" href="#coalesce">Coalesce</a><a class="toclink toclink-3" href="#existconditional">Exist Conditional</a><a class="toclink toclink-3" href="#arrays">Arrays</a><a class="toclink toclink-3" href="#slices">Slices</a><a class="toclink toclink-3" href="#typeassertion">Type Assertion</a><a class="toclink toclink-3" href="#initialization">Initialization</a><a class="toclink toclink-3" href="#superbuiltinfunction">Super (Builtin Function)</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#statements">Statements</a><a class="toclink toclink-3" href="#forloop">For loop</a><a class="toclink toclink-3" href="#forin">For/In</a><a class="toclink toclink-3" href="#forinrange">For/In/Range</a><a class="toclink toclink-3" href="#ifelse">If/Else</a><a class="toclink toclink-3" href="#switchcasedefault">Switch/Case/Default</a><a class="toclink toclink-3" href="#incdec">Inc/Dec</a><a class="toclink toclink-3" href="#use">Use</a><a class="toclink toclink-3" href="#catcherror">Catch/Error</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#run">Run</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#theloader">The Loader</a><a class="toclink toclink-3" href="#configuration">Configuration</a><a class="toclink toclink-4" href="#dependenceinjection">Dependence injection</a><a class="toclink toclink-2" href="#corinthebrowser">Cor in the Browser</a><a class="toclink toclink-2" href="#thecrlcorruntimelibrary">The CRL (Cor Runtime Library)</a></p>
+<p><h2>Table of Content</h2><a class="toclink toclink-2" href="#quickrecap">Quick recap</a><a class="toclink toclink-3" href="#inlcudingmodules">Inlcuding modules</a><a class="toclink toclink-3" href="#functions">Functions</a><a class="toclink toclink-3" href="#stringinterpolation">String Interpolation</a><a class="toclink toclink-3" href="#concurrencyparallelismcoroutineschannels">Concurrency/Parallelism/Coroutines/Channels</a><a class="toclink toclink-3" href="#slicescoalesceoperatorconditionaloperator">Slices/Coalesce Operator/Conditional Operator</a><a class="toclink toclink-3" href="#classesinheritanceinstance">Classes/Inheritance/Instance</a><a class="toclink toclink-3" href="#ifforswitch">If/For/Switch</a><a class="toclink toclink-3" href="#typeassertionerrors">Type Assertion/Errors</a><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#expressions">Expressions</a><a class="toclink toclink-3" href="#comments">Comments</a><a class="toclink toclink-3" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-3" href="#objects">Objects</a><a class="toclink toclink-3" href="#parenthesisexpressions">Parenthesis Expressions</a><a class="toclink toclink-3" href="#strings">Strings</a><a class="toclink toclink-3" href="#templatesstringinterpolation">Templates (String Interpolation)</a><a class="toclink toclink-3" href="#numbers">Numbers</a><a class="toclink toclink-3" href="#operators">Operators</a><a class="toclink toclink-3" href="#coalesce">Coalesce</a><a class="toclink toclink-3" href="#existconditional">Exist Conditional</a><a class="toclink toclink-3" href="#arrays">Arrays</a><a class="toclink toclink-3" href="#slices">Slices</a><a class="toclink toclink-3" href="#typeassertion">Type Assertion</a><a class="toclink toclink-3" href="#coroutines">Coroutines</a><a class="toclink toclink-3" href="#asynchronicoperator">Asynchronic Operator</a><a class="toclink toclink-3" href="#classes">Classes</a><a class="toclink toclink-4" href="#initialization">Initialization</a><a class="toclink toclink-4" href="#inheritance">Inheritance</a><a class="toclink toclink-2" href="#builtinfunctions">Builtin Functions</a><a class="toclink toclink-3" href="#super">Super</a><a class="toclink toclink-3" href="#regex">Regex</a><a class="toclink toclink-3" href="#chan">Chan</a><a class="toclink toclink-3" href="#timeout">Timeout</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#statements">Statements</a><a class="toclink toclink-3" href="#forloop">For loop</a><a class="toclink toclink-3" href="#forin">For/In</a><a class="toclink toclink-3" href="#forinrange">For/In/Range</a><a class="toclink toclink-3" href="#ifelse">If/Else</a><a class="toclink toclink-3" href="#switchcasedefault">Switch/Case/Default</a><a class="toclink toclink-3" href="#incdec">Inc/Dec</a><a class="toclink toclink-3" href="#use">Use</a><a class="toclink toclink-3" href="#catcherror">Catch/Error</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#run">Run</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#theloader">The Loader</a><a class="toclink toclink-3" href="#configuration">Configuration</a><a class="toclink toclink-4" href="#dependenceinjection">Dependence injection</a><a class="toclink toclink-2" href="#corinthebrowser">Cor in the Browser</a><a class="toclink toclink-2" href="#thecrlcorruntimelibrary">The CRL (Cor Runtime Library)</a></p>
 
 <h2 id="quickrecap">Quick recap</h2>
 
@@ -71,13 +70,63 @@ func init() {
 }
 </code></pre>
 
-<h3 id="slicescoalesceoperatorconditionaloperator">Slices/CoalesceOperator/ConditionalOperator</h3>
+<h3 id="stringinterpolation">String Interpolation</h3>
+
+<pre><code>str = $'hello my name is {person.name}'
+</code></pre>
+
+<h3 id="concurrencyparallelismcoroutineschannels">Concurrency/Parallelism/Coroutines/Channels</h3>
+
+<pre><code>// corotines starts with `go`
+go {
+    // block until the result is resolved
+    accounts = &lt;- fetch.get($'http://rest-api.com/client/{id}/accounts')
+    for account in accounts {
+        //...
+    }
+}
+</code></pre>
+
+<pre><code>// unbuffered channel
+ch = chan()
+go {
+    for num in 1:100 {
+        // send
+        ch &lt;- num
+    }
+}
+
+go {
+    // receive
+    c = &lt;- ch
+    console.log(c)
+}
+</code></pre>
+
+<pre><code>// parallel
+go {
+    result = &lt;- (
+        books    : fetch.get($'http://rest-api.com/client/{id}/books'),
+        articles : fetch.get($'http://rest-api.com/client/{id}/books'),
+    )
+
+    for book in result.books {
+        //..
+    }
+
+    for articles in result.articles {
+        //..
+    }
+}
+</code></pre>
+
+<h3 id="slicescoalesceoperatorconditionaloperator">Slices/Coalesce Operator/Conditional Operator</h3>
 
 <pre><code>---
 Coalesce operator
 ---
 // if `null` or `undefined` then be an empty array
-panels = getPanels() ?? []
+panels = getPanels() ?? (,)
 
 ---
 Slice
@@ -95,7 +144,7 @@ h = pan?.height
 c = pan.children?[0]
 </code></pre>
 
-<h3 id="classes">Classes</h3>
+<h3 id="classesinheritanceinstance">Classes/Inheritance/Instance</h3>
 
 <pre><code>---
 classes are prototype based underlaying
@@ -114,10 +163,8 @@ class Model {
 }
 </code></pre>
 
-<h3 id="inheritance">Inheritance</h3>
-
 <pre><code>---
-fully compatible with javascript prototypal inheritance
+inheritance is fully compatible with javascript prototypal inheritance
 ---
 class Person : Model {
     name
@@ -134,26 +181,21 @@ class Person : Model {
 }
 </code></pre>
 
-<h3 id="instances">Instances</h3>
-
 <pre><code>---
 use `&amp;` symbol to create instances
 ---
-
-// empty object
-obj = &amp;[]
 
 // new instance
 person = &amp;Person
 
 // instance and properties setting
-person = &amp;Person[
+person = &amp;Person(
     name : 'John',
     age  : 23,
-]
+)
 
 // positional properties setting
-person = &amp;Person['John', 23]
+person = &amp;Person('John', 23)
 
 // person.name == 'John'
 // person.age == 23
@@ -198,7 +240,7 @@ func init() {
 }
 </code></pre>
 
-<h3 id="typeassertionerrors">TypeAssertion/Errors</h3>
+<h3 id="typeassertionerrors">Type Assertion/Errors</h3>
 
 <pre><code>func init() {
 
@@ -320,12 +362,8 @@ func init() {
 
 <p>Objects are a collection of variables and functions. It may be created using <code>&amp;</code> operator.</p>
 
-<blockquote>
-  <p>In previous versions it was possible to use <code>@</code> operator, but is now deprecated.</p>
-</blockquote>
-
 <pre><code>// creates an empty object
-obj = &amp;[]
+obj = &amp;Object
 
 // filling properties
 obj.name = 'Aaron'
@@ -334,14 +372,14 @@ obj.age  = 20
 
 <p>Object properties can be assigned in more declarative way by using <code>Literal Constructors</code></p>
 
-<pre><code>client = &amp;[
+<pre><code>client = (
     name : 'Aaron',
     age  : 20,
-    pet  : &amp;[
+    pet  : (
         name : 'Kitty',
         kind : 'Cat',
-    ],
-]
+    ),
+)
 </code></pre>
 
 <p>There is two ways to access object properties, by using <code>.</code> symbol or by using <code>[</code> <code>]</code> wrappers.</p>
@@ -355,21 +393,44 @@ console.log(client['age'])
 // will print '20'
 </code></pre>
 
-<h3 id="literalconstructors">Literal Constructors</h3>
+<h3 id="parenthesisexpressions">Parenthesis Expressions</h3>
 
-<p>A literal constructor is a list of elements bounded by <code>[</code> and <code>]</code> symbols, used for creating objects and arrays. An element can be either, expression or a key-value pair. If one element is key-value type, all other elements has to be key-value in the same declaration.</p>
+<p>A parenthesis expression is bouded by <code>(</code> and <code>)</code> symbols, it evaluates depending on what is inside, followig the rules:</p>
 
-<p>Example using key-value pair elements:</p>
+<ol>
+<li>If there is just one value it evaluates to that value.</li>
 
-<pre><code>walter = &amp;Client[
-    name : 'Walter',
-    age  : 12,
-]
+<li>If at least a <code>:</code> it returns an object.</li>
+
+<li>If at least a <code>,</code> it return an array.</li>
+</ol>
+
+<p>If one element inside is key-value type, all other elements has to be key-value in the same declaration.</p>
+
+<pre><code>// rule #1, expression
+expr = (4)
+
+// rule #2, object
+obj  = (:)
+obj  = (name: 'john')
+
+// rule #3, array
+arr  = (,)
+arr  = (1,)
+arr  = (1, 2, 3)
 </code></pre>
 
-<p>Example using expression elements:</p>
+<p>Example using key-value pair list:</p>
 
-<pre><code>aaron = &amp;Client['Aaron', 20]
+<pre><code>walter = &amp;Client(
+    name : 'Walter',
+    age  : 12,
+)
+</code></pre>
+
+<p>Example using expression list:</p>
+
+<pre><code>aaron = &amp;Client('Aaron', 20)
 
 // aaron.name = 'Aaron'
 // aaron.age  = 20
@@ -389,6 +450,18 @@ query = '
     FROM Article
     WHERE slug = ?
 '
+</code></pre>
+
+<h3 id="templatesstringinterpolation">Templates (String Interpolation)</h3>
+
+<p>Templates or string interpolation is a string literal with trailing <code>$</code> symbol and curly braces to define the bounds of the expressions within the string, example:</p>
+
+<pre><code>str  = $'Hello {person.name}!'
+</code></pre>
+
+<p>It is possible to use string delimiters inside the expressions:</p>
+
+<pre><code>str  = $'Hello {person['name']}!'
 </code></pre>
 
 <h3 id="numbers">Numbers</h3>
@@ -438,6 +511,9 @@ n = 3e-10
 
 // 7 - Existential
 ??  ?
+
+// Async Operator
+&lt;-
 </code></pre>
 
 <p>The operators <code>==</code> and <code>!=</code> are translated to <code>===</code> and <code>!==</code> in the same order.</p>
@@ -464,18 +540,18 @@ n = 3e-10
 
 <p>The above example should be translated to: <em>if <code>someFunc</code> exists, call it</em>. It also can be used with indexes, selectors and slices.</p>
 
-<pre><code>len  = customers?.length;
-frst = customers?[0];
-copy = customers?[:];
+<pre><code>len  = customers?.length
+frst = customers?[0]
+copy = customers?[:]
 </code></pre>
 
 <h3 id="arrays">Arrays</h3>
 
 <p>An array is a collection of ordered values. It may be defined using literal constructor with expressions as elements. Example:</p>
 
-<pre><code>empty  = []
-colors = ['red', 'green', 'blue']
-foo    = [bar(), 56, 'baz']
+<pre><code>empty  = (,)
+colors = ('red', 'green', 'blue')
+foo    = (bar(), 56, 'baz')
 
 // accessing
 color1 = colors[0]
@@ -487,13 +563,13 @@ color2 = colors[1]
 
 <h3 id="slices">Slices</h3>
 
-<p>Slice expression is a syntactic sugar for the javascript <code>slice</code> method, in most of the cases it constructs an array from an existing array.</p>
+<p>Slice expression constructs an array from an existing array, it is a syntactic sugar for the javascript <code>slice</code> method. You can use the syntax: <code>array[start:length]</code>, start and length are optionals.</p>
 
-<pre><code>colors = ['red', 'green', 'blue']
+<pre><code>colors = ('red', 'green', 'blue')
 
-sliced = colors[1:3] // sliced is ['green', 'blue']
-sliced = colors[:1]  // sliced is ['red']
-sliced = colors[1:]  // sliced is ['green', 'blue']
+sliced = colors[1:3] // sliced is ('green', 'blue')
+sliced = colors[:1]  // sliced is ('red')
+sliced = colors[1:]  // sliced is ('green', 'blue')
 </code></pre>
 
 <h3 id="typeassertion">Type Assertion</h3>
@@ -515,7 +591,76 @@ isRunner = rnr.(Runner) // true
 isRunner = obj.(Runner) // false
 </code></pre>
 
-<h3 id="classes-1">Classes</h3>
+<h3 id="coroutines">Coroutines</h3>
+
+<p>Coroutines are blocks containig code that executes asynchronously. It can be defined using the <code>go</code> keyword followed by a block. Coroutines can be also used as expressions, its execution starts once evaluated, it returns a <strong>Promise</strong> object.</p>
+
+<blockquote>
+  <p>Coroutines uses generators underlying</p>
+</blockquote>
+
+<p>Example:</p>
+
+<pre><code>go {
+    // code...
+}
+</code></pre>
+
+<p>Used as expression:</p>
+
+<pre><code>prom = go {
+    return 'yosbelms'
+}
+
+prom.then(func(s) console.log(s))
+
+// will print 'yosbelms'
+</code></pre>
+
+<h3 id="asynchronicoperator">Asynchronic Operator</h3>
+
+<p>The asynchronic operator <code>&lt;-</code> allows to block coroutines and wait to receive future values (Promises) if a Promise is returned, also can be used to send values to <a href="#chan">Channels</a>. Asynchronic operators can be used only inside coroutines (<code>go</code> blocks)</p>
+
+<pre><code>go {
+    accounts = &lt;- fetch.get($'http://rest-api.com/client/{id}/accounts')
+    for account in accounts {
+        //...
+    }
+}
+</code></pre>
+
+<p>If receiving a array or object of future values it will resolve all values in parallel.</p>
+
+<pre><code>go {
+    result = &lt;- (
+        books    : fetch.get($'http://rest-api.com/client/{id}/books'),
+        articles : fetch.get($'http://rest-api.com/client/{id}/books'),
+    )
+
+    for book in result.books {
+        //..
+    }
+
+    for articles in result.articles {
+        //..
+    }
+}
+</code></pre>
+
+<p>Awaiting a coroutine (idiomatic Cor):</p>
+
+<pre><code>// get articles in the las hour
+func findArticlesByTag(tag) go {
+    articles &lt;- fetch.get($'http://rest-api.com/article')
+    return articles.filter(func(a) a.tag == tag)
+}
+
+func renderArticles() go {
+    &amp;ArticlesView(&lt;- findArticlesByTag(tag))
+}
+</code></pre>
+
+<h3 id="classes">Classes</h3>
 
 <p>A class is a "blueprint" for objects, Cor has its own approach and keeps compatibility with javascript. Unlike javascript's <code>this</code> which references the execution scope, Cor's <code>me</code> identifier is available as a reference to the class  instance.</p>
 
@@ -550,16 +695,16 @@ class Account {
     ammount
 }
 
-client = &amp;Client[
+client = &amp;Client(
     firstName : 'Aaron',
     lastName  : 20,
-    accounts  : [
-        &amp;Account[
+    accounts  : (
+        &amp;Account(
             code    : '3980-121970',
             ammount : 5000,
-        ],
-    ],
-]
+        ),
+    ),
+)
 </code></pre>
 
 <p><code>me</code> keyword always references the internal scope of the class regardless its actual scope:</p>
@@ -580,7 +725,7 @@ client = &amp;Client[
   <p>The <code>this</code> keyword is intact, you can use it as in javascript, however it may lead to unsafe code, use <code>this</code> at your own risk.</p>
 </blockquote>
 
-<h3 id="initialization">Initialization</h3>
+<h4 id="initialization">Initialization</h4>
 
 <p>There is two ways to define class initialization. The first way is by declaring a property-set before any method declaration:</p>
 
@@ -592,11 +737,11 @@ client = &amp;Client[
 }
 
 
-// a = &amp;Animal['snake', 'slithering']
-// a = &amp;Animal[
+// a = &amp;Animal('snake', 'slithering')
+// a = &amp;Animal(
 //      name:     'snake',
 //      movement: 'slithering',
-//  ]
+//  )
 </code></pre>
 
 <p>The second one is by declaring <code>init</code> as the first member of the class. You should use this way case of inheriting from a class defined in a javascript library which relays in <code>constructor</code> e.g: views and models of Backbone.js. Using this approach does not mean there is a <code>init</code> method in the compiled <code>js</code>, it will be translated to <code>constructor</code>, so that if you use <code>super</code> builtin function, it will call the constructor of the super class, see <a href="#superbuiltinfunction">Super (Builtin Function)</a>.</p>
@@ -613,14 +758,14 @@ client = &amp;Client[
     // methods...
 }
 
-// a = &amp;Animal['snake', 'slithering']
+// a = &amp;Animal('snake', 'slithering')
 </code></pre>
 
 <blockquote>
   <p>You can use eiter, <code>init</code> method or property-set, but not both.</p>
 </blockquote>
 
-<h3 id="inheritance-1">Inheritance</h3>
+<h4 id="inheritance">Inheritance</h4>
 
 <p>Cor supports single inheritance by using <code>:</code> operator. It embraces javascript prototype chain, so it is safe to use it along with any javascript libraries.</p>
 
@@ -641,9 +786,11 @@ class Triangle : Shape {
 
 <p>In above example <code>Triangle</code> class inherits from <code>Shape</code> class.</p>
 
-<h3 id="superbuiltinfunction">Super (Builtin Function)</h3>
+<h2 id="builtinfunctions">Builtin Functions</h2>
 
-<p>The <code>super</code> builtin function calls a method of the super class. It will call the method with equal name to the current method where <code>super</code> is located. It should compile to <code>&lt;SuperClass&gt;.prototype.&lt;Method&gt;.apply(this, arguments)</code></p>
+<h3 id="super">Super</h3>
+
+<p>The <code>super</code> function calls a method of the super class. It will call the method with equal name to the current method where <code>super</code> is located. It should compile to <code>&lt;SuperClass&gt;.prototype.&lt;Method&gt;.apply(this, arguments)</code></p>
 
 <p>Example:</p>
 
@@ -672,6 +819,92 @@ class DialogBox : Window {
     func show() {
         super('center')
     }
+}
+</code></pre>
+
+<h3 id="regex">Regex</h3>
+
+<p>The <code>regex</code> function enables to use regular expressions in Cor. The regular expression syntax is equal to JavaScript regular expressions.</p>
+
+<pre><code>reg  = regex('pla[a-z]?')
+// with flags
+regf = regex('gi(t)+', 'ig')
+</code></pre>
+
+<p>Furthemore, it can be multilined:</p>
+
+<pre><code>r = regex('
+    pla
+    [a-z]?
+')
+</code></pre>
+
+<h3 id="chan">Chan</h3>
+
+<p><code>chan(bufferSize, tranformer)</code></p>
+
+<p>The <code>chan</code> function creates a channel. A channel is a structure to allow comunication and synchronization between coroutines.</p>
+
+<p>Channels can be buffered or unbuffered. When sending data through unbuffered channels it always blocks the sender until some other process receives. Once the data has been received, the sender will be unblocked and the receptor will be blocked until new data is received. Unbuffered channels are also known as <em>synchronic channels</em>. When some data is sent to a buffered channel it only blocks the coroutine if the buffer is full. The receiver only blocks if there is no data in the buffer.</p>
+
+<ul>
+<li><p>The fist parameter defines the buffer size, if omitted or <code>nil</code> is provided the created channel will be unbuffered.</p></li>
+
+<li><p>The transformer is a function that transfor values to send though the channel.</p></li>
+</ul>
+
+<p>The created channels are objects that can be closed using <code>.close()</code> method, to check whether is closed or not use <code>.closed</code> property.</p>
+
+<p>Example:</p>
+
+<pre><code>// unbuffered channel
+ch = chan()
+go {
+    for num in 1:100 {
+        // send
+        ch &lt;- num
+    }
+}
+
+go {
+    // receive
+    c = &lt;- ch
+    console.log(c)
+}
+</code></pre>
+
+<p>Transformer example:</p>
+
+<pre><code>// transform value*2
+ch = chan(nil, func(s) s*2)
+
+go {
+    for num in 1:3 {
+        ch &lt;- num
+    }
+}
+
+go {
+    console.log(&lt;- ch)
+}
+
+---
+output:
+2
+4
+---
+</code></pre>
+
+<h3 id="timeout">Timeout</h3>
+
+<p><code>timeout(msecs)</code>
+The timeout function blocks the execution of a coroutine during the specified milliseconds.</p>
+
+<p>Example:</p>
+
+<pre><code>go {
+    timeout(100)
+    console.log('after 100 milliseconds')
 }
 </code></pre>
 
@@ -743,7 +976,7 @@ func init() {
 <pre><code>use 'model/User'
 
 func init() {
-    u = &amp;User['ragnar', 'secretpass']
+    u = &amp;User('ragnar', 'secretpass')
 }
 </code></pre>
 
@@ -762,7 +995,7 @@ func init() {
 
 <p>Example:</p>
 
-<pre><code>fruits = ['orange', 'apple', 'pear']
+<pre><code>fruits = ('orange', 'apple', 'pear')
 
 for i = 0, len = fruits.length; i &lt; len; i++ {
     console.log(fruits[i])
@@ -813,8 +1046,8 @@ for {
 
 <p>If you need to jump to the next iteration or to get out of the current curl, <code>break</code> and <code>continue</code> are there for you, it behaves exactly as in javascript.</p>
 
-<pre><code>array = [4, 3, 'Cor', 'PHP', 5, 'Go', 1, 7, 'Python']
-langs = []
+<pre><code>array = (4, 3, 'Cor', 'PHP', 5, 'Go', 1, 7, 'Python')
+langs = (,)
 
 for item = array.shift() {
     if item.(Number) { continue }
@@ -828,8 +1061,8 @@ for item = array.shift() {
 
 <p>The first syntax gives access to the current value in each iteration.</p>
 
-<pre><code>arr = [1, 2, 3]
-sum   = 0
+<pre><code>arr = (1, 2, 3)
+sum = 0
 
 for value in arr {
     sum += value
@@ -840,20 +1073,20 @@ for value in arr {
 
 <p>The second way is similar but exposes the current index and value in each iteration.</p>
 
-<pre><code>arr = ['Jeremy', 'Nolan', 'Brendan']
+<pre><code>arr = ('Niña', 'Pinta', 'Santa María')
 
 for index, value in arr {
     console.log(index + ' ' + value)
 }
 
-// 0 Jeremy
-// 1 Nolan
-// 2 Brendan
+// 0 Niña
+// 1 Pinta
+// 2 Santa María
 </code></pre>
 
 <p>For-In can be used to iterate over object properties</p>
 
-<pre><code>obj = &amp;[name: 'Bill', age: 50]
+<pre><code>obj = (name: 'Bill', age: 50)
 
 for index, value in obj {
     console.log(index + ' ' + value)
@@ -921,6 +1154,14 @@ if a &lt; b {
 switch num {
     case 0, 1 : alert('0 or 1')
     case 2, 3 : alert('2 or 3')
+}
+</code></pre>
+
+<p>Switch statement is even more generic, one can omit the main expression, the <code>true</code> value will be evaluated in place of the omitted expression:</p>
+
+<pre><code>switch {
+    case x &gt; 2 : doSomething()
+    case x &lt; 2 : doOtherThing()
 }
 </code></pre>
 
@@ -1287,17 +1528,13 @@ class TodoModel : bbone.Model {
 
 <h2 id="thecrlcorruntimelibrary">The CRL (Cor Runtime Library)</h2>
 
-<p>The CRL is a small (~3Kb) library which makes possible to take advantage of features such as <em>for/in statements, inheritance, type assertions, among others</em>. Without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by the javascript resulting code.</p>        <div class="full-rule"></div>
+<p>The CRL is a small (~13Kb unminified and uncompressed) library which makes possible to take advantage of features such as <em>for/in statements, inheritance, type assertions, among others</em>. Without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by the javascript resulting code.</p>        <div class="full-rule"></div>
 
         <div class="feature footer-links">
             <ul>
                 <li><a href="https://github.com/yosbelms/cor">GitHub Repository</a></li>
                 <li>&middot;</li>
-                <li><a href="http://ost.io/@yosbelms/cor">Discussions</a></li>
-                <li>&middot;</li>
                 <li><a href="http://github.com/yosbelms/cor/issues">Issues</a></li>
-                <li>&middot;</li>
-                <li><a href="http://github.com/yosbelms/cor/contributors">Contributors</a></li>
             </ul>
         </div>
 

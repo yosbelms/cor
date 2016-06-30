@@ -34,15 +34,17 @@ SUCH DAMAGE.
 CRL (Cor Runtime Library)
 */
 
-var
-hasProp = Object.prototype.hasOwnProperty,
-slice   = Array.prototype.slice;
-
 CRL = (typeof CRL === 'undefined' ? {} : CRL);
 
-CRL.idSeed      = 1;
-CRL.instancers  = [];
-CRL.nativeTypes = {
+var
+hasProp     = Object.prototype.hasOwnProperty,
+toString    = Object.prototype.toString,
+slice       = Array.prototype.slice,
+
+// store function that instantiate classes
+// whith different quantity of arguments
+instancers  = [],
+nativeTypes = {
     'String'   : String,
     'Number'   : Number,
     'Boolean'  : Boolean,
@@ -52,62 +54,71 @@ CRL.nativeTypes = {
     'Function' : Function
 };
 
-CRL.copyObj = function(from, to, strict) {
+// copy properties from an object to another
+// returns the object which properties has been copied to
+CRL.copyObj = function copyObj(from, to) {
     var name;
-    if (strict) {
-        for (name in from) {
-            if (hasProp.call(from, name)) {
-                to[name] = from[name];
-            }
-        }
-    }
-    else {
-        for (name in from) {
+
+    for (name in from) {
+        if (hasProp.call(from, name)) {
             to[name] = from[name];
-        }   
+        }
     }
 
     return to;
 };
 
-CRL.create = function(Class) {
+// creates an instance of a class
+// CRL.create(Class, arg1, arg2, ...)
+CRL.create = function create(Class) {
+    if (typeof Class !== 'function') {
+        throw Error('Runtime Error: trying to instanstiate no class');
+    }
+
     var
     instancerArgs,        
     args      = slice.call(arguments, 1),
     argc      = args.length,
     i         = -1,
-    instancer = this.instancers[argc];
+    instancer = instancers[argc];
 
     if (! instancer) {
         instancerArgs = [];
+
         while (++i < argc) {
             instancerArgs.push('args[' + i + ']');
         }
-        this.instancers[argc] = instancer = new Function('cls', 'args', 'return new cls(' + instancerArgs.join(',') + ');');
+
+        instancer = instancers[argc] = new Function(
+            'cls',
+            'args',
+            'return new cls(' + instancerArgs.join(',') + ');'
+        );
     }
 
-    if (typeof Class === 'function') {
-        return instancer(Class, args);
-    }
-
-    throw Error('Runtime Error: trying to instanstiate no class');
+    return instancer(Class, args);
 };
 
-CRL.extend = function(Cls, baseCls) {
-    CRL.copyObj(baseCls, Cls, true);
+// convert a class in a subclass of other class
+// CRL.subclass(Subclass, Superclass)
+CRL.subclass = function subclass(subClass, superClass) {
+    CRL.copyObj(superClass, subClass);
 
     function Proto() {
-        this.constructor = Cls;
+        this.constructor = subClass;
     }
 
-    Proto.prototype = baseCls.prototype;
-    Cls.prototype   = new Proto();
+    Proto.prototype    = superClass.prototype;
+    subClass.prototype = new Proto();
 }
 
-
-CRL.keys = function(obj) {
+// extract keys from an object or array
+// CRL.keys([5, 7, 3])    -> [0, 1, 2]
+// CRL.keys({x: 2, y: 4}) -> ['x', 'y']
+CRL.keys = function keys(obj) {
     var keys, i, len;
 
+    // is array
     if (obj instanceof Array) {            
         i    = -1;
         len  = obj.length;
@@ -116,51 +127,508 @@ CRL.keys = function(obj) {
         while (++i < len) {
             keys.push(i);
         }
-    }
-    else {
-        if (typeof Object.keys === 'function') {
-            keys = Object.keys(obj);
-        }
-        else {
-            for (i in obj) {
-                if (hasProp.call(obj, i)) {
-                    keys.push(i);
-                }
-            }
-        }
+
+        return keys;
     }
 
+    // if has key function
+    if (typeof Object.keys === 'function') {
+        return Object.keys(obj);
+    }
+
+    // otherwise polyfill it
+    for (i in obj) {
+        if (hasProp.call(obj, i)) {
+            keys.push(i);
+        }
+    }
     return keys;
 };
 
-CRL.assertType = function(obj, Class) {
+// whether a object is instance of a class or not
+// CRL.assertType({}, Object)
+// CRL.assertType(person, Person)
+CRL.assertType = function assertType(obj, Class) {
     var type;
 
-    // Class is a Class?
-    if (typeof Class === 'function') {        
-        // object is defined?
-        if (typeof obj !== 'undefined') {
-            if (obj instanceof Class) {
-                return true;
-            }
-            // otherwise find the native type according to "Object.prototype.toString"
-            else {
-                type = Object.prototype.toString.call(obj);
-                type = type.substring(8, type.length - 1);
-                if(hasProp.call(this.nativeTypes, type) && this.nativeTypes[type] === Class) {
-                    return true;
-                }
-            }
-        }
-        else {
-            throw 'Trying to assert undefined object';
-        }
-    }
-    else {
+    if (typeof Class !== 'function') {
         throw 'Trying to assert undefined class';
+    }
+
+    if (typeof obj === 'undefined') {
+        throw 'Trying to assert undefined object';
+    }
+
+    // try with instanceof
+    if (obj instanceof Class) {
+        return true;
+    }
+
+    // try with finding the native type according to "Object.prototype.toString"
+    type = toString.call(obj);
+    type = type.substring(8, type.length - 1);
+    if(hasProp.call(nativeTypes, type) && nativeTypes[type] === Class) {
+        return true;
     }
 
     return false;
 };
 
+CRL.regex = function regex(pattern, flags) {
+    return new RegExp(pattern, flags);
+}
+
 })();
+
+
+(function(global) {
+
+// Lightweight non standard compliant Promise
+function Promise(resolverFn) {
+    if (typeof resolverFn !== 'function') {
+        throw 'provided resolver must be a function';
+    }
+
+    var p = this;
+
+    // this.value;
+    // this.reason;
+    this.completed      = false;
+    this.thenListeners  = [];
+    this.catchListeners = [];
+
+    resolverFn(
+        function resolve(value){
+            Promise.doResolve(p, value);
+        },
+        function reject(reason) {
+            Promise.doReject(p, reason);
+        }
+    );
+}
+
+Promise.prototype = {
+
+    then: function(fn) {
+        this.thenListeners.push(fn);
+        if (this.completed) {
+            Promise.doResolve(this, this.value);
+        }
+        return this;
+    },
+
+    catch: function(fn) {
+        this.catchListeners.push(fn);
+        if (this.completed) {
+            Promise.doReject(this, this.reason);
+        }
+        return this;
+    }
+};
+
+Promise.doResolve = function resolve(p, value) {
+    p.thenListeners.forEach(function(listener) {
+        listener(value);
+    })
+
+    p.completed = true;
+    p.value     = value;
+};
+
+Promise.doReject = function reject(p, reason) {
+    p.catchListeners.forEach(function(listener){
+        listener(reason);
+    })
+
+    p.completed = true;
+    p.reason    = reason;
+};
+
+Promise.all = function all(array) {
+    var promise,
+    i          = -1,
+    numPending = 0,
+    result     = [],
+    len        = array.length;
+
+    return new Promise(function(resolve) {
+        while (++i < len) {
+            promise = array[i];
+            if (isPromise(promise)) {
+                setupThen(promise, i);
+            }
+            else {
+                result[i] = array[i];
+                tryToResolve();
+            }
+        }
+
+        function setupThen(promise, i) {
+            numPending++;
+
+            // default value
+            result[i] = void 0;
+
+            promise.then(function(value) {
+                result[i] = value;
+                numPending--;
+                tryToResolve();
+            })
+        }
+
+        function tryToResolve() {
+            if (numPending === 0) {
+                resolve(result)
+            }
+        }
+    })
+}
+
+Promise.defer = function defer() {
+    var deferred     = {};
+    // use CRL.Promise
+    deferred.promise = new CRL.Promise(function(resolve, reject) {
+        deferred.resolve = resolve;
+        deferred.reject  = reject;
+    })
+
+    return deferred;
+}
+
+
+CRL.Promise = Promise;
+
+// polyfill Promise
+if (typeof global.Promise !== 'function') {
+    global.Promise = CRL.Promise;
+}
+
+// Coroutines
+// Schedule
+function schedule(fn, time) {
+    if (time === void 0 && typeof global.setImmediate !== 'undefined') {
+        setImmediate(fn);
+    } else {
+        setTimeout(fn, +time);
+    }
+}
+
+function isPromise(p) {
+    return p && typeof p.then === 'function';
+}
+
+function isFunction(f) {
+    return typeof f === 'function';
+}
+
+function isObject(obj) {
+    return obj && Object == obj.constructor;
+}
+
+function isArray(arr) {
+    return Array.isArray(arr);
+}
+
+// Generator Runner
+CRL.go = function go(genf, ctx) {
+    var state, gen = genf.apply(ctx || {});
+
+    return new CRL.Promise(function(resolve, reject) {
+        //schedule(next);
+        next();
+
+        function next(value) {
+            if (state && state.done) {
+                resolve(value);
+                return;
+            }
+
+            state = gen.next(value);
+            value = state.value;
+
+            if (isPromise(value)) {
+                value.then(function(value) {
+                    next(value);
+                })
+                return;
+            }
+
+            next(value);
+        }
+    })
+}
+
+// convert to promise as much possible
+function toPromise(obj) {
+    if (isPromise(obj)) {
+        return obj;
+    }
+
+    if (isArray(obj)) {
+        return arrayToPromise(obj);
+    }
+
+    if (isObject(obj)) {
+        return objectToPromise(obj);
+    }
+}
+
+// convert array to promise
+function arrayToPromise(array) {
+    var promise;
+    return CRL.Promise.all(array.map(function(value) {
+        promise = toPromise(value);
+        if (isPromise(promise)) {
+            return promise;
+        }
+
+        return value;
+    }));
+}
+
+// convert object to promise
+function objectToPromise(obj) {
+    var key, promise, ret,
+    promises = [],
+    result   = {},
+    i        = -1,
+    keys     = Object.keys(obj),
+    len      = keys.length;
+
+    ret = new CRL.Promise(function(resolve) {
+
+        while (++i < len) {
+            key     = keys[i];
+            promise = toPromise(obj[key]);
+            if (isPromise(promise)) {
+                setupThen(promise, key);
+            }
+            else {
+                result[key] = obj[key];
+            }
+        }
+
+        CRL.Promise.all(promises).then(function() {
+            resolve(result);
+        })
+
+        function setupThen(promise, key) {
+            // default value
+            result[key] = void 0;
+
+            promise.then(function(value) {
+                result[key] = value;
+            })
+
+            promises.push(promise);
+        }
+
+    })
+
+    return ret;
+}
+
+// receiver
+CRL.receive = function receive(obj) {
+    var prom;
+
+    if (obj && isFunction(obj.receive)) {
+        return obj.receive();
+    }
+
+    prom = toPromise(obj);
+    if (isPromise(prom)) {
+        return prom;
+    }
+
+    return obj;
+}
+
+// sender
+CRL.send = function send(obj, value) {
+    if (obj && isFunction(obj.send)) {
+        return obj.send(value);
+    }
+    throw 'unable to receive values';
+}
+
+
+function timeout(time) {
+    if (!isNaN(time) && time !== null) {
+        return new CRL.Promise(function(resolve) {
+            schedule(resolve, time)
+        })
+    }
+
+    throw 'Invalid time';
+}
+
+CRL.timeout = timeout;
+
+// Buffer: simple array based buffer to use with channels
+function Buffer(size) {
+    this.size  = isNaN(size) ? 1 : size;
+    this.array = [];
+}
+
+Buffer.prototype = {
+
+    shift: function() {
+        return this.array.shift();
+    },
+
+    push: function(value) {
+        if (this.isFull()) { return false }
+        this.array.push(value);
+        return true;
+    },
+
+    isFull: function() {
+        return !(this.array.length < this.size);
+    },
+
+    isEmpty: function() {
+        return this.array.length === 0;
+    }
+}
+
+
+// Channel: a structure to transport messages
+function indentityFn(x) {return x}
+
+function scheduledResolve(deferred, value) {
+    schedule(function() { deferred.resolve(value) })
+}
+
+function Channel(buffer, transform) {
+    this.buffer           = buffer;
+    this.closed           = false;
+    this.data             = void 0;
+    this.senderPromises   = [];
+    this.receiverPromises = [];
+    this.transform        = transform || indentityFn;
+}
+
+Channel.prototype = {
+
+    receive: function() {
+        var data, deferred;
+
+        // is unbuffered
+        if (! this.buffer) {
+            // there is data?
+            if (this.data !== void 0) {
+                // resume the first sender coroutine
+                if (this.senderPromises[0]) {
+                    scheduledResolve(this.senderPromises.shift());
+                }
+                // clean and return
+                data      = this.data;
+                this.data = void 0;
+                return data;
+
+            // if no data
+            } else {
+                // suspend the coroutine wanting to receive
+                deferred = Promise.defer();
+                this.receiverPromises.push(deferred);
+                return deferred.promise;
+            }
+        }
+
+        // if buffered
+        // empty buffer?
+        if (this.buffer.isEmpty()) {
+            // suspend the coroutine wanting to receive
+            deferred = Promise.defer();
+            this.receiverPromises.push(deferred);
+            return deferred.promise;
+
+        // some value in the buffer?
+        } else {
+            // resume the first sender coroutine
+            if (this.senderPromises[0]) {
+                scheduledResolve(this.senderPromises.shift());
+            }
+            // clean and return
+            return this.buffer.shift();
+        }
+    },
+
+    send: function(data) {
+        if (this.closed) { throw 'closed channel' }
+        var deferred;
+
+        // is unbuffered
+        if (! this.buffer) {
+            // some stored data?
+            if (this.data !== void 0) {
+                // deliver data to the first waiting coroutine
+                if (this.receiverPromises[0]) {
+                    scheduledResolve(this.receiverPromises.shift(), this.data);
+                }
+
+            // no stored data?
+            } else {
+                // pass sent data directly to the first waiting for it
+                if (this.receiverPromises[0]) {
+                    this.data = void 0;
+                    scheduledResolve(this.receiverPromises.shift(), this.transform(data));
+                    // schedule the the sender coroutine
+                    return new timeout(0);
+                }
+            }
+
+            // else, store the transformed data
+            this.data = this.transform(data);
+            deferred = Promise.defer();
+            this.senderPromises.push(deferred);
+            return deferred.promise;
+        }
+
+        // if buffered
+        // emty buffer?
+        if (! this.buffer.isFull()) {
+            // TODO: optimize below code
+            // store sent value in the buffer
+            this.buffer.push(this.transform(data));
+            // if any waiting for the data, give it
+            if (this.receiverPromises[0]) {
+                scheduledResolve(this.receiverPromises.shift(), this.buffer.shift());
+            }
+        }
+
+        // full buffer?
+        if (this.buffer.isFull()) {
+            // stop until the buffer start to be drained
+            deferred = Promise.defer();
+            this.senderPromises.push(deferred);
+            return deferred.promise;
+        }
+    },
+
+    close: function() {
+        this.closed         = true;
+        this.senderPromises = [];
+        while (this.receiverPromises.length) {
+            scheduledResolve(this.receiverPromises.shift());
+        }
+    }
+}
+
+CRL.Channel = Channel;
+
+CRL.chan = function chan(size, transform) {
+    if (size instanceof Buffer) {
+        return new Channel(size, transform);
+    }
+
+    // isNaN(null) == false  :O
+    if (isNaN(size) || size === null) {
+        return new Channel(null, transform);
+    }
+
+    return new Channel(new Buffer(size), transform);
+}
+
+})(this);
