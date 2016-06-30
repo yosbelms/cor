@@ -44,9 +44,11 @@ Once installed you can install Cor, from the CLI run:
 bower install cor-lang
 ```
 
-After that, you are able to include the distribution script located at bower_components/cor/dist/cor.js in any html file through the <script></script> tag.
+After that, you are able to include the distribution script located at bower_components/cor/dist/cor.js in any html file through the `<script></script>` tag.
 
-<scritp type="text/javascript" src="bower_components/cor/dist/cor.js">
+```
+<script type="text/javascript" src="bower_components/cor/dist/cor.js"></script>
+```
 
 ## First steps
 
