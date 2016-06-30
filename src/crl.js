@@ -264,11 +264,12 @@ Promise.defer = function defer() {
     return deferred;
 }
 
+
 CRL.Promise = Promise;
 
 // polyfill Promise
-if (typeof Promise !== 'function') {
-    Promise = CRL.Promise;
+if (typeof global.Promise !== 'function') {
+    global.Promise = CRL.Promise;
 }
 
 // Coroutines
@@ -579,7 +580,7 @@ Channel.prototype = {
         this.closed         = true;
         this.senderPromises = [];
         while (this.receiverPromises.length) {
-            scheduledResolve(this.receiverPromises.shift(), value);
+            scheduledResolve(this.receiverPromises.shift());
         }
     }
 }
