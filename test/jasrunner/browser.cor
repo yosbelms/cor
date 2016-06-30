@@ -23,51 +23,52 @@ func prepareJasmine() {
         window[k] = item
     }
 
-    queryString = &jasmine.QueryString[
-        getWindowLocation: func() {
-            return window.location
-        },
-    ]
+    queryString = &jasmine.QueryString(
+        getWindowLocation: func() window.location,
+    )
 
     catchingExceptions = queryString.getParam('catch')
     env.catchExceptions(catchingExceptions)
 
-    htmlReporter = &jasmine.HtmlReporter[
+    htmlReporter = &jasmine.HtmlReporter(
+        
         env: env,
+        
         onRaiseExceptionsClick: func() {
             queryString.navigateWithNewParam('catch', !env.catchingExceptions())
         },
+        
         onThrowExpectationsClick: func() {
-            queryString.navigateWithNewParam('throwFailures', !env.throwingExpectationFailures())
+            queryString.navigateWithNewParam(
+                'throwFailures',
+                !env.throwingExpectationFailures(),
+            )
         },
-        addToExistingQueryString: func(key, value) {
-            return queryString.fullStringWithNewParam(key, value)
-        },
-        getContainer: func() {
-            return document.body
-        },
-        createElement: func() {
-            return document.createElement.apply(document, arguments)
-        },
-        createTextNode: func() {
-            return document.createTextNode.apply(document, arguments)
-        },
+
+        addToExistingQueryString:
+            func(key, value) queryString.fullStringWithNewParam(key, value),
+
+        getContainer:
+            func() document.body,
+
+        createElement:
+            func() document.createElement.apply(document, arguments),
+
+        createTextNode:
+            func() document.createTextNode.apply(document, arguments),
+
         timer: &jasmine.Timer,
-    ]
+    )
 
     env.addReporter(jasmineInterface.jsApiReporter)
     env.addReporter(htmlReporter)
 
-    specFilter = &jasmine.HtmlSpecFilter[
-        filterString: func() {
-            return queryString.getParam('spec')
-        },
-    ]
+    specFilter = &jasmine.HtmlSpecFilter(
+        filterString: func() queryString.getParam('spec'),
+    )
 
-    env.specFilter = func(spec) {
-        return specFilter.matches(spec.getFullName())
-    }
-        
+    env.specFilter = func(spec) specFilter.matches(spec.getFullName())
+
 }
 
 func browserHack() {

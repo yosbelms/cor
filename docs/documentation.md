@@ -1,6 +1,6 @@
 # Documentation
 
-This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts, including experimental features to be added in future releases. Cor is a language designed with large web development in mind. Hence, is possible to develop your software without to execute any command to compile the source code, CLI tools are only needed to make the product able for production environments.
+This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts. Cor is a language designed with large web development in mind. Hence, is possible to develop your software without to execute any command to compile the source code, CLI tools are only needed to make the product able for production environments.
 
 <toc/>
 
@@ -37,13 +37,66 @@ func init() {
 }
 ```
 
-### Slices/CoalesceOperator/ConditionalOperator
+### String Interpolation
+```
+str = $'hello my name is {person.name}'
+```
+
+### Concurrency/Parallelism/Coroutines/Channels
+```
+// corotines starts with `go`
+go {
+    // block until the result is resolved
+    accounts = <- fetch.get($'http://rest-api.com/client/{id}/accounts')
+    for account in accounts {
+        //...
+    }
+}
+```
+
+```
+// unbuffered channel
+ch = chan()
+go {
+    for num in 1:100 {
+        // send
+        ch <- num
+    }
+}
+
+go {
+    // receive
+    c = <- ch
+    console.log(c)
+}
+```
+
+```
+// parallel
+go {
+    result = <- (
+        books    : fetch.get($'http://rest-api.com/client/{id}/books'),
+        articles : fetch.get($'http://rest-api.com/client/{id}/books'),
+    )
+
+    for book in result.books {
+        //..
+    }
+
+    for articles in result.articles {
+        //..
+    }
+}
+
+```
+
+### Slices/Coalesce Operator/Conditional Operator
 ```
 ---
 Coalesce operator
 ---
 // if `null` or `undefined` then be an empty array
-panels = getPanels() ?? []
+panels = getPanels() ?? (,)
 
 ---
 Slice
@@ -61,7 +114,7 @@ h = pan?.height
 c = pan.children?[0]
 ```
 
-### Classes
+### Classes/Inheritance/Instance
 ```
 ---
 classes are prototype based underlaying
@@ -80,10 +133,9 @@ class Model {
 }
 ```
 
-### Inheritance
 ```
 ---
-fully compatible with javascript prototypal inheritance
+inheritance is fully compatible with javascript prototypal inheritance
 ---
 class Person : Model {
     name
@@ -100,26 +152,22 @@ class Person : Model {
 }
 ```
 
-### Instances
 ```
 ---
 use `&` symbol to create instances
 ---
 
-// empty object
-obj = &[]
-
 // new instance
 person = &Person
 
 // instance and properties setting
-person = &Person[
+person = &Person(
     name : 'John',
     age  : 23,
-]
+)
 
 // positional properties setting
-person = &Person['John', 23]
+person = &Person('John', 23)
 
 // person.name == 'John'
 // person.age == 23
@@ -164,7 +212,7 @@ func init() {
 }
 ```
 
-### TypeAssertion/Errors
+### Type Assertion/Errors
 ```
 func init() {
 
@@ -287,10 +335,9 @@ In above fragment, `outer` variable will be declared in a local scope by **annou
 ### Objects
 
 Objects are a collection of variables and functions. It may be created using `&` operator.
-> In previous versions it was possible to use `@` operator, but is now deprecated.
 ```
 // creates an empty object
-obj = &[]
+obj = &Object
 
 // filling properties
 obj.name = 'Aaron'
@@ -300,14 +347,14 @@ obj.age  = 20
 
 Object properties can be assigned in more declarative way by using `Literal Constructors`
 ```
-client = &[
+client = (
     name : 'Aaron',
     age  : 20,
-    pet  : &[
+    pet  : (
         name : 'Kitty',
         kind : 'Cat',
-    ],
-]
+    ),
+)
 ```
 
 There is two ways to access object properties, by using `.` symbol or by using `[` `]` wrappers.
@@ -322,21 +369,41 @@ console.log(client['age'])
 ```
 
 
-### Literal Constructors
+### Parenthesis Expressions
 
-A literal constructor is a list of elements bounded by `[` and `]` symbols, used for creating objects and arrays. An element can be either, expression or a key-value pair. If one element is key-value type, all other elements has to be key-value in the same declaration.
+A parenthesis expression is bouded by `(` and `)` symbols, it evaluates depending on what is inside, followig the rules:
 
-Example using key-value pair elements:
+1. If there is just one value it evaluates to that value.
+2. If at least a `:` it returns an object.
+3. If at least a `,` it return an array.
+
+If one element inside is key-value type, all other elements has to be key-value in the same declaration.
+
 ```
-walter = &Client[
+// rule #1, expression
+expr = (4)
+
+// rule #2, object
+obj  = (:)
+obj  = (name: 'john')
+
+// rule #3, array
+arr  = (,)
+arr  = (1,)
+arr  = (1, 2, 3)
+```
+
+Example using key-value pair list:
+```
+walter = &Client(
     name : 'Walter',
     age  : 12,
-]
+)
 ```
 
-Example using expression elements:
+Example using expression list:
 ```
-aaron = &Client['Aaron', 20]
+aaron = &Client('Aaron', 20)
 
 // aaron.name = 'Aaron'
 // aaron.age  = 20
@@ -356,6 +423,19 @@ query = '
     FROM Article
     WHERE slug = ?
 '
+```
+
+
+### Templates (String Interpolation)
+
+Templates or string interpolation is a string literal with trailing `$` symbol and curly braces to define the bounds of the expressions within the string, example:
+```
+str  = $'Hello {person.name}!'
+```
+
+It is possible to use string delimiters inside the expressions:
+```
+str  = $'Hello {person['name']}!'
 ```
 
 
@@ -408,6 +488,9 @@ Operators are the following:
 
 // 7 - Existential
 ??  ?
+
+// Async Operator
+<-
 ```
 
 The operators `==` and `!=` are translated to `===` and `!==` in the same order.
@@ -431,15 +514,17 @@ This returns the articles's summary if exists, otherwise returns the content of 
 Sometimes code tends to drown a bit in existence-checking. The exist-conditional operator lets you access members and elements only when the receiver exists, providing an empty result otherwise:
 
 Example:
+
 ```
 someFunc?()
 ```
 
 The above example should be translated to: *if `someFunc` exists, call it*. It also can be used with indexes, selectors and slices.
+
 ```
-len  = customers?.length;
-frst = customers?[0];
-copy = customers?[:];
+len  = customers?.length
+frst = customers?[0]
+copy = customers?[:]
 ```
 
 
@@ -447,9 +532,9 @@ copy = customers?[:];
 
 An array is a collection of ordered values. It may be defined using literal constructor with expressions as elements. Example:
 ```
-empty  = []
-colors = ['red', 'green', 'blue']
-foo    = [bar(), 56, 'baz']
+empty  = (,)
+colors = ('red', 'green', 'blue')
+foo    = (bar(), 56, 'baz')
 
 // accessing
 color1 = colors[0]
@@ -464,11 +549,11 @@ color2 = colors[1]
 
 Slice expression constructs an array from an existing array, it is a syntactic sugar for the javascript `slice` method. You can use the syntax: `array[start:length]`, start and length are optionals.
 ```
-colors = ['red', 'green', 'blue']
+colors = ('red', 'green', 'blue')
 
-sliced = colors[1:3] // sliced is ['green', 'blue']
-sliced = colors[:1]  // sliced is ['red']
-sliced = colors[1:]  // sliced is ['green', 'blue']
+sliced = colors[1:3] // sliced is ('green', 'blue')
+sliced = colors[:1]  // sliced is ('red')
+sliced = colors[1:]  // sliced is ('green', 'blue')
 ```
 
 
@@ -489,6 +574,74 @@ rnr = &Runner
 isRunner = rnr.(Runner) // true
 isRunner = obj.(Runner) // false
 
+```
+
+
+### Coroutines
+
+Coroutines are blocks containig code that executes asynchronously. It can be defined using the `go` keyword followed by a block. Coroutines can be also used as expressions, its execution starts once evaluated, it returns a **Promise** object.
+> Coroutines uses generators underlying
+
+Example:
+```
+go {
+    // code...
+}
+```
+
+Used as expression:
+```
+prom = go {
+    return 'yosbelms'
+}
+
+prom.then(func(s) console.log(s))
+
+// will print 'yosbelms'
+```
+
+
+### Asynchronic Operator
+
+The asynchronic operator `<-` allows to block coroutines and wait to receive future values (Promises) if a Promise is returned, also can be used to send values to [Channels](#chan). Asynchronic operators can be used only inside coroutines (`go` blocks)
+```
+go {
+    accounts = <- fetch.get($'http://rest-api.com/client/{id}/accounts')
+    for account in accounts {
+        //...
+    }
+}
+```
+
+If receiving a array or object of future values it will resolve all values in parallel.
+```
+go {
+    result = <- (
+        books    : fetch.get($'http://rest-api.com/client/{id}/books'),
+        articles : fetch.get($'http://rest-api.com/client/{id}/books'),
+    )
+
+    for book in result.books {
+        //..
+    }
+
+    for articles in result.articles {
+        //..
+    }
+}
+```
+
+Awaiting a coroutine (idiomatic Cor):
+```
+// get articles in the las hour
+func findArticlesByTag(tag) go {
+    articles <- fetch.get($'http://rest-api.com/article')
+    return articles.filter(func(a) a.tag == tag)
+}
+
+func renderArticles() go {
+    &ArticlesView(<- findArticlesByTag(tag))
+}
 ```
 
 
@@ -527,16 +680,16 @@ class Account {
     ammount
 }
 
-client = &Client[
+client = &Client(
     firstName : 'Aaron',
     lastName  : 20,
-    accounts  : [
-        &Account[
+    accounts  : (
+        &Account(
             code    : '3980-121970',
             ammount : 5000,
-        ],
-    ],
-]
+        ),
+    ),
+)
 ```
 
 `me` keyword always references the internal scope of the class regardless its actual scope:
@@ -554,7 +707,7 @@ In the above example `me` keyword is used inside a lambda scope, however it refe
 
 > The `this` keyword is intact, you can use it as in javascript, however it may lead to unsafe code, use `this` at your own risk.
 
-### Initialization
+#### Initialization
 
 There is two ways to define class initialization. The first way is by declaring a property-set before any method declaration:
 ```
@@ -566,11 +719,11 @@ class Animal {
 }
 
 
-// a = &Animal['snake', 'slithering']
-// a = &Animal[
+// a = &Animal('snake', 'slithering')
+// a = &Animal(
 //      name:     'snake',
 //      movement: 'slithering',
-//  ]
+//  )
 ```
 
 The second one is by declaring `init` as the first member of the class. You should use this way case of inheriting from a class defined in a javascript library which relays in `constructor` e.g: views and models of Backbone.js. Using this approach does not mean there is a `init` method in the compiled `js`, it will be translated to `constructor`, so that if you use `super` builtin function, it will call the constructor of the super class, see [Super (Builtin Function)](#superbuiltinfunction).
@@ -587,13 +740,13 @@ class Animal : Model {
     // methods...
 }
 
-// a = &Animal['snake', 'slithering']
+// a = &Animal('snake', 'slithering')
 ```
 
 > You can use eiter, `init` method or property-set, but not both.
 
 
-### Inheritance
+#### Inheritance
 
 Cor supports single inheritance by using `:` operator. It embraces javascript prototype chain, so it is safe to use it along with any javascript libraries.
 
@@ -615,9 +768,11 @@ In above example `Triangle` class inherits from `Shape` class.
 
 
 
-### Super (Builtin Function)
+## Builtin Functions
 
-The `super` builtin function calls a method of the super class. It will call the method with equal name to the current method where `super` is located. It should compile to `<SuperClass>.prototype.<Method>.apply(this, arguments)`
+### Super
+
+The `super` function calls a method of the super class. It will call the method with equal name to the current method where `super` is located. It should compile to `<SuperClass>.prototype.<Method>.apply(this, arguments)`
 
 Example:
 
@@ -649,6 +804,93 @@ class DialogBox : Window {
     }
 }
 ```
+
+
+### Regex
+The `regex` function enables to use regular expressions in Cor. The regular expression syntax is equal to JavaScript regular expressions.
+```
+reg  = regex('pla[a-z]?')
+// with flags
+regf = regex('gi(t)+', 'ig')
+```
+
+Furthemore, it can be multilined:
+```
+r = regex('
+    pla
+    [a-z]?
+')
+```
+
+
+### Chan
+
+`chan(bufferSize, tranformer)`
+
+The `chan` function creates a channel. A channel is a structure to allow comunication and synchronization between coroutines.
+
+Channels can be buffered or unbuffered. When sending data through unbuffered channels it always blocks the sender until some other process receives. Once the data has been received, the sender will be unblocked and the receptor will be blocked until new data is received. Unbuffered channels are also known as _synchronic channels_. When some data is sent to a buffered channel it only blocks the coroutine if the buffer is full. The receiver only blocks if there is no data in the buffer.
+
+* The fist parameter defines the buffer size, if omitted or `nil` is provided the created channel will be unbuffered.
+
+* The transformer is a function that transfor values to send though the channel.
+
+The created channels are objects that can be closed using `.close()` method, to check whether is closed or not use `.closed` property.
+
+Example:
+```
+// unbuffered channel
+ch = chan()
+go {
+    for num in 1:100 {
+        // send
+        ch <- num
+    }
+}
+
+go {
+    // receive
+    c = <- ch
+    console.log(c)
+}
+```
+
+Transformer example:
+```
+// transform value*2
+ch = chan(nil, func(s) s*2)
+
+go {
+    for num in 1:3 {
+        ch <- num
+    }
+}
+
+go {
+    console.log(<- ch)
+}
+
+---
+output:
+2
+4
+---
+```
+
+
+### Timeout
+
+`timeout(msecs)`
+The timeout function blocks the execution of a coroutine during the specified milliseconds.
+
+Example:
+```
+go {
+    timeout(100)
+    console.log('after 100 milliseconds')
+}
+```
+
 
 
 ## Modules
@@ -715,7 +957,7 @@ In `app.cor`
 use 'model/User'
 
 func init() {
-    u = &User['ragnar', 'secretpass']
+    u = &User('ragnar', 'secretpass')
 }
 ```
 Don't need to qualify the name when importing throwgh `use` statement because the class `User` will be exported as default.
@@ -735,7 +977,7 @@ for Start; Continuation; Statement {
 
 Example:
 ```
-fruits = ['orange', 'apple', 'pear']
+fruits = ('orange', 'apple', 'pear')
 
 for i = 0, len = fruits.length; i < len; i++ {
     console.log(fruits[i])
@@ -787,8 +1029,8 @@ for {
 If you need to jump to the next iteration or to get out of the current curl, `break` and `continue` are there for you, it behaves exactly as in javascript.
 
 ```
-array = [4, 3, 'Cor', 'PHP', 5, 'Go', 1, 7, 'Python']
-langs = []
+array = (4, 3, 'Cor', 'PHP', 5, 'Go', 1, 7, 'Python')
+langs = (,)
 
 for item = array.shift() {
     if item.(Number) { continue }
@@ -803,8 +1045,8 @@ A for/in loop provides the easiest way to iterate collections. There are two syn
 
 The first syntax gives access to the current value in each iteration.
 ```
-arr = [1, 2, 3]
-sum   = 0
+arr = (1, 2, 3)
+sum = 0
 
 for value in arr {
     sum += value
@@ -815,20 +1057,20 @@ for value in arr {
 
 The second way is similar but exposes the current index and value in each iteration.
 ```
-arr = ['Jeremy', 'Nolan', 'Brendan']
+arr = ('Niña', 'Pinta', 'Santa María')
 
 for index, value in arr {
     console.log(index + ' ' + value)
 }
 
-// 0 Jeremy
-// 1 Nolan
-// 2 Brendan
+// 0 Niña
+// 1 Pinta
+// 2 Santa María
 ```
 
 For-In can be used to iterate over object properties
 ```
-obj = &[name: 'Bill', age: 50]
+obj = (name: 'Bill', age: 50)
 
 for index, value in obj {
     console.log(index + ' ' + value)
@@ -895,6 +1137,14 @@ switch good {
 switch num {
     case 0, 1 : alert('0 or 1')
     case 2, 3 : alert('2 or 3')
+}
+```
+
+Switch statement is even more generic, one can omit the main expression, the `true` value will be evaluated in place of the omitted expression:
+```
+switch {
+    case x > 2 : doSomething()
+    case x < 2 : doOtherThing()
 }
 ```
 
@@ -1261,4 +1511,4 @@ The Cor distribution for browsers is recomended only for development purpose, to
 
 ## The CRL (Cor Runtime Library)
 
-The CRL is a small (~3Kb) library which makes possible to take advantage of features such as *for/in statements, inheritance, type assertions, among others*. Without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by the javascript resulting code.
+The CRL is a small (~13Kb unminified and uncompressed) library which makes possible to take advantage of features such as *for/in statements, inheritance, type assertions, among others*. Without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by the javascript resulting code.

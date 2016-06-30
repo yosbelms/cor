@@ -81,6 +81,23 @@ translationTable = {
     '^': ' ^ '
 };
 
+var builtinFn = [
+    'error',
+    'super',
+    'regex',
+    'chan',
+    'timeout'
+];
+
+function isBuiltinFn(name) {
+    return builtinFn.indexOf(name) !== -1;
+}
+
+
+function isEcmaReservedKeyWord(name) {
+    return EcmaReservedKeywords.indexOf(name) !== -1;
+}
+
 yy.parseError = function parseError (msg, hash, replaceMsg) {
     var filename = yy.env.filename;
     //is non recoverable parser error?
@@ -289,10 +306,12 @@ yy.List = Class(yy.Node, {
 
     add: function() {
         this.children = this.children.concat(slice.call(arguments));
+        this.adopt(this.children);
     },
 
     addFront: function() {
         this.children = slice.call(arguments).concat(this.children);
+        this.adopt(this.children);
     },
 
     last: function() {
@@ -390,7 +409,6 @@ yy.ValueList = Class(yy.List, {
                 break;
             }
         }
-        
     }
 
 });
@@ -541,7 +559,6 @@ yy.BlockNode = Class(yy.Node, {
                 }
             }    
         }
-        
     }
 });
 
@@ -698,6 +715,9 @@ yy.ObjectConstructorArgsNode = Class(yy.Node, {
     initNode: function() {
         var ch = this.children;
 
+        if (!ch[1]) {
+            this.keyValue = true;
+        }
         if (ch[3]) { // key-value
             this.keyValue = true;
             this.checkKeyNames(ch[1]);
@@ -729,7 +749,7 @@ yy.ObjectConstructorArgsNode = Class(yy.Node, {
             this.children[2].children = '}';
             if (!this.parent.isLiteral) {
                 this.children.splice(2, 0, new yy.Lit(', _conf: true', this.children[2].lineno))
-            }            
+            }
         }
         else {
             this.children[0].children = '(';
@@ -737,6 +757,19 @@ yy.ObjectConstructorArgsNode = Class(yy.Node, {
         }
     }
 });
+
+yy.ArrayConstructorNode = Class(yy.Node, {
+
+    type: 'ArrayConstructorNode',
+
+    compile: function() {
+        var ch = this.children[1];
+        if (ch && (ch.children.length % 2) === 0) {
+            ch.children.pop();
+        }
+    }
+
+})
 
 yy.TypeAssertNode = Class(yy.Node, {
 
@@ -793,7 +826,7 @@ yy.VarNode = Class(yy.Node, {
         this.context = this.yy.env.context();
         this.name = this.children[0].children;
 
-        if (EcmaReservedKeywords.indexOf(this.name) !== -1) {
+        if (isEcmaReservedKeyWord(this.name)) {
             this.children[0].children = this.name += '_';
         }
     },
@@ -1052,7 +1085,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         ];
 
         if (this.superClassName) {
-            this.methodSet.children[0].children[1].children += this.runtimeFn('extend') + this.className + extendsStr +');';
+            this.methodSet.children[0].children[1].children += this.runtimeFn('subclass') + this.className + extendsStr +');';
         }
     },
 
@@ -1093,7 +1126,7 @@ yy.ClassNode = Class(yy.ContextAwareNode, {
         this.children.push(new yy.Lit('};', this.propertySet.lineno));
 
         if (this.superClassName) {
-            newNode = new yy.Lit(this.runtimeFn('extend') + this.className + extendsStr +');', this.propertySet.lineno);
+            newNode = new yy.Lit(this.runtimeFn('subclass') + this.className + extendsStr +');', this.propertySet.lineno);
             newNode.loc = ch[2].loc;
             this.children.push(newNode);
         }
@@ -1236,11 +1269,9 @@ yy.CallNode = Class(yy.Node, {
         var
         ch = this.children, last, builtin;
 
-        if (this.name) {
-            builtin = this[this.name + 'Builtin'];
-            if (builtin) {
-                builtin.call(this);
-            }
+        builtin = this[this.name + 'Builtin'];
+        if (this.name && isBuiltinFn(this.name) && builtin) {
+            builtin.call(this);
         }
 
         this.base('compile', arguments);
@@ -1304,6 +1335,84 @@ yy.CallNode = Class(yy.Node, {
                 new yy.Lit('_error', ch[0].lineno)
             ]
         }
+    },
+
+
+    regexBuiltin: function() {
+
+        if (!this.children[2]) {
+            this.error('invalid regular expression pattern', this.children[0].lineno);
+        }
+
+        var
+        flags,
+        ch      = this.children,
+        params  = ch[2],
+        patternNode = params.children[0],
+        flagsNode   = params.children[2],
+        regStart  = /^\'/,
+        regEnd    = /\'$/,
+        regDelim  = /\//g,
+        strDelim  = "\\'",
+        newLine   = /\n(\s+)?/g,
+        rFlags    = /[gimy]+/,
+        rEscape   = /\\(?=[bBdDsSwW])/g;
+
+        function cleanPattern(p) {
+            return p.replace(newLine, '').replace(regDelim, '\\/');
+        }
+
+        if (patternNode instanceof yy.StringNode && (flagsNode instanceof yy.StringNode || flagsNode == void 0)) {
+
+            patternNode.children = cleanPattern(patternNode.children).replace(regStart, '\/')
+                .replace(regEnd, '\/')
+                .replace(newLine, '\\n')
+                .replace(strDelim, "'");
+
+            if (patternNode.children === '//') {
+                this.error('invalid regular expression pattern', patternNode.lineno);
+            }
+
+            if (flagsNode) {
+                flags = flagsNode.children.replace(regStart, '').replace(regEnd, '');
+
+                if (flags !== '' && !rFlags.test(flags)) {
+                    this.error('invalid regular expression flags', flagsNode.lineno);
+                }
+
+                patternNode.children += flags;
+            }
+
+            this.children = [
+                patternNode
+            ];
+
+            return;
+        } else {
+            ch[0].children[0].children = this.runtimePrefix + 'regex';
+        }
+
+        if (patternNode instanceof yy.StringNode) {
+            // special symbols
+            // bBdDsSwW
+            patternNode.children = cleanPattern(patternNode.children).replace(rEscape, '\\\\');
+        }
+
+    },
+
+    chanBuiltin: function() {
+        var ch = this.children;
+        ch[0].children[0].children = this.runtimePrefix + 'chan';
+    },
+
+    timeoutBuiltin: function() {
+        if (! isInGoExpr(this)) {
+            this.error('unexpected timeout operation', this.lineno);
+        }
+
+        var ch = this.children;
+        ch[0].children[0].children = this.runtimePrefix + 'timeout';
+        ch.unshift(new yy.Lit('yield ', getLesserLineNumber(ch[0])))
     }
 
 });
@@ -1374,6 +1483,7 @@ yy.CaseNode = Class(yy.Node, {
             ls = ch[3];
             ls.children.push(new yy.Lit(' break; ', ls.last().lineno - 1));
         }
+
     },
 
     handleFallThrough: function(exprList) {
@@ -1480,6 +1590,7 @@ yy.ForInNode = Class(yy.Node, {
             ch.splice(3, 0, new yy.Lit(str2, ch[2].lineno));
             ch[4].children.splice(1, 0, new yy.Lit(str3, ch[4].children[0].lineno));
         }
+
     }
 
 });
@@ -1508,8 +1619,7 @@ yy.ForInRangeNode = Class(yy.Node, {
             to,
             new yy.Lit('; ' + i + '++) ', to.lineno),
             ch[6],
-        ]
-                
+        ];
     }
 
 });
@@ -1567,7 +1677,7 @@ yy.CoalesceNode = Class(yy.Node, {
                 ch[2],
                 new yy.Lit(')', ch[2].lineno),
             ];    
-        }        
+        }
     }
 });
 
@@ -1651,9 +1761,112 @@ yy.ExistenceNode = Class(yy.Node, {
                 new yy.Lit('void 0 : ' + ref, ch[ch.length - 1].lineno),
                 this.subject,
             ];    
-        }        
+        }
+
+        // re-adopt
+        this.adopt(this.children);
     }
 })
 
+
+// check if a node is inside a `go` expression
+function isInGoExpr(node) {
+    var goExprFound = false;
+
+    while(node.parent) {
+        node = node.parent;
+
+        if (node instanceof yy.ContextAwareNode && !goExprFound) {
+            return false;
+        }
+
+        if (node instanceof yy.GoExprNode) {
+            goExprFound = true;
+        }
+    }
+
+    return goExprFound;
+}
+
+yy.GoExprNode = Class(yy.Node, {
+
+    type: 'GoExprNode',
+
+    compile: function() {
+        var
+        ch     = this.children,
+        fnNode = ch[1];
+        ch[0].children = this.runtimePrefix + 'go(function* go()';
+
+        fnNode.children[fnNode.children.length - 1].children += ', this)';
+    }
+})
+
+yy.SendAsyncNode = Class(yy.Node, {
+
+    type: 'SendAsyncNode',
+
+    compile: function() {
+        if (! isInGoExpr(this)) {
+            this.error('unexpected async operation', this.lineno);
+        }
+
+        var
+        ch = this.children;
+        ch[1].children = ',';
+
+        ch.splice(0, 0, new yy.Lit('yield ' + this.runtimeFn('send'), ch[0].lineno));
+        ch.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+    }
+})
+
+yy.ReceiveAsyncNode = Class(yy.Node, {
+
+    type: 'ReceiveAsyncNode',
+
+    compile: function() {
+        if (! isInGoExpr(this)) {
+            this.error('unexpected async operation', this.lineno);
+        }
+
+        var
+        ch = this.children;
+
+        ch[0].children = 'yield ' + this.runtimeFn('receive');
+        ch.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+    }
+})
+
+
+yy.TemplateLiteralNode = Class(yy.Node, {
+
+    type: 'TemplateLiteralNode',
+
+    compile: function() {
+        var str, list, i, len, item,
+        ch = this.children;
+
+        if (ch.length === 1) {
+            // simple template
+            ch[0] = new yy.StringNode(ch[0].children.substr(1), ch[0].loc);
+        } else {
+            // interpolation
+            str = ch[0].children;
+            ch[0] = new yy.StringNode(str.substring(1, str.length-1) + "' + ", ch[0].loc);
+
+            str = ch[2].children;
+            ch[2] = new yy.StringNode(" + '" + str.substring(1), ch[2].loc);
+
+            list = ch[1];
+
+            for (i = -1, len = list.children.length-2; i < len;) {
+                i+=2;
+                item = list.children[i];
+                str  = item.children;
+                list.children[i] = new yy.StringNode(" + '" + str.substring(1, str.length-1) + "' + ", item.loc);
+            }
+        }
+    }
+})
 
 })(typeof cor === 'undefined' ? {} : cor);

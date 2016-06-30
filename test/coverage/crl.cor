@@ -35,11 +35,11 @@ func init() {
         
         describe('keys', func(){
             it('From Arrays should extract just numeric indexes', func() {
-                arr = ['mango', 'orange', 'guava']
+                arr = ('mango', 'orange', 'guava')
                 arr.someProp = 'Foo'
 
                 keys = CRL.keys(arr)
-                expect(keys).toEqual([0, 1, 2])
+                expect(keys).toEqual((0, 1, 2))
                 expect(keys.someProp).toBeUndefined()
             })
 
@@ -47,7 +47,7 @@ func init() {
                 c = &Client
 
                 keys = CRL.keys(c)
-                expect(keys).toEqual(['name', 'age'])
+                expect(keys).toEqual(('name', 'age'))
                 expect(keys).not.toContain('manuallyInsertedInPrototype')
             })
         })
@@ -86,6 +86,51 @@ func init() {
                     expect(CRL.assertType(c, Object)).toBeTruthy()
                 })
 
+            })
+        })
+
+        describe('Receive Operator', func() {
+
+            it('Should transform objects to promise', func() {
+                prom = CRL.receive((:))
+                expect(prom.(CRL.Promise)).toBe(true)
+            })
+
+            it('Should transform array to promise', func() {
+                prom = CRL.receive((,))
+                expect(prom.(CRL.Promise)).toBe(true)
+            })
+
+            it('Should passthrough promises', func() {
+                prom = CRL.receive(&CRL.Promise(func(x)x))
+                expect(prom.(CRL.Promise)).toBe(true)
+            })
+
+            it('Should return every else', func() {
+                val = CRL.receive(0)
+                expect(val).toBe(0)
+            })
+
+            it('Should delegate to `receive` function if object (receive:func()) is given', func() {
+                obj = (receive: func() 0)
+                val = CRL.receive(obj)
+                expect(val).toBe(0)
+            })
+
+        })
+
+        describe('Send Operator', func() {
+
+            it('Should delegate to `send` function if object (send:func()) is given', func() {
+                val = 0
+                obj = (send: func(s) val = s)
+                CRL.send(obj, 1)
+                expect(val).toBe(1)
+            })
+
+            it('Should throw otherwise', func(){
+                func send() CRL.send((:), 1)
+                expect(send).toThrow()
             })
         })
 

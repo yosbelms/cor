@@ -9,8 +9,11 @@ By: Yosbel Marín @yosbelms
     display: block;
     overflow-x: auto;
     padding: 0.5em;
-    background: #232323;
-    color: #FFFFFF;
+    background: #F8F8F8;
+    color: #232323;
+    border: 1px solid #E8E8E8;
+    border-top: 0px;
+    border-bottom: 0px;
 }
 
 .hljs-name,
@@ -32,7 +35,7 @@ By: Yosbel Marín @yosbelms
 
 .hljs-string,
 .hljs-bullet {  
-    color: #66BB6A;
+    color: #008C05;
 }
 
 .hljs-section,
@@ -40,12 +43,12 @@ By: Yosbel Marín @yosbelms
 .hljs-quote,
 .hljs-built_in,
 .hljs-builtin-name {
-    color: #FFF9C4;
+    color: #888600;
 }
 
 .hljs-type,
 .hljs-title {
-   color: #FFE082;
+   color: #E88B00;
 }
 
 .hljs-tag {
@@ -63,17 +66,13 @@ By: Yosbel Marín @yosbelms
 .hljs-selector-tag,
 .hljs-literal,
 .hljs-keyword {    
-    color: #B39DDB;
-}
-
-.hljs-literal {
-    color: #C0CA33;  
+    color: #006ACC;
 }
 
 .hljs-comment,
 .hljs-deletion,
 .hljs-code {
-    color: #909090;
+    color: #AFAFAF;
 }
 
 .hljs-regexp,

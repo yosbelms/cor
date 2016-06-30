@@ -1,0 +1,40 @@
+
+func init() {
+    describe('template literals', func() {
+        person = (name:'peter')
+
+        it('simple templates should work as string', func() {
+
+            expect($'tpl').toBe('tpl')
+
+        })
+
+        it('should interpolate', func() {
+
+            expect($'tpl:{person.name}').toBe('tpl:peter')
+
+        })
+
+        it('should allow new lines', func() {
+
+            expect($'tpl:
+                {person.name}').
+            toBe('tpl:
+                peter')
+
+        })
+
+        it('should allow curly braces (`{`) escaping', func() {
+
+            expect($'tpl:\{person.name}').toBe('tpl:\{person.name}')
+
+        })
+
+        it('should allow string delimiter inside embedded expressions', func() {
+
+            expect($'tpl:{person['name']}').toBe('tpl:peter')
+
+        })
+
+    })
+}

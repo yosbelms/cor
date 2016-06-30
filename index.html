@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" type="text/css" href="docs/assets/style.css">
-        <link rel="stylesheet" type="text/css" href="docs/assets/highlightjs/cor.css">
+        <link rel="stylesheet" type="text/css" href="docs/assets/highlightjs/cor_light.css">
         <link rel="shortcut icon" href="docs/assets/favicon.ico" />
         <title>Cor - The language of the Web</title>
     </head>
@@ -20,7 +20,6 @@
                 <li class="inline"><a href="test/index.html">Run tests</a></li>
             </ul>
             <ul class="right">
-                <li class="inline"><a class="icon-twitter" href="http://twitter.com/yosbelms" target="_blank"></a></li>
                 <li class="inline"><a class="icon-github" href="https://github.com/yosbelms/cor" target="_blank"></a></li>
             </ul>
         </div>
@@ -30,57 +29,96 @@
         <div class="master">        
             <h1 class="content">The Cor Language</h1>
             <p class="lead content">            
-            Cor is an opensource language that compiles to plain javascript. It is designed to make easy to write, build, and maintain large software for the web. Cor is an attemp to make myself more productive, it is what I think javascript should have been from the beginning.</p>
+            <b>Cor</b> is an opensource language that compiles to plain JavaScript. It is designed to make easy to write and maintain software for the asynchronous Web.</p>
         </div>
 
         <div class="rule"></div>
 
-        <p class="content">Cor brings a fresh way of programming for web browsers and Node.js platform, it borrows good ideas from well known languages such as Go and C#, but it is a new language. It plays very well with the outer world; with Cor you can take advantage of the huge javascript ecosystem and reuse your preferred libraries.</p>
+        <p class="content"><b>Concurrency</b> and <b>parallelism</b> are first-class citizens in <b>Cor</b>, bringing a fresh way of programming for Web browsers and Node.js platforms. It is a language inspired in <b>Go</b>, but runs in a world wide platform that is the Web. With <b>Cor</b> you can take advantage of the whole <b>JavaScript</b> ecosystem, use your preferred libraries, and ensure your application runs everywhere the Web is.</p>
         
         <div class="content">
             <div class="rule"></div>
+
             <div class="grid">
                 <div class="col">
+<pre><code class="hljs cor">func init() {
+    ch = chan()
+    go {
+        timeout(100)
+        ch <- 'some msg'
+    }
+
+    go { console.log(<- ch) }
+}
+</code></pre>
+                </div>
+
+                <div class="col clear">
+                    <h3>Concurrent and Parallel</h3>
+                    <p><b>Cor</b> allows you to synchronize <b>coroutines</b> by passing messages through <b>channels</b>, and supports the execution of many tasks in <b>parallel</b>, all of that by writing sequential code.</p>
+                </div>
+            </div>
+
+            <div class="rule"></div>
+
+            <div class="grid">
+                <div class="col clear">
+                    <h3>Hot reaload</h3>
+                    <p><b>Cor</b> provides a smooth front-end development by furnishing a builtin <b>hot-loader</b> which resolves dependences and compiles source code <b>on the fly</b>, with just reloading the Web page. You will only need to use CLI tools to deliver a production-ready version of the app.</p>
+                </div>
+
+                <div class="col">
+<pre><code class="hljs cor">&lt;html&gt;
+    &lt;script
+        type="text/javascript"
+        src="node_modules/cor-lang/dist/cor.js"&gt;
+    &lt;/script&gt;
+    &lt;script data-entry="my_app.cor"&gt;&lt;/script&gt;
+&lt;/html&gt;
+</code></pre>
+                </div>
+            </div>
+
+            <div class="rule"></div>
+
+            <div class="grid">
+                <div class="col">
+                    <img src="docs/assets/cor_debug_light.jpg" />
+                </div>
+
+                <div class="col">
+                    <h3>Easy to debug</h3>
+                    <p><b>Cor</b> supports <b>source-maps</b>, allowing you the easy debugging in major browsers. However a line of <b>Cor</b> source is compiled to the <b>exact line number</b> in JavaScript for accurated <b>debugging</b> when developing in platforms that doesn't supports source-maps such as servers.</p>
+                </div>
+            </div>
+
+            <div class="rule"></div>
+
+            <div class="grid">
+                <div class="col">
+                    <h3>Clean syntax</h3>
+                    <p><b>Cor</b> enables you to write <b>large applications</b> by providing a <b>clean syntax</b>, classes and a modular architecture to keep organized code, enforcing the writing of <b>readable source code</b> based on conventions.</p>
+                </div>
+
+                <div class="col clear">
 <pre><code class="hljs cor">use './Todo'
 use 'backbone' bb
 use 'storage'  Storage
 
 class TodoList : bb.Collection {
-    localStorage    = &Storage['todos-backbone']
+    localStorage    = &Storage('todos-backbone')
     model           = Todo
     func getModel() me.model
 }
 </code></pre>
                 </div>
-            
-                <div class="col clear">
-                    <h3>Clean syntax</h3>
-                    <p>Cor enables you to write large applications by providing a clean syntax, classes and a modular architecture to keep organized code, enforcing the writing of readable source based on conventions.</p>
-                </div>
             </div>
 
-            <div class="rule"></div>
-            
-            <div class="grid">
-                <div class="col">
-                    <h3>Easy to debug</h3>
-                    <p>Cor supports source-maps, allowing you the easy debugging in major browsers. However a line of Cor source is compiled to the exact line number in javascript for accurated debugging when developing in platforms that doesn't supports source-maps such as servers.</p>
-                </div>
- 
-                <div class="col">
-                    <img src="docs/assets/cor_debug.jpg" />
-                </div>
-                
-                <div>
-            </div>
-        </div>
-        
-        <div class="full-rule"></div>
+            <div class="full-rule"></div>
 
-        
-        <div class="center">
-            <a class="button" href="docs/get_started.html">Get started</a>    
-        </div>
+            <div class="center">
+                <a class="button" href="docs/get_started.html">Get started</a>    
+            </div>
         
 
         <!--div>
@@ -94,11 +132,7 @@ class TodoList : bb.Collection {
             <ul>
                 <li><a href="https://github.com/yosbelms/cor">GitHub Repository</a></li>
                 <li>&middot;</li>
-                <li><a href="http://ost.io/@yosbelms/cor">Discussions</a></li>
-                <li>&middot;</li>
                 <li><a href="https://github.com/yosbelms/cor/issues">Issues</a></li>
-                <li>&middot;</li>
-                <li><a href="https://github.com/yosbelms/cor/contributors">Contributors</a></li>
             </ul>
         </div>
     </div>

@@ -1,0 +1,8 @@
+r1 = regex('\d+', 'g')
+r2 = regex(p)
+r3 = regex('\d+', f)
+r4 = regex(p, f)
+r5 = regex('
+        a
+        b
+')

@@ -201,32 +201,3 @@ target.test = function() {
 	echo(' + testing')
     exec('node ./bin/cor run ./test/node.cor');
 }
-
-// make a release, publishing a new tag
-// usage: make release
-target.release = function() {
-
-    if (!which('git')) {
-        echo('this command requires "git" to be installed')
-        exit(1)
-    }
-
-    if (!which('npm')) {
-        echo('this command requires "npm" to be installed')
-        exit(1)
-    }
-
-    var
-    out = exec('git branch --no-color', {silent: true}).output,
-    version = /\*\s+([\w\.]+)/.exec(out)[1];
-
-    if (version == packageJson.version) {
-        echo('+ releasing ' + version);
-        exec('git tag v' + version)
-        exec('git push origin master --tags')
-        exec('npm publish .')
-    }
-    else {
-        echo('+ current branch does not match with the "version" in package.json');
-    }    
-}

@@ -1,0 +1,61 @@
+
+func test(title) {
+    Promise = CRL.Promise
+
+    func asyncVal(val, time) {
+        return &Promise(func(resolve) {
+            setTimeout(func() resolve(val), time ?? 0)
+        })
+    }
+
+    describe('Receive operator ' + title, func() {
+
+        it('Should receive from array in parallel', func(done) {
+            go {
+                v = <- (
+                    asyncVal(2),
+                    asyncVal(3),
+                    4,
+                )
+
+                expect(v).toEqual((2, 3, 4))
+                done()
+            }
+        })
+
+        it('Should receive from objects in parallel', func(done) {
+            go {
+                v = <- (
+                    'two'   : asyncVal(2),
+                    'three' : asyncVal(3),
+                    'four'  : 4,
+                )
+
+                expect(v).toEqual(('two': 2, 'three': 3, 'four': 4))
+                done()
+            }
+        })
+
+        it('Should receive from promise', func(done) {
+            go {
+                v = <- &Promise(func(resolve) resolve(0))
+                expect(v).toBe(0)
+                done()
+            }
+        })
+
+        it('Should receive simple values', func(done) {
+            go {
+                v = <- 4
+                expect(v).toBe(4)
+                done()
+            }
+        })
+    })
+}
+
+
+use '../utils'
+func init() {
+    utils.testWithPromise(test)
+}

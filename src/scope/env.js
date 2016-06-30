@@ -183,7 +183,7 @@ yy.Environment = Class({
     },
 
     context: function(n) {
-        if (isNaN(n)) {
+        if (isNaN(n) || n === null) {
             n = this.contexts.length - 1;
         }
         else if (n <= 0) {

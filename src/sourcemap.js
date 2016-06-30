@@ -1,5 +1,9 @@
 (function(cor){
 
+// This is a version,
+// the original code can be found at
+// https://github.com/jashkenas/coffeescript/tree/master/src/sourcemap.litcoffee
+
 var
 Class                = cor.Class,
 VLQ_SHIFT            = 5,

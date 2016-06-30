@@ -780,13 +780,13 @@ Category: common, scripting
 hljs.registerLanguage('cor', function(hljs) {
     var COR_KEYWORDS = {
         keyword:
-            'new use class func me return ' +
+            'use class func me return ' +
             'if else for in switch case default ' +
-            'continue break catch',
+            'continue break catch go',
         literal:
             'true false nil',
         built_in:
-            'super error'
+            'super regex error chan timeout'
     };
 
     return {
@@ -814,13 +814,13 @@ hljs.registerLanguage('cor', function(hljs) {
             {
                 className: 'class',
                 beginKeywords: 'class', end: /[{;=]/, excludeEnd: true,
-                illegal: /["\[\]]/,
+                illegal: /["\(\)]/,
                 contains: [hljs.UNDERSCORE_TITLE_MODE]
             },
             {
                 className: 'new',
-                begin: '&', end: /[\[{;,\n]/, excludeEnd: true,
-                illegal: /["\[\]]/,
+                begin: '&', end: /[\({;,\n]/, excludeEnd: true,
+                illegal: /["\(\)]/,
                 contains: [hljs.UNDERSCORE_TITLE_MODE]
             }
         ]

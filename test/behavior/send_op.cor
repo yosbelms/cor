@@ -1,0 +1,18 @@
+
+func test() {
+    describe('Send operator', func() {
+        it('Should delegate to `send` function', func(done) {
+            val
+            go {
+                (send: func(s) val = s) <- 5
+                expect(val).toBe(5)
+                done()
+            }
+        })
+    })
+}
+
+use '../utils'
+func init() {
+    utils.testWithPromise(test)
+}

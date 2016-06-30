@@ -1,0 +1,63 @@
+
+func test(title) {
+    Promise = CRL.Promise
+
+    describe('Corourines' + title, func() {
+
+        it('Should break on promise', func(done) {
+            p = &Promise(func(resolve, reject) setTimeout(func() resolve(0), 100))
+
+            go {
+                val = <- p
+                expect(val).toBe(0)
+                done()
+            }
+            
+        })
+
+
+        it('Should allow comunication between', func(done) {
+            go {
+                p = &Promise(func(resolve, reject) setTimeout(func() resolve(0), 100))
+            }
+
+            go {
+                val = <- p
+                expect(val).toBe(0)
+                done()
+            }
+            
+        })
+
+        describe('Can be chained', func() {
+
+            it('- Explicit', func(done) {
+                // explicit
+                g = go {
+                    return 0
+                }
+
+                go {
+                    expect(<- g).toBe(0)
+                    done()
+                }
+            })
+
+            it('- Succint', func(done) {
+                // succint
+                go {
+                    expect(<- go { return 0 }).toBe(0)
+                    done()
+                }
+
+            })
+        })
+
+    })
+}
+
+
+use '../utils'
+func init() {
+    utils.testWithPromise(test)
+}

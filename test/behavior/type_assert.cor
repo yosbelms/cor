@@ -71,14 +71,14 @@ func init() {
             ---
 
             it('Array', func() {
-                a = [1, 2]
+                a = (1, 2)
 
                 expect(a.(Array)).toBeTruthy()
                 expect(arguments.(Array)).toBeFalsy()
             })
 
             it('Object', func() {
-                o = &[1, 2]
+                o = &Object(1, 2)
                 p = &Person
 
                 expect(o.(Object)).toBeTruthy()

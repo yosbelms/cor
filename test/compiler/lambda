@@ -5,9 +5,7 @@ func a() {
     }
 	a = func() 1
 
-	a = func () [
-        1, 2,
-    ]
+	a = func () (1, 2)
 
     a = func f() x
 

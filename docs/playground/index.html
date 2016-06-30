@@ -23,7 +23,6 @@
                 <li class="inline"><a href="../../test/index.html">Run tests</a></li>
             </ul>
             <ul class="right">
-                <li class="inline"><a class="icon-twitter" href="http://twitter.com/yosbelms" target="_blank"></a></li>
                 <li class="inline"><a class="icon-github" href="https://github.com/yosbelms/cor" target="_blank"></a></li>
             </ul>
         </div>
@@ -35,11 +34,11 @@
     <br />
     Start with
     <select id="sample-select">
-        <option name="play-hello">Hello !</option>
-        <option name="play-dom">DOM</option>
-        <option name="play-class">Classes</option>
         <option name="play-fib">Fibonacci</option>
-        <option name="play-list">Linked list</option>
+        <option name="play-numbers">Delayed numbers</option>
+        <option name="play-mouser">Mouser</option>
+        <option name="play-pingpong">Ping-Pong</option>
+        <option name="play-model">Model</option>
     </select>
 
     <div class="pg-toolbar">
@@ -56,154 +55,113 @@
         </li>
     </ul>
 
-<script id="play-hello" type="text/cor">
-func init() {
-    alert('Hello World !')
-}
-</script>
-
 <script id="play-fib" type="text/cor">// fib() returns a function which generates
 // succesive fibonacci numbers
 
 func fib(n) {
     a = 0
     b = 1
-    return func() {
-        f = a + b
-        a = b
-        return b = f
-    }
+    return func()(t = a + b, a = b, b = t)[0]
 }
 
 func init() {
     gen = fib()
-    res = []
-    for f in 0:10 {
-        res.push(gen())
+    res = (,)
+    for i in 2:15 {
+        echo($'{i}, {gen()}')
     }
-    alert(res)
 }
+
 </script>
-<script id="play-list" type="text/cor">// simple linked list
 
-class Node {
-    data
-    next
-}
+<script id="play-mouser" type="text/cor">// Channels in action
+// just run the example and move
+// the mouse over the output panel
 
-class List {
-    head
-}
-
-func iterate(list) {
-    node = list.head
-    return func() {
-        ret = node
-        if node { node = node.next }
-        return ret
-    }
-}
-
-func size(ls) {
-    iter  = iterate(ls)
-    count = 0
-    for i = iter() { count++ }
-    return count
-}
-
-func fromArray(arr) {
-    ls = current = &List
-    for item in arr {
-        node = &Node[item]
-        switch current.constructor {
-            case List : current.head = node
-            case Node : current.next = node
-        }
-        current = node
-    }
-    return ls
-}
-
-func toArray(ls) {
-    iter = iterate(ls)
-    ret  = []
-    for i = iter() { ret.push(i.data) }
-    return ret
-}
-
+outEl = document.getElementById('output')
 
 func init() {
-    ls = fromArray(['horse', 'snake', 'cat'])
-    alert('size:  ' + size(ls) + '\ndata: ' + toArray(ls))
+    offsetCh = chan(200)
+
+    outEl.onmousemove = func(event) go {
+        offsetCh <- (event.clientX, event.clientY)
+    }
+
+    go {
+        echo('Move the mouse over me !!!')
+
+        for i in 0:500 {
+            offset = <- offsetCh
+            echo($'X:{offset[0]} - Y:{offset[1]}')
+            timeout(10)
+            clearOutput()
+        }
+    }
 }
 </script>
-<!--script id="play-list" type="text/cor">// simple linked list
 
-class Node {
-    data
-    next
-}
+<script id="play-pingpong" type="text/cor">// Ping-pong example ported from Go
+// http://talks.golang.org/2013/advconc.slide#6
+// Using unbuffered channels to synchronize coroutines
 
-class List {
-    head
-}
-
-func iterate(list) {
-    node = list.head
-    return func() {
-        ret = node
-        if node { node = node.next }
-        return ret
-    }
-}
-
-func size(ls) {
-    iter  = iterate(ls)
-    count = 0
-    for i = iter() { count++ }
-    return count
-}
-
-func fromArray(arr) {
-    ls = current = &List
-    for item in arr {
-        node = &Node[item]
-        switch current.constructor {
-            case List : current.head = node
-            case Node : current.next = node
+func player(name, table) go {
+    for {
+        ball = <- table
+        if table.closed {
+            echo($'{name}: Table is gone...')
+            return
         }
-        current = node
+        ball.hits++
+
+        echo($'{name} {ball.hits}')
+        timeout(500)
+
+        catch table <- ball { return }
     }
-    return ls
 }
 
-func toArray(ls) {
-    iter = iterate(ls)
-    ret  = []
-    for i = iter() { ret.push(i.data) }
-    return ret
+func init() go {
+    table = chan()
+
+    // send to the channel inside a new coroutine
+    // to avoid blocking the current context
+    go {table <- (hits: 0)}
+
+    player('Ping', table)
+    player('Pong', table)
+
+    timeout(5000)
+    table.close()
 }
+</script>
 
+<script id="play-numbers" type="text/cor">// Prints numbers from 0 to 9 to the output panel
+// with an interval of one second between each print
 
-func init() {
-    ls = fromArray(['horse', 'snake', 'cat'])
-    alert('size:  ' + size(ls) + '\ndata: ' + toArray(ls))
+func init() go {
+    for i in 0:10 {
+        echo(i)
+        timeout(400)
+    }
 }
-</script-->
+</script>
 
-<script id="play-class" type="text/cor">// Show inheritance and literal object contructions
+<script id="play-model" type="text/cor">// Show inheritance and literal object contructions
 
+// id generator
 idSeed = 0
 func genId() {
     idSeed++
-    return 'id-' + idSeed
+    return $'id-{idSeed}'
 }
 
+// Model class
 class Model {
     id = genId()
-    func toJSON() &[id: me.id]
+    func toJSON() (id: me.id)
 }
 
+// inherit from model
 class Todo : Model {
     desc    
     func toJSON() {
@@ -214,30 +172,13 @@ class Todo : Model {
     }
 }
 
-
+// initialize module
 func init() {
-    ls = [
-        &Todo['Buy a battery'],
-        &Todo['Clean the fan'],
-        &Todo['Make a push'],
-    ]
-    alert(JSON.stringify(ls, 0, 4))
-}
-</script>
-
-<script id="play-dom" type="text/cor">// move [Run] and [Link] buttons to the right
-// and put it back after a second
-
-class View {
-    elem
-    func move()    me.elem.style.marginLeft = '50px'
-    func restore() me.elem.style.marginLeft = '0px'
-}
-
-func init() {
-    view = &View[elem: document.getElementById('btn-run')]
-    view.move()
-    setTimeout(func() view.restore(), 1000)
+    echo(JSON.stringify((
+        &Todo('Buy a battery'),
+        &Todo('Clean the fan'),
+        &Todo('Make a push'),
+    ), 0, 4))
 }
 </script>
 
@@ -249,11 +190,7 @@ func init() {
         <ul>
             <li><a href="https://github.com/yosbelms/cor">GitHub Repository</a></li>
             <li>&middot;</li>
-            <li><a href="http://ost.io/@yosbelms/cor">Discussions</a></li>
-            <li>&middot;</li>
             <li><a href="https://github.com/yosbelms/cor/issues">Issues</a></li>
-            <li>&middot;</li>
-            <li><a href="https://github.com/yosbelms/cor/contributors">Contributors</a></li>
         </ul>
     </div>
         

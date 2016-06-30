@@ -1,14 +1,13 @@
 
 func a() {
     
-    a = &[]
-    a = &[a, b]
-    a = &[a:b, c:d]
+    a = (:)
+    a = (a:b, c:d)
 
     a = &A
-    a = &A[]
-    a = &A[a, b]
-    a = &A[a: b, c: d]
+    a = &A()
+    a = &A(a, b)
+    a = &A(a: b, c: d)
     
-    a = &a.b.C[]
+    a = &a.b.C
 }
