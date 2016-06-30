@@ -67,12 +67,29 @@ func select() {
     }
 }
 
+---
+Echoes a text to the output panel
+---
+func echo(txt) {
+    ElOutput.value += $'{txt}\n'
+}
+window.echo  = echo
+
+---
+Clear the output panel
+---
+func clearOutput() {
+    ElOutput.value = ''
+}
+window.clearOutput = clearOutput
 
 ---
 Get source code in the editor, compiles and run it in the
 browser scope
 ---
 func run() {
+    clearOutput()
+    ElOutput.onmousemove = nil
     catch cor.run(ElSource.value) {
         ElOutput.value = String(error())
         error()

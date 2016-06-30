@@ -4,9 +4,9 @@
 
 **The Language of the Web**
 
-Cor is an opensource language that compiles to plain javascript. It is designed to make easy to write, build, and maintain large software for the web. Cor is an attemp to make myself more productive, it is what I think javascript should have been from the beginning.
+Cor is an opensource language that compiles to plain JavaScript. It is designed to make easy to write and maintain software for the asynchronous Web.
 
-Cor brings a fresh way of programming for web browsers and Node.js platform, it borrows good ideas from well known languages such as Go and C#, but it is a new language. It plays very well with the outer world; with Cor you can take advantage of the huge javascript ecosystem and reuse your preferred libraries.
+Concurrency and parallelism are first class citizens in Cor, bringing a fresh way of programming for web browsers and Node.js platforms. It is a language inspired in _Go_, but runs in a world wide platform that is the Web. With Cor you can take advantage of the whole JavaScript ecosystem, use your preferred libraries, and ensure your application runs everywhere the Web is.
 
 
 ## Installation
@@ -37,6 +37,28 @@ Compile a script:
 ```
 cor compile /path/to/source.cor
 ```
+
+
+## Platform Compatibility
+
+Cor coroutines are based in generators, so, if you plan to use it you must take the following in consideration.
+
+When using Node.js or browsers without generator support, you must use [gnode](https://github.com/TooTallNate/gnode) and/or [regenerator](http://facebook.github.io/regenerator/).
+
+### Server
+
+* Node.js 4+
+
+When using Node.js 0.11.x or greater, you must use the `--harmony-generators` flag or just `--harmony` to get access to generators.
+
+### Browsers
+
+* Firefox 27+
+* Chrome 39+
+* Opera 26+
+* Edge 13+
+
+Chrome between 28 and 38 are supported by turning on an experimental flag.
 
 ## Support
 

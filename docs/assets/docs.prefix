@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" type="text/css" href="assets/style.css">
-        <link rel="stylesheet" type="text/css" href="assets/highlightjs/cor.css">
+        <link rel="stylesheet" type="text/css" href="assets/highlightjs/cor_light.css">
         <link rel="shortcut icon" href="assets/favicon.ico" />
         <title></title>
     </head>
@@ -24,7 +24,6 @@
                 <li class="inline"><a href="../test/index.html">Run tests</a></li>
             </ul>
 			<ul class="right">
-                <li class="inline"><a class="icon-twitter" href="http://twitter.com/yosbelms" target="_blank"></a></li>
                 <li class="inline"><a class="icon-github" href="https://github.com/yosbelms/cor" target="_blank"></a></li>
             </ul>
         </div>
