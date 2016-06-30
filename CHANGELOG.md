@@ -1,11 +1,15 @@
-# 0.9.0
+# 0.10.0
 
-Many pending features were added to Cor in this version, example, the new builtin function for regular expressions, also some syntax has changed, read the docs form more information about it.
+Many pending features and radical changes were added to Cor in this version, example, the new builtin function for regular expressions, also some syntax has changed. Croutines, concurrency, and parallelism were introduced in this version.
 
 * Add template literals (string interpolation)
 * Square brackets '[ and ']' is no longer part of the syntax in object constructors and arrays, now it uses parenthesis '(' and ')'
 * Add `regex` builtin function
 * Object and array constructors are now primary expressions
+* Add coroutines
+* Add the asynchronic operations
+* Add `timeout` builtin function
+* Add channels
 
 
 # 0.6.0
