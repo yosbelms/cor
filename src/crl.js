@@ -303,8 +303,8 @@ CRL.go = function go(genf, ctx) {
     var state, gen = genf.apply(ctx || {});
 
     return new CRL.Promise(function(resolve, reject) {
-        //schedule(next);
-        next();
+        // ensure it runs asynchronously
+        schedule(next);
 
         function next(value) {
             if (state && state.done) {
