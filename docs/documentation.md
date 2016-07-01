@@ -244,6 +244,29 @@ func init() {
 }
 ```
 
+
+## Platform Compatibility
+
+Cor coroutines are based in generators, so, if you plan to use it you must take the following in consideration.
+
+When using Node.js or browsers without generator support, you must use [gnode](https://github.com/TooTallNate/gnode) and/or [regenerator](http://facebook.github.io/regenerator/).
+
+### Server
+
+* Node.js 4+
+
+When using Node.js 0.11.x or greater, you must use the `--harmony-generators` flag or just `--harmony` to get access to generators.
+
+### Browsers
+
+* Firefox 27+
+* Chrome 39+
+* Opera 26+
+* Edge 13+
+
+Chrome between 28 and 38 are supported by turning on an experimental flag.
+
+
 ## Semicolon Insertion
 
 Cor grammar uses semicolon to terminate statements, but those semicolons doesn't need to appear in the source. Instead, the lexer applies a simple rule to insert semicolons automatically as it scans, so you can avoid write it. **The rule is:** If the last token before a newline is an identifier (which includes keywords), a basic literal such as a number or string constant, or one of the tokens: `++ -- ) }` the lexer always inserts a semicolon after the token.

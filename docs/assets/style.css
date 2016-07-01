@@ -508,6 +508,18 @@ a.pg-btn-link:hover {
     background-color: #31b0d5;
 }
 
+.notification {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    font-size: 12px;
+    text-align: right;
+    background-color: #FDFFBC;
+    color: #BA0000;
+    opacity: .9;
+}
+
 
 /* RESPONSIVE */
 
