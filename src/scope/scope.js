@@ -82,6 +82,7 @@ translationTable = {
 };
 
 var builtinFn = [
+    'echo',
     'error',
     'super',
     'regex',
@@ -1413,7 +1414,12 @@ yy.CallNode = Class(yy.Node, {
         var ch = this.children;
         ch[0].children[0].children = this.runtimePrefix + 'timeout';
         ch.unshift(new yy.Lit('yield ', getLesserLineNumber(ch[0])))
-    }
+    },
+
+    echoBuiltin: function() {
+        var ch = this.children;
+        ch[0].children[0].children = this.runtimePrefix + 'echo';
+    },
 
 });
 

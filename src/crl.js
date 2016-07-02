@@ -147,6 +147,12 @@ CRL.regex = function regex(pattern, flags) {
     return new RegExp(pattern, flags);
 }
 
+CRL.echo = function echo() {
+    if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+        console.log.apply(console, slice.call(arguments));
+    }
+}
+
 })();
 
 

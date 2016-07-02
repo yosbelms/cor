@@ -70,10 +70,9 @@ func select() {
 ---
 Echoes a text to the output panel
 ---
-func echo(txt) {
+echo = CRL.echo = func echo(txt) {
     ElOutput.value += $'{txt}\n'
 }
-window.echo  = echo
 
 ---
 Clear the output panel
