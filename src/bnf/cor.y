@@ -370,7 +370,7 @@ UnaryExpr
     | '~' UnaryExpr  { $$= new yy.UnaryExprNode(new yy.Lit($1, @1), $2) }
     
     // pure existence
-    | PrimaryExpr '?' { $$= new yy.ExistenceNode($1, new yy.Lit($2, @2)) }
+    | PrimaryExpr '?' { $$= new yy.UnaryExistenceNode($1, new yy.Lit($2, @2)) }
     ;
 
 OperationExprNotAdditive
