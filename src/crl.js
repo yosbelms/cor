@@ -120,8 +120,12 @@ CRL.keys = function keys(obj) {
 CRL.assertType = function assertType(obj, Class) {
     var type;
 
+    if (Class === void 0) {
+        return obj === void 0;
+    }
+
     if (typeof Class !== 'function') {
-        throw 'Trying to assert undefined class';
+        throw 'Trying to assert invalid class';
     }
 
     if (typeof obj === 'undefined') {
@@ -163,6 +167,8 @@ function Promise(resolverFn) {
     // this.value;
     // this.reason;
     this.completed      = false;
+    this.fail           = false;
+    this.success        = false;
     this.thenListeners  = [];
     this.catchListeners = [];
 
@@ -180,7 +186,7 @@ Promise.prototype = {
 
     then: function(fn) {
         this.thenListeners.push(fn);
-        if (this.completed) {
+        if (this.success) {
             Promise.doResolve(this, this.value);
         }
         return this;
@@ -188,7 +194,7 @@ Promise.prototype = {
 
     catch: function(fn) {
         this.catchListeners.push(fn);
-        if (this.completed) {
+        if (this.fail) {
             Promise.doReject(this, this.reason);
         }
         return this;
@@ -201,6 +207,7 @@ Promise.doResolve = function resolve(p, value) {
     })
 
     p.completed = true;
+    p.success   = true;
     p.value     = value;
 };
 
@@ -210,6 +217,7 @@ Promise.doReject = function reject(p, reason) {
     })
 
     p.completed = true;
+    p.fail      = true;
     p.reason    = reason;
 };
 
@@ -318,6 +326,10 @@ CRL.go = function go(genf, ctx) {
             if (isPromise(value)) {
                 value.then(function(value) {
                     next(value);
+                })
+
+                value.catch(function(reason) {
+                    gen.throw(reason);
                 })
                 return;
             }
