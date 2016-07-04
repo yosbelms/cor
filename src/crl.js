@@ -184,10 +184,13 @@ function Promise(resolverFn) {
 
 Promise.prototype = {
 
-    then: function(fn) {
-        this.thenListeners.push(fn);
+    then: function(fnFulfill, fnReject) {
+        this.thenListeners.push(fnFulfill);
         if (this.success) {
             Promise.doResolve(this, this.value);
+        }
+        if (fnReject) {
+            this.catch(fnReject);
         }
         return this;
     },
@@ -212,7 +215,12 @@ Promise.doResolve = function resolve(p, value) {
 };
 
 Promise.doReject = function reject(p, reason) {
-    p.catchListeners.forEach(function(listener){
+
+    if (p.catchListeners.length === 0) {
+        console.log('Uncaught (in promise): ' + reason);
+    }
+
+    p.catchListeners.forEach(function(listener) {
         listener(reason);
     })
 
@@ -320,17 +328,23 @@ CRL.go = function go(genf, ctx) {
                 return;
             }
 
-            state = gen.next(value);
-            value = state.value;
+            try {
+                state = gen.next(value);
+                value = state.value;
+            } catch (e) {
+                console.error(e.stack ? '\n' + e.stack : e);
+                return;
+            }
 
             if (isPromise(value)) {
-                value.then(function(value) {
-                    next(value);
-                })
-
-                value.catch(function(reason) {
-                    gen.throw(reason);
-                })
+                value.then(
+                    function onFulfilled(value) {
+                        next(value)
+                    },
+                    function onRejected(reason) {
+                        gen.throw(reason)
+                    }
+                )
                 return;
             }
 
