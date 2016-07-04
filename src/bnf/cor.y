@@ -370,7 +370,7 @@ UnaryExpr
     | '~' UnaryExpr  { $$= new yy.UnaryExprNode(new yy.Lit($1, @1), $2) }
     
     // pure existence
-    | PrimaryExpr '?' { $$= new yy.ExistenceNode($1, new yy.Lit($2, @2)) }
+    | PrimaryExpr '?' { $$= new yy.UnaryExistenceNode($1, new yy.Lit($2, @2)) }
     ;
 
 OperationExprNotAdditive
@@ -447,11 +447,9 @@ SelectorExpr
     ;
 
 IndexExpr
-    : PrimaryExpr '[' ']'             { $$= new yy.Node($1, new yy.Lit($2, @2), new yy.Lit($3, @3)) }
-    | PrimaryExpr '[' PrimaryExpr ']' { $$= new yy.Node($1, new yy.Lit($2, @2), $3, new yy.Lit($4, @4)) }
+    : PrimaryExpr '[' PrimaryExpr ']' { $$= new yy.Node($1, new yy.Lit($2, @2), $3, new yy.Lit($4, @4)) }
     
     // reference if exists
-    | PrimaryExpr '?' '[' ']'             { $$= new yy.ExistenceNode(new yy.Node($1, new yy.Lit($3, @3), new yy.Lit($4, @4))) }
     | PrimaryExpr '?' '[' PrimaryExpr ']' { $$= new yy.ExistenceNode(new yy.Node($1, new yy.Lit($3, @3), $4, new yy.Lit($5, @5))) }
     ;
 

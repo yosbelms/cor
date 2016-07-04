@@ -1699,7 +1699,7 @@ yy.ExistenceNode = Class(yy.Node, {
     },
     
     initNode: function() {
-        if (this.children[0] instanceof yy.VarNode ) {            
+        if (this.children[0] instanceof yy.VarNode ) {
             this.ref = this.children[0].name;
         }
         else {             
@@ -1766,6 +1766,42 @@ yy.ExistenceNode = Class(yy.Node, {
         // re-adopt
         this.adopt(this.children);
     }
+});
+
+
+yy.UnaryExistenceNode = Class(yy.ExistenceNode, {
+
+    type: 'UnaryExistenceNode',
+
+    initNode: function() {
+        var ch = this.children;
+
+        if (ch.length == 1 && (this.subject instanceof yy.VarNode)) {
+            this.ref = this.subject.name;
+            this.usingVar = true;
+        } else {
+            this.ref = yy.env.context().generateVar('ref');
+            this.yy.env.context().addLocalVar(this.ref);
+        }
+    },
+
+    compile: function() {
+        var
+        ch        = this.children,
+        ref       = this.ref,
+        condition = '!(typeof ' + ref + ' === \'undefined\' || ' + ref + ' === null)';
+
+        if (this.usingVar) {
+            ch.splice(0, 1);
+        } else {
+            ch.splice(0, 0, new yy.Lit('((' + ref + ' = ', getLesserLineNumber(ch[0])));
+            ch.push(new yy.Lit('), ', this.lineno));
+            condition += ')';
+        }
+
+        ch.push(new yy.Lit(condition, this.lineno));
+    }
+
 })
 
 

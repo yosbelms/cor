@@ -99,23 +99,27 @@ function writeFile(src, srcPath, outPath) {
     fs.writeFileSync(outPath, content);
 }
 
-function writeAll(outPath) {
+function writeAll(dirPath) {
     var
-    i, len,plugin, src,
+    i, len, parsed, outPath,
     srcPath, absPath;
 
     for (i = 0, len = sourceDirs.length; i < len; i++) {
-        absPath = cor.path.join(outPath, sourceDirs[i]);
+        absPath = cor.path.join(dirPath, sourceDirs[i]);
         makePath(cor.path.split(absPath));
     }
 
     print('Compiling:\n');
 
     for (srcPath in sourceCode) {
+        outPath = cor.path.join(dirPath, srcPath);
+        parsed  = cor.path.parse(outPath);
+
+        outPath = parsed.root + parsed.dir + cor.path.basename(outPath, cor.path.ext(outPath)) + '.js';
         writeFile(sourceCode[srcPath], srcPath, outPath);
     }
 
-    console.log('\nOutput in ' + path.resolve(outPath));
+    console.log('\nOutput in ' + path.resolve(dirPath));
 }
 
 function compile(sourcePath, outPath) {
@@ -127,12 +131,12 @@ function compile(sourcePath, outPath) {
         
     if (stats.isFile()) {
         parsed = cor.path.parse(sourcePath);        
-        outPath = outPath || parsed.root + parsed.dir + cor.path.basename(sourcePath, cor.path.ext(sourcePath)) + '.js';        
+        outPath = outPath || parsed.root + parsed.dir + cor.path.basename(sourcePath, cor.path.ext(sourcePath)) + '.js';
         writeFile(sourceCode[''], sourcePath, outPath);
     }
     else if (stats.isDirectory()) {
-        outPath = outPath || cor.path.basename(sourcePath) + ('js_' + (new Date()).getTime());        
-        write(outPath);
+        outPath = outPath || cor.path.basename(sourcePath) + ('js_' + (new Date()).getTime());
+        writeAll(outPath);
     }
 }
 

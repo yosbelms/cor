@@ -13,16 +13,27 @@ func init() {
     describe('Existential Operator', func() {
         
         describe('For unary expressions', func() {
-            it('Should work for simple call', func() {
-                expect(obj?).toBeTruthy()
-                expect(undefObj?).toBeUndefined()
+            it('Should work for simple expressions', func() {
+                expect(obj?).toBe(true)
+                expect(undefObj?).toBe(false)
             })
             
             it('Should work for expressions', func() {
                 expect(obj.fn()?).toBe(true)
                 expect(arr[0]()?).toBe(true)
-                expect(obj.nfn?).toBeUndefined()
-            })    
+                expect(obj.nfn?).toBe(false)
+            })
+
+            it('Should work for assignment', func() {
+                someVar
+                expect((someVar = 2)?).toBe(true)
+                expect((someVar += 2)?).toBe(true)
+            })
+
+            it('Should work winth 0', func() {
+                x = 0
+                expect(x?).toBe(true)
+            })
         })
 
 

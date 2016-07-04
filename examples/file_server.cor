@@ -1,0 +1,72 @@
+
+---
+A vary basic static web server example
+---
+
+use 'http'
+use 'url'
+use 'path'
+use 'fs'
+
+use './util/util'
+
+dfs = util.drive(fs)
+
+
+// show 404
+func show404(res, urlPath) {
+    res.writeHead(404)
+    res.end($'Error: file {urlPath} was not found.')
+}
+
+// handle each server request
+func serve(req, res) go {
+    html      = ''
+    parsedUrl = url.parse(req.url)
+    urlPath   = parsedUrl.pathname ?? ''
+    filePath  = path.join(process.cwd(), urlPath)
+
+    catch stat = <- dfs.stat(filePath) {
+        show404(res, urlPath)
+        return
+    }
+
+    // handle file
+    if stat.isFile() {
+        res.writeHead(200)
+        res.end(<- dfs.readFile(filePath), 'utf8')
+        return
+    }
+
+    // handle directory
+    if stat.isDirectory() {
+        files = <- dfs.readdir(filePath)
+
+        if urlPath == '/' {
+            dirPath = ''
+        } else {
+            dirPath = urlPath + '/'
+        }
+
+        for file in files {
+            html += $'<li><a href={dirPath}{file}>{file}</li>'
+        }
+
+        res.writeHead(200, ('Content-Type': 'text/html'))
+        res.end($'<ul>{html}</ul>')
+
+        return
+    }
+
+    show404(res, urlPath)
+}
+
+func init() {
+    port = 8000
+    http.createServer(serve).listen(port)
+
+    console.log($'
+    Server Runnig At : {port}\n
+    Server Root      : {process.cwd()}
+    ')
+}

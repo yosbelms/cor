@@ -53,6 +53,19 @@ func test(title) {
             })
         })
 
+
+        it('Shoud be binded to `this` context', func(done) {
+            obj = (
+                name: 'Peter',
+                run: func() go {
+                    expect(this.name).toBe('Peter')
+                    done()
+                },
+            )
+
+            obj.run()
+        })
+
     })
 }
 
