@@ -1,0 +1,31 @@
+
+---
+Multiple ajax in parallel
+
+We mock `fetch` API and iterate over a future value
+that contains the result of each request
+---
+
+// append to the body
+func print(txt) document.body.innerHTML += $'<pre>{txt}</pre>'
+
+// emulate fetch API
+// in this implementation
+// `fetch.get` returns the url and a timestamp
+fetch = (
+    get: func get(url) go {
+        return $'{url} : {Date.now()}'
+    },
+)
+
+func init() go {
+    print('Parallel Ajax resolution')
+
+    for result in <- (
+        fetch.get('github.com'),
+        fetch.get('twitter.com'),
+        fetch.get('facebook.com'),
+    ) {
+        print(result)
+    }
+}

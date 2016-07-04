@@ -1,0 +1,24 @@
+func worker(ch, name) go {    
+    for (n = <- ch)? {
+        timeout(n*30)
+        console.log(n, name)
+    }
+}
+
+func pool(ch, numWorkers, numTasks) go {
+    for i in :numWorkers {
+        worker(ch, i)
+    }
+
+    for i in :numTasks {
+        ch <- i
+    }
+
+    console.log('close')
+    ch.close()
+}
+
+func init() go {
+    ch = chan()
+    pool(ch, 10, 50)
+}

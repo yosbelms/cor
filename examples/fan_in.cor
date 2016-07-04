@@ -1,0 +1,26 @@
+func producer(ch, time) go {
+    for i in :20 {
+        ch <- i
+        timeout(time)
+    }
+}
+
+func reader(out) go {    
+    for {
+        console.log(<- out)
+    }
+}
+
+func init() go {
+    ch  = chan()
+    out = chan()
+    producer(ch, 100)
+    producer(ch, 200)
+    reader(out)
+
+    for (x = <- ch)? {
+        out <- x
+    }
+
+    out.close()
+}

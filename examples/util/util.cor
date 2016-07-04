@@ -1,0 +1,56 @@
+
+---
+wrap a node.js asynchronic function and make it
+to return a Promise
+---
+func driveFn(fn, ctx) {
+    if !fn.__drivenFn {
+        fn.__drivenFn = func drivenFn() {
+            args     = Array.prototype.slice.call(arguments)
+            deferred = CRL.Promise.defer()
+
+            args.push(func(err, value) {
+                if err {
+                    deferred.reject(err)
+                } else {
+                    deferred.resolve(value)
+                }
+            })
+
+            fn.apply(ctx ?? this, args)
+
+            return deferred.promise
+        }
+    }
+
+    return fn.__drivenFn
+}
+
+---
+wrap node.js modules
+---
+func drive(obj, ctx) {
+    syncPrefix = regex('Sync$')
+
+    if !obj { return }
+
+    ctx = ctx ?? obj
+
+    if obj.(Function) {
+        return driveFn(obj, ctx)
+    }
+    
+    newObj = (:)
+    for name, value in obj {
+        if syncPrefix.test(name) {
+            continue
+        }
+
+        if value.(Function) {
+            newObj[name] = driveFn(value, ctx)
+        } else {
+            newObj[name] = value
+        }
+    }
+    return newObj
+}
