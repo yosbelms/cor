@@ -151,8 +151,12 @@ CRL.keys = function keys(obj) {
 CRL.assertType = function assertType(obj, Class) {
     var type;
 
+    if (Class === void 0) {
+        return obj === void 0;
+    }
+
     if (typeof Class !== 'function') {
-        throw 'Trying to assert undefined class';
+        throw 'Trying to assert invalid class';
     }
 
     if (typeof obj === 'undefined') {
@@ -194,6 +198,8 @@ function Promise(resolverFn) {
     // this.value;
     // this.reason;
     this.completed      = false;
+    this.fail           = false;
+    this.success        = false;
     this.thenListeners  = [];
     this.catchListeners = [];
 
@@ -209,17 +215,20 @@ function Promise(resolverFn) {
 
 Promise.prototype = {
 
-    then: function(fn) {
-        this.thenListeners.push(fn);
-        if (this.completed) {
+    then: function(fnFulfill, fnReject) {
+        this.thenListeners.push(fnFulfill);
+        if (this.success) {
             Promise.doResolve(this, this.value);
+        }
+        if (fnReject) {
+            this.catch(fnReject);
         }
         return this;
     },
 
     catch: function(fn) {
         this.catchListeners.push(fn);
-        if (this.completed) {
+        if (this.fail) {
             Promise.doReject(this, this.reason);
         }
         return this;
@@ -232,15 +241,22 @@ Promise.doResolve = function resolve(p, value) {
     })
 
     p.completed = true;
+    p.success   = true;
     p.value     = value;
 };
 
 Promise.doReject = function reject(p, reason) {
-    p.catchListeners.forEach(function(listener){
+
+    if (p.catchListeners.length === 0) {
+        console.log('Uncaught (in promise): ' + reason);
+    }
+
+    p.catchListeners.forEach(function(listener) {
         listener(reason);
     })
 
     p.completed = true;
+    p.fail      = true;
     p.reason    = reason;
 };
 
@@ -334,8 +350,8 @@ CRL.go = function go(genf, ctx) {
     var state, gen = genf.apply(ctx || {});
 
     return new CRL.Promise(function(resolve, reject) {
-        //schedule(next);
-        next();
+        // ensure it runs asynchronously
+        schedule(next);
 
         function next(value) {
             if (state && state.done) {
@@ -343,13 +359,23 @@ CRL.go = function go(genf, ctx) {
                 return;
             }
 
-            state = gen.next(value);
-            value = state.value;
+            try {
+                state = gen.next(value);
+                value = state.value;
+            } catch (e) {
+                console.error(e.stack ? '\n' + e.stack : e);
+                return;
+            }
 
             if (isPromise(value)) {
-                value.then(function(value) {
-                    next(value);
-                })
+                value.then(
+                    function onFulfilled(value) {
+                        next(value)
+                    },
+                    function onRejected(reason) {
+                        gen.throw(reason)
+                    }
+                )
                 return;
             }
 
