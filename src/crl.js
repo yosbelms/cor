@@ -468,11 +468,11 @@ function Buffer(size) {
 
 Buffer.prototype = {
 
-    shift: function() {
+    read: function() {
         return this.array.shift();
     },
 
-    push: function(value) {
+    write: function(value) {
         if (this.isFull()) { return false }
         this.array.push(value);
         return true;
@@ -487,6 +487,13 @@ Buffer.prototype = {
     }
 }
 
+function isBuffer(b) {
+    return (b
+        && isFunction(b.read)
+        && isFunction(b.write)
+        && isFunction(b.isFull)
+        && isFunction(b.isEmpty));
+}
 
 // Channel: a structure to transport messages
 function indentityFn(x) {return x}
@@ -546,7 +553,7 @@ Channel.prototype = {
                 scheduledResolve(this.senderPromises.shift());
             }
             // clean and return
-            return this.buffer.shift();
+            return this.buffer.read();
         }
     },
 
@@ -586,10 +593,10 @@ Channel.prototype = {
         if (! this.buffer.isFull()) {
             // TODO: optimize below code
             // store sent value in the buffer
-            this.buffer.push(this.transform(data));
+            this.buffer.write(this.transform(data));
             // if any waiting for the data, give it
             if (this.receiverPromises[0]) {
-                scheduledResolve(this.receiverPromises.shift(), this.buffer.shift());
+                scheduledResolve(this.receiverPromises.shift(), this.buffer.read());
             }
         }
 
@@ -614,7 +621,7 @@ Channel.prototype = {
 CRL.Channel = Channel;
 
 CRL.chan = function chan(size, transform) {
-    if (size instanceof Buffer) {
+    if (isBuffer(size)) {
         return new Channel(size, transform);
     }
 
