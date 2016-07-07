@@ -184,37 +184,40 @@ function Promise(resolverFn) {
 
 Promise.prototype = {
 
-    then: function(fnFulfill, fnReject) {
-        this.thenListeners.push(fnFulfill);
-        if (this.success) {
-            Promise.doResolve(this, this.value);
+    then: function(onSuccess, onFail) {
+        if (isFunction(onSuccess)) {
+            // proactive add
+            this.thenListeners.push(onSuccess);
+            if (this.success) {
+                Promise.doResolve(this, this.value);
+            }
         }
-        if (fnReject) {
-            this.catch(fnReject);
+
+        if (isFunction(onFail)) {
+            // proactive add
+            this.catchListeners.push(onFail);
+            if (this.fail) {
+                Promise.doReject(this, this.reason);
+            }
         }
-        return this;
     },
 
-    catch: function(fn) {
-        this.catchListeners.push(fn);
-        if (this.fail) {
-            Promise.doReject(this, this.reason);
-        }
-        return this;
+    catch: function(onFail) {
+        this.then(null, onFail);
     }
 };
 
-Promise.doResolve = function resolve(p, value) {
+Promise.doResolve = function doResolve(p, value) {
     p.thenListeners.forEach(function(listener) {
         listener(value);
     })
 
-    p.completed = true;
     p.success   = true;
     p.value     = value;
+    p.completed = true;
 };
 
-Promise.doReject = function reject(p, reason) {
+Promise.doReject = function doReject(p, reason) {
 
     if (p.catchListeners.length === 0) {
         console.log('Uncaught (in promise): ' + reason);
@@ -224,9 +227,9 @@ Promise.doReject = function reject(p, reason) {
         listener(reason);
     })
 
-    p.completed = true;
     p.fail      = true;
     p.reason    = reason;
+    p.completed = true;
 };
 
 Promise.all = function all(array) {
