@@ -247,11 +247,9 @@ func init() {
 
 ## Platform Compatibility
 
-Cor coroutines are based in generators, so, if you plan to use it you must take the following in consideration.
+Coroutines are based in generators, so, if you plan to use concurrency features in old versions of Node.js or browsers without generator support, you must use [gnode](https://github.com/TooTallNate/gnode) and/or [regenerator](http://facebook.github.io/regenerator/). The following platforms are supported without 3rd party tools:
 
-When using Node.js or browsers without generator support, you must use [gnode](https://github.com/TooTallNate/gnode) and/or [regenerator](http://facebook.github.io/regenerator/).
-
-### Server
+### Servers
 
 * Node.js 4+
 
@@ -512,7 +510,7 @@ Operators are the following:
 // 7 - Existential
 ??  ?
 
-// Async Operator
+// 8 - Async Operator
 <-
 ```
 
@@ -603,7 +601,6 @@ isRunner = obj.(Runner) // false
 ### Coroutines
 
 Coroutines are blocks containig code that executes asynchronously. It can be defined using the `go` keyword followed by a block. Coroutines can be also used as expressions, its execution starts once evaluated, it returns a **Promise** object.
-> Coroutines uses generators underlying
 
 Example:
 ```
@@ -622,6 +619,7 @@ prom.then(func(s) console.log(s))
 
 // will print 'yosbelms'
 ```
+> Coroutines are based in generators, see [platform compatibility](#platformcompatibility)
 
 
 ### Asynchronic Operator

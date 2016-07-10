@@ -6,7 +6,7 @@
 
 Cor is an opensource language that compiles to plain JavaScript. It is designed to make easy to write and maintain software for the asynchronous Web.
 
-Concurrency and parallelism are first class citizens in Cor, bringing a fresh way of programming for web browsers and Node.js platforms. It is a language inspired in _Go_, but runs in a world wide platform that is the Web. With Cor you can take advantage of the whole JavaScript ecosystem, use your preferred libraries, and ensure your application runs everywhere the Web is.
+Concurrency and parallelism are first class citizens in Cor, bringing a fresh way of programming for Web browsers and Node.js platforms. It is a language inspired by _Go_, but runs in a world wide platform that is the Web. With Cor you can take advantage of the whole JavaScript ecosystem, use your preferred libraries, and ensure your application runs everywhere the Web is.
 
 
 ## Installation
@@ -41,11 +41,9 @@ cor compile /path/to/source.cor
 
 ## Platform Compatibility
 
-Cor coroutines are based in generators, so, if you plan to use it you must take the following in consideration.
+Coroutines are based in generators, so, if you plan to use concurrency features in old versions of Node.js or browsers without generator support, you must use [gnode](https://github.com/TooTallNate/gnode) and/or [regenerator](http://facebook.github.io/regenerator/). The following platforms are supported without 3rd party tools:
 
-When using Node.js or browsers without generator support, you must use [gnode](https://github.com/TooTallNate/gnode) and/or [regenerator](http://facebook.github.io/regenerator/).
-
-### Server
+### Servers
 
 * Node.js 4+
 
