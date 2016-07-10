@@ -2,7 +2,7 @@
 ---
 Multiple ajax in parallel
 
-We mock `fetch` API and iterate over a future value
+We mock `fetch` API and iterate over future values
 that contains the result of each request
 ---
 

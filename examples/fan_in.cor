@@ -5,7 +5,7 @@ func producer(ch, time) go {
     }
 }
 
-func reader(out) go {    
+func reader(out) go {
     for {
         console.log(<- out)
     }
