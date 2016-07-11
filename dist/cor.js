@@ -2396,9 +2396,8 @@ yy.parseError = function parseError (msg, hash, replaceMsg) {
 
 
 /*
-There is three types of routes:
+There is two types of routes:
 
-- Inner    : begins with . char, example: `.models`
 - Delegate : ends with file extensions, example `filename.js`
 - Public   : is tested against `^[a-z_-]+$` regex
 
@@ -2406,36 +2405,33 @@ Routes are tested in the same order as types above, if the route does not match 
 any of before types then it will be proccessed by `packagize` function which transform
 routes according to Cor package convention.
 */
-yy.generateRoute = function(route) {    
+yy.generateRoute = function(route) {
     var
-    parsed, ext,
-    rFileNameExt   = /([\s\S]+)*(^|\/)([\w\-]+)*(\.[\w\-]+)*$/,
-    rCapitalLetter = /^[A-Z]/,
-    rStatic        = /^(\.\.\/)|(\.\/)|(\/)/,
-    rPublic        = /^[a-z_-]+$/;
+    parsed,
+    rFileNameExt = /([\s\S]+)*(^|\/)([\w\-]+)*(\.[\w\-]+)*$/,
+    rPublic      = /^[a-z_-]+$/;
     
     // replace \ by /
     function normalize(route) {
         return route.replace(/\\/g, '/').replace(/\/+/g, '/');
     }
 
-
     // Public modules
     if (rPublic.test(route)) {
         return normalize(route);
     }
     
-    // Delegate, is a route that has explicit extension
+    // Delegate, is a route that has explicit file extension
     // example: jquery.js, mylib.cor
     // parsed[4] is the file extension
     // so if parsed[4]? then is delegate route
     parsed = rFileNameExt.exec(route);
-    if (parsed[4]) {
+    if (parsed && parsed[4]) {
         return normalize(route);
     }
 
-    // else process by applying Cor package convention
-    //return packagize(route);
+
+    // resturn route as is
     return route;
 }
 
@@ -4705,6 +4701,7 @@ var Loader = Class({
     // plugins to extend the loader funcionality
     plugins : {},
 
+    ready: false,
 
     init: function() {
         var
@@ -4818,8 +4815,8 @@ var Loader = Class({
         }
     },
 
-    // add paths to be ignred by the loader
-    // path parametter is an array
+    // add paths to be ignored by the loader
+    // `path` parameter is an array
     ignorePath: function(path) {
         var i, len;
         if (path instanceof Array) {
@@ -4904,8 +4901,12 @@ var Loader = Class({
     },
 
     onLoaderReady: function() {
-        var module = this.moduleCache[this.entryModulePath];
+        var module;
+        if (this.ready) { return }
+
+        module = this.moduleCache[this.entryModulePath];
         if (module) {
+            this.ready = true;
             return module.getExports();
         }
         else {
@@ -4939,7 +4940,6 @@ var Loader = Class({
 
     setEntry: function(entryPath, confPath) {
         var
-        parsed,
         me  = this,
         cwd = path.cwd();
 

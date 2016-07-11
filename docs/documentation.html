@@ -35,14 +35,14 @@
 
 <p>This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts. Cor is a language designed with large web development in mind. Hence, is possible to develop your software without to execute any command to compile the source code, CLI tools are only needed to make the product able for production environments.</p>
 
-<p><h2>Table of Content</h2><a class="toclink toclink-2" href="#quickrecap">Quick recap</a><a class="toclink toclink-3" href="#inlcudingmodules">Inlcuding modules</a><a class="toclink toclink-3" href="#functions">Functions</a><a class="toclink toclink-3" href="#stringinterpolation">String Interpolation</a><a class="toclink toclink-3" href="#concurrencyparallelismcoroutineschannels">Concurrency/Parallelism/Coroutines/Channels</a><a class="toclink toclink-3" href="#slicescoalesceoperatorconditionaloperator">Slices/Coalesce Operator/Conditional Operator</a><a class="toclink toclink-3" href="#classesinheritanceinstance">Classes/Inheritance/Instance</a><a class="toclink toclink-3" href="#ifforswitch">If/For/Switch</a><a class="toclink toclink-3" href="#typeassertionerrors">Type Assertion/Errors</a><a class="toclink toclink-2" href="#platformcompatibility">Platform Compatibility</a><a class="toclink toclink-3" href="#server">Server</a><a class="toclink toclink-3" href="#browsers">Browsers</a><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#expressions">Expressions</a><a class="toclink toclink-3" href="#comments">Comments</a><a class="toclink toclink-3" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-3" href="#objects">Objects</a><a class="toclink toclink-3" href="#parenthesisexpressions">Parenthesis Expressions</a><a class="toclink toclink-3" href="#strings">Strings</a><a class="toclink toclink-3" href="#templatesstringinterpolation">Templates (String Interpolation)</a><a class="toclink toclink-3" href="#numbers">Numbers</a><a class="toclink toclink-3" href="#operators">Operators</a><a class="toclink toclink-3" href="#coalesce">Coalesce</a><a class="toclink toclink-3" href="#existconditional">Exist Conditional</a><a class="toclink toclink-3" href="#arrays">Arrays</a><a class="toclink toclink-3" href="#slices">Slices</a><a class="toclink toclink-3" href="#typeassertion">Type Assertion</a><a class="toclink toclink-3" href="#coroutines">Coroutines</a><a class="toclink toclink-3" href="#asynchronicoperator">Asynchronic Operator</a><a class="toclink toclink-3" href="#classes">Classes</a><a class="toclink toclink-4" href="#initialization">Initialization</a><a class="toclink toclink-4" href="#inheritance">Inheritance</a><a class="toclink toclink-2" href="#builtinfunctions">Builtin Functions</a><a class="toclink toclink-3" href="#super">Super</a><a class="toclink toclink-3" href="#regex">Regex</a><a class="toclink toclink-3" href="#chan">Chan</a><a class="toclink toclink-3" href="#timeout">Timeout</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#statements">Statements</a><a class="toclink toclink-3" href="#forloop">For loop</a><a class="toclink toclink-3" href="#forin">For/In</a><a class="toclink toclink-3" href="#forinrange">For/In/Range</a><a class="toclink toclink-3" href="#ifelse">If/Else</a><a class="toclink toclink-3" href="#switchcasedefault">Switch/Case/Default</a><a class="toclink toclink-3" href="#incdec">Inc/Dec</a><a class="toclink toclink-3" href="#use">Use</a><a class="toclink toclink-3" href="#catcherror">Catch/Error</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#run">Run</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#theloader">The Loader</a><a class="toclink toclink-3" href="#configuration">Configuration</a><a class="toclink toclink-4" href="#dependenceinjection">Dependence injection</a><a class="toclink toclink-2" href="#corinthebrowser">Cor in the Browser</a><a class="toclink toclink-2" href="#thecrlcorruntimelibrary">The CRL (Cor Runtime Library)</a></p>
+<p><h2>Table of Content</h2><a class="toclink toclink-2" href="#quickrecap">Quick recap</a><a class="toclink toclink-3" href="#inlcudingmodules">Inlcuding modules</a><a class="toclink toclink-3" href="#functions">Functions</a><a class="toclink toclink-3" href="#stringinterpolation">String Interpolation</a><a class="toclink toclink-3" href="#coroutineschannels">Coroutines/Channels</a><a class="toclink toclink-3" href="#slicescoalesceoperatorconditionaloperator">Slices/Coalesce Operator/Conditional Operator</a><a class="toclink toclink-3" href="#classesinheritanceinstance">Classes/Inheritance/Instance</a><a class="toclink toclink-3" href="#ifforswitch">If/For/Switch</a><a class="toclink toclink-3" href="#typeassertionerrors">Type Assertion/Errors</a><a class="toclink toclink-2" href="#platformcompatibility">Platform Compatibility</a><a class="toclink toclink-3" href="#servers">Servers</a><a class="toclink toclink-3" href="#browsers">Browsers</a><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#whitespaces">White Spaces</a><a class="toclink toclink-2" href="#expressions">Expressions</a><a class="toclink toclink-3" href="#comments">Comments</a><a class="toclink toclink-3" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-3" href="#objects">Objects</a><a class="toclink toclink-3" href="#parenthesisexpressions">Parenthesis Expressions</a><a class="toclink toclink-3" href="#strings">Strings</a><a class="toclink toclink-3" href="#templatesstringinterpolation">Templates (String Interpolation)</a><a class="toclink toclink-3" href="#numbers">Numbers</a><a class="toclink toclink-3" href="#operators">Operators</a><a class="toclink toclink-3" href="#coalesce">Coalesce</a><a class="toclink toclink-3" href="#existconditional">Exist Conditional</a><a class="toclink toclink-3" href="#arrays">Arrays</a><a class="toclink toclink-3" href="#slices">Slices</a><a class="toclink toclink-3" href="#typeassertion">Type Assertion</a><a class="toclink toclink-3" href="#coroutines">Coroutines</a><a class="toclink toclink-3" href="#asynchronicoperator">Asynchronic Operator</a><a class="toclink toclink-3" href="#classes">Classes</a><a class="toclink toclink-4" href="#initialization">Initialization</a><a class="toclink toclink-4" href="#inheritance">Inheritance</a><a class="toclink toclink-2" href="#builtinfunctions">Builtin Functions</a><a class="toclink toclink-3" href="#super">Super</a><a class="toclink toclink-3" href="#regex">Regex</a><a class="toclink toclink-3" href="#chan">Chan</a><a class="toclink toclink-3" href="#timeout">Timeout</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#statements">Statements</a><a class="toclink toclink-3" href="#forloop">For loop</a><a class="toclink toclink-3" href="#forin">For/In</a><a class="toclink toclink-3" href="#forinrange">For/In/Range</a><a class="toclink toclink-3" href="#ifelse">If/Else</a><a class="toclink toclink-3" href="#switchcasedefault">Switch/Case/Default</a><a class="toclink toclink-3" href="#incdec">Inc/Dec</a><a class="toclink toclink-3" href="#use">Use</a><a class="toclink toclink-3" href="#catcherror">Catch/Error</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#run">Run</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#theloader">The Loader</a><a class="toclink toclink-3" href="#configuration">Configuration</a><a class="toclink toclink-4" href="#dependenceinjection">Dependence injection</a><a class="toclink toclink-2" href="#corinthebrowser">Cor in the Browser</a><a class="toclink toclink-2" href="#thecrlcorruntimelibrary">The CRL (Cor Runtime Library)</a></p>
 
 <h2 id="quickrecap">Quick recap</h2>
 
 <h3 id="inlcudingmodules">Inlcuding modules</h3>
 
-<pre><code>use '../jquery.js'
-use './module'
+<pre><code>use './module'     // cor module
+use '../jquery.js' // javascript module
 </code></pre>
 
 <h3 id="functions">Functions</h3>
@@ -75,12 +75,12 @@ func init() {
 <pre><code>str = $'hello my name is {person.name}'
 </code></pre>
 
-<h3 id="concurrencyparallelismcoroutineschannels">Concurrency/Parallelism/Coroutines/Channels</h3>
+<h3 id="coroutineschannels">Coroutines/Channels</h3>
 
 <pre><code>// corotines starts with `go`
 go {
     // block until the result is resolved
-    accounts = &lt;- fetch.get($'http://rest-api.com/client/{id}/accounts')
+    accounts = &lt;- fetch.get('http://api.com/accounts')
     for account in accounts {
         //...
     }
@@ -106,8 +106,8 @@ go {
 <pre><code>// parallel
 go {
     result = &lt;- (
-        books    : fetch.get($'http://rest-api.com/client/{id}/books'),
-        articles : fetch.get($'http://rest-api.com/client/{id}/books'),
+        books    : fetch.get('http://api.com/books'),
+        articles : fetch.get('http://api.com/articles'),
     )
 
     for book in result.books {
@@ -155,11 +155,17 @@ class Model {
     id = genId()
     conn
 
-    // initializer
-    func init() {}
-
     // method
     func save() {}
+}
+
+---
+you can use either a property block, or initializer
+but not both
+---
+class WithInit {
+    // initializer
+    func init() {}
 }
 </code></pre>
 
@@ -274,11 +280,9 @@ func init() {
 
 <h2 id="platformcompatibility">Platform Compatibility</h2>
 
-<p>Cor coroutines are based in generators, so, if you plan to use it you must take the following in consideration.</p>
+<p>Coroutines are based in generators, so, if you plan to use concurrency features in old versions of Node.js or browsers without generator support, you must use <a href="https://github.com/TooTallNate/gnode">gnode</a> and/or <a href="http://facebook.github.io/regenerator/">regenerator</a>. The following platforms are supported without 3rd party tools:</p>
 
-<p>When using Node.js or browsers without generator support, you must use <a href="https://github.com/TooTallNate/gnode">gnode</a> and/or <a href="http://facebook.github.io/regenerator/">regenerator</a>.</p>
-
-<h3 id="server">Server</h3>
+<h3 id="servers">Servers</h3>
 
 <ul>
 <li>Node.js 4+</li>
@@ -303,6 +307,14 @@ func init() {
 <h2 id="semicoloninsertion">Semicolon Insertion</h2>
 
 <p>Cor grammar uses semicolon to terminate statements, but those semicolons doesn't need to appear in the source. Instead, the lexer applies a simple rule to insert semicolons automatically as it scans, so you can avoid write it. <strong>The rule is:</strong> If the last token before a newline is an identifier (which includes keywords), a basic literal such as a number or string constant, or one of the tokens: <code>++ -- ) }</code> the lexer always inserts a semicolon after the token.</p>
+
+<h2 id="whitespaces">White Spaces</h2>
+
+<p>The Cor lexer ignores all whitespace characters if they are not part of a token. The tokens that may contain whitespaces are <code>strings</code> and <code>templates</code>. Operators that are composed by the combination of two or more characters, for example, <code>&lt;-</code>, <code>==</code>, <code>+=</code>... may not contain any whitespace between its characters. See the following example that shows how the semantic differs by splitting a composed operator:</p>
+
+<pre><code>ch &lt;- val  // send `val` to `ch`
+ch &lt; -val  // `ch` less than negative `val`
+</code></pre>
 
 <h2 id="expressions">Expressions</h2>
 
@@ -428,9 +440,9 @@ console.log(client['age'])
 <ol>
 <li>If there is just one value it evaluates to that value.</li>
 
-<li>If at least a <code>:</code> it returns an object.</li>
+<li>If at least a <code>:</code> symbol, it returns an object.</li>
 
-<li>If at least a <code>,</code> it return an array.</li>
+<li>If at least a <code>,</code> symbol, it return an array.</li>
 </ol>
 
 <p>If one element inside is key-value type, all other elements has to be key-value in the same declaration.</p>
@@ -540,7 +552,7 @@ n = 3e-10
 // 7 - Existential
 ??  ?
 
-// Async Operator
+// 8 - Async Operator
 &lt;-
 </code></pre>
 
@@ -623,10 +635,6 @@ isRunner = obj.(Runner) // false
 
 <p>Coroutines are blocks containig code that executes asynchronously. It can be defined using the <code>go</code> keyword followed by a block. Coroutines can be also used as expressions, its execution starts once evaluated, it returns a <strong>Promise</strong> object.</p>
 
-<blockquote>
-  <p>Coroutines uses generators underlying</p>
-</blockquote>
-
 <p>Example:</p>
 
 <pre><code>go {
@@ -645,12 +653,16 @@ prom.then(func(s) console.log(s))
 // will print 'yosbelms'
 </code></pre>
 
+<blockquote>
+  <p>Coroutines are based in generators, see <a href="#platformcompatibility">platform compatibility</a></p>
+</blockquote>
+
 <h3 id="asynchronicoperator">Asynchronic Operator</h3>
 
 <p>The asynchronic operator <code>&lt;-</code> allows to block coroutines and wait to receive future values (Promises) if a Promise is returned, also can be used to send values to <a href="#chan">Channels</a>. Asynchronic operators can be used only inside coroutines (<code>go</code> blocks)</p>
 
 <pre><code>go {
-    accounts = &lt;- fetch.get($'http://rest-api.com/client/{id}/accounts')
+    accounts = &lt;- fetch.get('http://api.com/accounts')
     for account in accounts {
         //...
     }
@@ -661,8 +673,8 @@ prom.then(func(s) console.log(s))
 
 <pre><code>go {
     result = &lt;- (
-        books    : fetch.get($'http://rest-api.com/client/{id}/books'),
-        articles : fetch.get($'http://rest-api.com/client/{id}/books'),
+        books    : fetch.get('http://api.com/books'),
+        articles : fetch.get('http://api.com/articles'),
     )
 
     for book in result.books {
@@ -679,7 +691,7 @@ prom.then(func(s) console.log(s))
 
 <pre><code>// get articles in the las hour
 func findArticlesByTag(tag) go {
-    articles &lt;- fetch.get($'http://rest-api.com/article')
+    articles &lt;- fetch.get('http://api.com/articles')
     return articles.filter(func(a) a.tag == tag)
 }
 
