@@ -50,6 +50,7 @@ var Loader = Class({
     // plugins to extend the loader funcionality
     plugins : {},
 
+    ready: false,
 
     init: function() {
         var
@@ -163,8 +164,8 @@ var Loader = Class({
         }
     },
 
-    // add paths to be ignred by the loader
-    // path parametter is an array
+    // add paths to be ignored by the loader
+    // `path` parameter is an array
     ignorePath: function(path) {
         var i, len;
         if (path instanceof Array) {
@@ -249,8 +250,12 @@ var Loader = Class({
     },
 
     onLoaderReady: function() {
-        var module = this.moduleCache[this.entryModulePath];
+        var module;
+        if (this.ready) { return }
+
+        module = this.moduleCache[this.entryModulePath];
         if (module) {
+            this.ready = true;
             return module.getExports();
         }
         else {
@@ -284,7 +289,6 @@ var Loader = Class({
 
     setEntry: function(entryPath, confPath) {
         var
-        parsed,
         me  = this,
         cwd = path.cwd();
 
