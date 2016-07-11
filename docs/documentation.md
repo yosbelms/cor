@@ -8,8 +8,8 @@ This is a reference manual for the Cor programming language. It will guide you i
 ## Quick recap
 ### Inlcuding modules
 ```
-use '../jquery.js'
-use './module'
+use './module'     // cor module
+use '../jquery.js' // javascript module
 ```
 
 ### Functions
@@ -42,12 +42,12 @@ func init() {
 str = $'hello my name is {person.name}'
 ```
 
-### Concurrency/Parallelism/Coroutines/Channels
+### Coroutines/Channels
 ```
 // corotines starts with `go`
 go {
     // block until the result is resolved
-    accounts = <- fetch.get($'http://rest-api.com/client/{id}/accounts')
+    accounts = <- fetch.get('http://api.com/accounts')
     for account in accounts {
         //...
     }
@@ -75,8 +75,8 @@ go {
 // parallel
 go {
     result = <- (
-        books    : fetch.get($'http://rest-api.com/client/{id}/books'),
-        articles : fetch.get($'http://rest-api.com/client/{id}/books'),
+        books    : fetch.get('http://api.com/books'),
+        articles : fetch.get('http://api.com/articles'),
     )
 
     for book in result.books {
@@ -125,11 +125,17 @@ class Model {
     id = genId()
     conn
 
-    // initializer
-    func init() {}
-
     // method
     func save() {}
+}
+
+---
+you can use either a property block, or initializer
+but not both
+---
+class WithInit {
+    // initializer
+    func init() {}
 }
 ```
 
@@ -247,11 +253,9 @@ func init() {
 
 ## Platform Compatibility
 
-Cor coroutines are based in generators, so, if you plan to use it you must take the following in consideration.
+Coroutines are based in generators, so, if you plan to use concurrency features in old versions of Node.js or browsers without generator support, you must use [gnode](https://github.com/TooTallNate/gnode) and/or [regenerator](http://facebook.github.io/regenerator/). The following platforms are supported without 3rd party tools:
 
-When using Node.js or browsers without generator support, you must use [gnode](https://github.com/TooTallNate/gnode) and/or [regenerator](http://facebook.github.io/regenerator/).
-
-### Server
+### Servers
 
 * Node.js 4+
 
@@ -270,6 +274,16 @@ Chrome between 28 and 38 are supported by turning on an experimental flag.
 ## Semicolon Insertion
 
 Cor grammar uses semicolon to terminate statements, but those semicolons doesn't need to appear in the source. Instead, the lexer applies a simple rule to insert semicolons automatically as it scans, so you can avoid write it. **The rule is:** If the last token before a newline is an identifier (which includes keywords), a basic literal such as a number or string constant, or one of the tokens: `++ -- ) }` the lexer always inserts a semicolon after the token.
+
+
+## White Spaces
+
+The Cor lexer ignores all whitespace characters if they are not part of a token. The tokens that may contain whitespaces are `strings` and `templates`. Operators that are composed by the combination of two or more characters, for example, `<-`, `==`, `+=`... may not contain any whitespace between its characters. See the following example that shows how the semantic differs by splitting a composed operator:
+```
+ch <- val  // send `val` to `ch`
+ch < -val  // `ch` less than negative `val`
+```
+
 
 ## Expressions
 
@@ -397,8 +411,8 @@ console.log(client['age'])
 A parenthesis expression is bouded by `(` and `)` symbols, it evaluates depending on what is inside, followig the rules:
 
 1. If there is just one value it evaluates to that value.
-2. If at least a `:` it returns an object.
-3. If at least a `,` it return an array.
+2. If at least a `:` symbol, it returns an object.
+3. If at least a `,` symbol, it return an array.
 
 If one element inside is key-value type, all other elements has to be key-value in the same declaration.
 
@@ -512,7 +526,7 @@ Operators are the following:
 // 7 - Existential
 ??  ?
 
-// Async Operator
+// 8 - Async Operator
 <-
 ```
 
@@ -603,7 +617,6 @@ isRunner = obj.(Runner) // false
 ### Coroutines
 
 Coroutines are blocks containig code that executes asynchronously. It can be defined using the `go` keyword followed by a block. Coroutines can be also used as expressions, its execution starts once evaluated, it returns a **Promise** object.
-> Coroutines uses generators underlying
 
 Example:
 ```
@@ -622,6 +635,7 @@ prom.then(func(s) console.log(s))
 
 // will print 'yosbelms'
 ```
+> Coroutines are based in generators, see [platform compatibility](#platformcompatibility)
 
 
 ### Asynchronic Operator
@@ -629,7 +643,7 @@ prom.then(func(s) console.log(s))
 The asynchronic operator `<-` allows to block coroutines and wait to receive future values (Promises) if a Promise is returned, also can be used to send values to [Channels](#chan). Asynchronic operators can be used only inside coroutines (`go` blocks)
 ```
 go {
-    accounts = <- fetch.get($'http://rest-api.com/client/{id}/accounts')
+    accounts = <- fetch.get('http://api.com/accounts')
     for account in accounts {
         //...
     }
@@ -640,8 +654,8 @@ If receiving a array or object of future values it will resolve all values in pa
 ```
 go {
     result = <- (
-        books    : fetch.get($'http://rest-api.com/client/{id}/books'),
-        articles : fetch.get($'http://rest-api.com/client/{id}/books'),
+        books    : fetch.get('http://api.com/books'),
+        articles : fetch.get('http://api.com/articles'),
     )
 
     for book in result.books {
@@ -658,7 +672,7 @@ Awaiting a coroutine (idiomatic Cor):
 ```
 // get articles in the las hour
 func findArticlesByTag(tag) go {
-    articles <- fetch.get($'http://rest-api.com/article')
+    articles <- fetch.get('http://api.com/articles')
     return articles.filter(func(a) a.tag == tag)
 }
 

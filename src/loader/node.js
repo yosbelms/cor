@@ -11,6 +11,7 @@ path     = cor.path,
 loader   = cor.loader = new cor.Loader(),
 oRequire = Module.prototype.require,
 oRequireModule = cor.Loader.prototype.requireModule,
+oOnReadFileSuccess = loader.onReadFileSuccess,
 nativeModules  = [
     'assert',
     'buffer',
@@ -52,7 +53,9 @@ cor.Loader.prototype.isNativeModule = function(name) {
 };
 
 cor.Loader.prototype.readFile = function(path, from, onLoad, onError) {    
-    var ret;
+    var ret, loader = this;
+
+    loader.busy(true);
         
     if (onLoad) {
         fs.readFile(path, 'utf8', function(err, data) {
@@ -67,14 +70,23 @@ cor.Loader.prototype.readFile = function(path, from, onLoad, onError) {
     else {
         try {
             ret = fs.readFileSync(path, 'utf8');    
-        } catch(e) {}
+        } catch(e) { }
         
         return ret;
     }
 };
 
+cor.Loader.prototype.busy = function(busy) {
+    this.isBusy = !!busy;
+}
 
-Module.prototype.require = function(filename) {
+cor.Loader.prototype.requireModule = function() {
+    this.busy(true);
+    return oRequireModule.apply(this, arguments);
+}
+
+
+Module.prototype.require = function require(filename) {
     var
     nodeAnswer, corAnswer, absPath,
     ext = nodePath.extname(filename);
@@ -87,21 +99,22 @@ Module.prototype.require = function(filename) {
         ext       = nodePath.extname(this.filename);
         absPath   = nodePath.resolve(nodePath.dirname(this.filename), filename + ext);        
         corAnswer = loader.moduleCache[path.sanitize(absPath)];
-                
+
         try {
-            nodeAnswer = oRequire.apply(this, arguments);
-        } catch (e){}
-        
-        if (nodeAnswer) {
-            return nodeAnswer;
-        }
-        
+            return oRequire.apply(this, arguments);
+        } catch (e) { }
+
         if (corAnswer) {
             return corAnswer.getExports(this);
         }
     }
+
+    try {
+        return oRequire.apply(this, arguments);
+    } catch (e) {
+        throw new Error('Cannot load module \'' + filename + '\' requested from ' + this.filename);
+    }
     
-    return oRequire.apply(this, arguments);
 }
 
 cor.Program.prototype.getExports = function(parent) {
@@ -119,8 +132,49 @@ cor.Program.prototype.getExports = function(parent) {
     return mod.exports || {};
 }
 
-loader.onReadFileFailure = function() {
+loader.onReadFileSuccess = function() {
+    loader.busy(false);
+    oOnReadFileSuccess.apply(this, arguments);
+}
+
+loader.onReadFileFailure = function(filename, from) {
+    // if a could not find the file, delegate to
+    // the nodejs module finding algorithm.
+    // we increase the counter count it as a loaded module to
+    // keep the loader working on
+
+    // if `numModules` == 0 then it is the entry file
+    if (loader.numModules === 0) {
+        throw Error('No such file: ' + filename)
+    }
+
+    loader.busy(false);
     loader.numModules++;
 }
+
+// check if the loader is idle
+var lastIdleTime = new Date().getTime();
+
+// check each 1 sec if the loader
+// is idle or not. If idle, for more than two seconds
+// then start the program
+function checkIdle() {
+    setTimeout(function() {
+        var
+        now     = new Date().getTime(),
+        elapsed = now - lastIdleTime;
+
+        if (loader.isBusy) {
+            lastIdleTime = now;
+            return;
+        }
+        if (elapsed > 2000 && !loader.ready) {
+            loader.onLoaderReady();
+        }
+        checkIdle();
+    }, 1000)
+}
+
+checkIdle();
 
 require('./plugins.js');

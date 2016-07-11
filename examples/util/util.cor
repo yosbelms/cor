@@ -1,10 +1,10 @@
 
 ---
-wrap a node.js asynchronic function and make it
+wrap a node.js asynchronous function and make it
 to return a Promise
 ---
 func driveFn(fn, ctx) {
-    if !fn.__drivenFn {
+    if !(fn.__drivenFn?) {
         fn.__drivenFn = func drivenFn() {
             args     = Array.prototype.slice.call(arguments)
             deferred = CRL.Promise.defer()
@@ -27,7 +27,7 @@ func driveFn(fn, ctx) {
 }
 
 ---
-wrap node.js modules
+wrap all function in a node.js module
 ---
 func drive(obj, ctx) {
     syncPrefix = regex('Sync$')
