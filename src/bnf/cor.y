@@ -440,10 +440,32 @@ CallExpr
     ;
 
 SelectorExpr
-    : PrimaryExpr '.' IDENT           { $$= new yy.Node($1, new yy.Lit($2, @2), new yy.Lit($3, @3)) }
+    : PrimaryExpr '.' Property           { $$= new yy.Node($1, new yy.Lit($2, @2), new yy.ObjectPropertyNode($3, @3)) }
     
     // reference if exists
-    | PrimaryExpr '?' '.' IDENT       { $$= new yy.ExistenceNode(new yy.Node($1, new yy.Lit($3, @3), new yy.Lit($4, @4))) }
+    | PrimaryExpr '?' '.' Property       { $$= new yy.ExistenceNode(new yy.Node($1, new yy.Lit($3, @3), new yy.ObjectPropertyNode($4, @4))) }
+    ;
+
+Property
+    : IDENT
+    | USE
+    | CLASS
+    | FUNC
+    | ME
+    | NIL
+    | RETURN
+    | IF
+    | ELSE
+    | FOR
+    | IN
+    | SWITCH
+    | CASE
+    | DEFAULT
+    | CONTINUE
+    | BREAK
+    | BOOLEAN
+    | CATCH
+    | GO
     ;
 
 IndexExpr

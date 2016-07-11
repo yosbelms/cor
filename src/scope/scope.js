@@ -347,6 +347,17 @@ yy.Lit = yy.LiteralNode = Class(yy.Node, {
     }
 });
 
+yy.ObjectPropertyNode = Class(yy.Lit, {
+
+    type: 'ObjectPropertyNode',
+
+    compile: function() {
+        return this.children;
+    }
+
+})
+
+
 // Single line comment
 // is a comment starting by `//` and ends in the next EOL
 yy.SingleLineCommentNode = Class(yy.Lit, {

@@ -34,6 +34,8 @@ shouldNotThrowList = (
     'compiler/existential_op',
     'compiler/template',
     'compiler/regex',
+
+    'compiler/keyword_as_property',
 )
 
 shouldThrowList = (

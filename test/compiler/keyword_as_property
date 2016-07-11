@@ -1,0 +1,23 @@
+
+func keywords() {
+    obj.
+    use.
+    class.
+    func.
+    me.
+    nil.
+    return.
+    if.
+    else.
+    for.
+    in.
+    switch.
+    case.
+    default.
+    continue.
+    break.
+    true.
+    false.
+    catch.
+    go
+}
