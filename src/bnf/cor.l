@@ -118,7 +118,6 @@ true\b|false\b              return 'BOOLEAN'
 "&"                         return '&'
 
 "="                         return '='
-"@"                         return '@'
 ":"                         return ':'
 ","                         return ','
 "."                         return '.'
