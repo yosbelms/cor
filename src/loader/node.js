@@ -52,11 +52,11 @@ cor.Loader.prototype.isNativeModule = function(name) {
     return nativeModules.indexOf(name) != -1;
 };
 
-cor.Loader.prototype.readFile = function(path, from, onLoad, onError) {    
+cor.Loader.prototype.readFile = function(path, from, onLoad, onError) {
     var ret, loader = this;
 
     loader.busy(true);
-        
+
     if (onLoad) {
         fs.readFile(path, 'utf8', function(err, data) {
             if (err && typeof onError === 'function') {
@@ -65,13 +65,13 @@ cor.Loader.prototype.readFile = function(path, from, onLoad, onError) {
             else if (typeof onLoad === 'function') {
                 onLoad(path, from, data);
             }
-        });    
+        });
     }
     else {
         try {
-            ret = fs.readFileSync(path, 'utf8');    
+            ret = fs.readFileSync(path, 'utf8');
         } catch(e) { }
-        
+
         return ret;
     }
 };
@@ -90,14 +90,14 @@ Module.prototype.require = function require(filename) {
     var
     nodeAnswer, corAnswer, absPath,
     ext = nodePath.extname(filename);
-    
+
     if (loader.isNativeModule(filename)){
         return oRequire.apply(this, arguments);
     }
-    
+
     if (ext === '') {
         ext       = nodePath.extname(this.filename);
-        absPath   = nodePath.resolve(nodePath.dirname(this.filename), filename + ext);        
+        absPath   = nodePath.resolve(nodePath.dirname(this.filename), filename + ext);
         corAnswer = loader.moduleCache[path.sanitize(absPath)];
 
         try {
@@ -114,21 +114,21 @@ Module.prototype.require = function require(filename) {
     } catch (e) {
         throw new Error('Cannot load module \'' + filename + '\' requested from ' + this.filename);
     }
-    
+
 }
 
 cor.Program.prototype.getExports = function(parent) {
     var mod, js = this.toJs();
-    
+
     mod = new Module(this.filename, parent);
-    
+
     mod.filename = this.filename;
     mod.paths    = Module._nodeModulePaths(nodePath.dirname(this.filename));
     mod.src      = js.src;
     mod.loaded   = true;
-    mod._contextLoad = true;    
+    mod._contextLoad = true;
     mod._compile(js.src, this.filename);
-        
+
     return mod.exports || {};
 }
 
@@ -159,12 +159,12 @@ var lastIdleTime = new Date().getTime();
 // is idle or not. If idle, for more than two seconds
 // then start the program
 function checkIdle() {
-    setTimeout(function() {
+    lastTimeout = setTimeout(function() {
         var
         now     = new Date().getTime(),
         elapsed = now - lastIdleTime;
 
-        if (loader.isBusy) {
+        if (loader.isBusy || loader.isReady) {
             lastIdleTime = now;
             return;
         }
