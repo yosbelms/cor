@@ -4710,7 +4710,7 @@ var Loader = Class({
     // plugins to extend the loader funcionality
     plugins : {},
 
-    ready: false,
+    isReady: false,
 
     init: function() {
         var
@@ -4911,11 +4911,11 @@ var Loader = Class({
 
     onLoaderReady: function() {
         var module;
-        if (this.ready) { return }
+        if (this.isReady) { return }
 
         module = this.moduleCache[this.entryModulePath];
         if (module) {
-            this.ready = true;
+            this.isReady = true;
             return module.getExports();
         }
         else {
