@@ -39,6 +39,8 @@ function getHeadStub() {
 
 
 function onLoaderReady() {
+    this.isReady = true;
+
     var
     name, i, len, content,
     filename, temp, dep,
