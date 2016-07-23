@@ -70,7 +70,8 @@ func select() {
 ---
 Echoes a text to the output panel
 ---
-func echo(txt) {
+func echo() {
+    txt = (,).join.call(arguments, ' ')
     ElOutput.value += $'{txt}\n'
 }
 window.echo  = echo
