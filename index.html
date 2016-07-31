@@ -7,7 +7,7 @@
         <link rel="stylesheet" type="text/css" href="docs/assets/style.css">
         <link rel="stylesheet" type="text/css" href="docs/assets/highlightjs/cor_light.css">
         <link rel="shortcut icon" href="docs/assets/favicon.ico" />
-        <title>Cor - The language of the Web</title>
+        <title>The Cor Language</title>
     </head>
     <body>
     <nav class="navbar" role="navigation">
@@ -27,16 +27,39 @@
 
     <div class="body">
         <div class="master">        
-            <h1 class="content">The Cor Language</h1>
+            <h1 class="content">Cor</h1>
             <p class="lead content">            
-            <b>Cor</b> is an opensource language that compiles to plain JavaScript. It is designed to make easy to write and maintain software for the asynchronous Web.</p>
+            <b>Cor</b> is an opensource language that compiles to regular JavaScript. It is designed to make easy to write simple, fast and maintainable software for the Web.</p>
         </div>
 
         <div class="rule"></div>
 
-        <p class="content"><b>Concurrency</b> and <b>parallelism</b> are first-class citizens in <b>Cor</b>, bringing a fresh way of programming for Web browsers and Node.js platforms. It is a language inspired by <b>Go</b>, but runs in a world wide platform that is the Web. With <b>Cor</b> you can take advantage of the whole <b>JavaScript</b> ecosystem, use your preferred libraries, and ensure your application runs everywhere the Web is.</p>
+        <p class="content">Cor is a new language that compiles line-to-line into the equivalent JavaScript. The resulting code runs at equal speed to handwritten JS. You can use any existing JavaScript library in Cor and vice-versa.</p>
         
         <div class="content">
+            <div class="rule"></div>
+
+
+            <div class="grid">
+                <div class="col">
+                    <h3>Clean syntax</h3>
+                    <p><b>Cor</b> enables you to write <b>large applications</b> by providing a <b>clean syntax</b>, classes and a modular architecture to keep organized code, enforcing the writing of <b>readable source code</b> based on conventions.</p>
+                </div>
+
+                <div class="col clear">
+<pre><code class="hljs cor">use './Todo'
+use 'backbone' bb
+use 'storage'  Storage
+
+class TodoList : bb.Collection {
+    localStorage    = &Storage('todos-backbone')
+    model           = Todo
+    func getModel() me.model
+}
+</code></pre>
+                </div>
+            </div>
+
             <div class="rule"></div>
 
             <div class="grid">
@@ -54,8 +77,8 @@
                 </div>
 
                 <div class="col clear">
-                    <h3>Concurrent and Parallel</h3>
-                    <p><b>Cor</b> allows you to synchronize <b>coroutines</b> by passing messages through <b>channels</b>, and supports the execution of many tasks in <b>parallel</b>, all of that by writing sequential code.</p>
+                    <h3>Asynchronous Nature</h3>
+                    <p><b>Cor</b> allows you to spawn <b>coroutines</b> and synchronize it by passing messages through <b>channels</b>. It is designed to deal with asynchronicity and parallel I/Os by writing sequential code.</p>
                 </div>
             </div>
 
@@ -64,7 +87,7 @@
             <div class="grid">
                 <div class="col clear">
                     <h3>Hot reaload</h3>
-                    <p><b>Cor</b> provides a smooth front-end development by furnishing a builtin <b>hot-loader</b> which resolves dependences and compiles source code <b>on the fly</b>, with just reloading the Web page. You will only need to use CLI tools to deliver a production-ready version of the app.</p>
+                    <p><b>Cor</b> provides a smooth front-end development by furnishing a builtin <b>loader</b> which resolves dependences and compiles source code <b>on the fly</b>, with just reloading the Web page. You will only need to use CLI tools to deliver a production-ready version of the app.</p>
                 </div>
 
                 <div class="col">
@@ -91,28 +114,7 @@
                     <p><b>Cor</b> supports <b>source-maps</b>, allowing you the easy debugging in major browsers. However a line of <b>Cor</b> source is compiled to the <b>exact line number</b> in JavaScript for accurated <b>debugging</b> when developing in platforms that doesn't supports source-maps such as servers.</p>
                 </div>
             </div>
-
-            <div class="rule"></div>
-
-            <div class="grid">
-                <div class="col">
-                    <h3>Clean syntax</h3>
-                    <p><b>Cor</b> enables you to write <b>large applications</b> by providing a <b>clean syntax</b>, classes and a modular architecture to keep organized code, enforcing the writing of <b>readable source code</b> based on conventions.</p>
-                </div>
-
-                <div class="col clear">
-<pre><code class="hljs cor">use './Todo'
-use 'backbone' bb
-use 'storage'  Storage
-
-class TodoList : bb.Collection {
-    localStorage    = &Storage('todos-backbone')
-    model           = Todo
-    func getModel() me.model
-}
-</code></pre>
-                </div>
-            </div>
+            
 
             <div class="full-rule"></div>
 

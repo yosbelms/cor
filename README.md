@@ -4,9 +4,9 @@
 
 **The Language of the Web**
 
-Cor is an opensource language that compiles to plain JavaScript. It is designed to make easy to write and maintain software for the asynchronous Web.
+Cor is an opensource language that compiles to regular JavaScript. It is designed to make easy to write simple, fast and maintainable software for the Web.
 
-Concurrency and parallelism are first class citizens in Cor, bringing a fresh way of programming for Web browsers and Node.js platforms. It is a language inspired by _Go_, but runs in a world wide platform that is the Web. With Cor you can take advantage of the whole JavaScript ecosystem, use your preferred libraries, and ensure your application runs everywhere the Web is.
+Cor is a new language that compiles line-to-line into the equivalent JavaScript. The resulting code runs at equal speed to handwritten JS. You can use any existing JavaScript library in Cor and vice-versa.
 
 
 ## Installation

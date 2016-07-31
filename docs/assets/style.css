@@ -95,6 +95,9 @@ a:hover {
     display: block;
     min-height: 50px;
     padding-bottom: 1px;
+    position: fixed;
+    z-index: 1000;
+    top: 0px;
 }
 
 .navbar a {
@@ -133,6 +136,10 @@ a:hover {
 
 ul {
     padding-left: 20px;
+}
+
+.body {
+    margin-top: 50px;
 }
 
 .content {
