@@ -168,8 +168,12 @@ function checkIdle() {
             lastIdleTime = now;
             return;
         }
-        if (elapsed > 2000 && !loader.ready) {
+
+        //console.log(elapsed, loader.isReady)
+
+        if (elapsed > 2000 && !loader.isReady) {
             loader.onLoaderReady();
+            return;
         }
         checkIdle();
     }, 1000)

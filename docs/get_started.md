@@ -1,16 +1,16 @@
 # Get started
 
-Cor promotes modularity, conventions and code organization, it is built for scalable applications development. The language itself allows organization and the syntax enforces you to write mantainable code. With Cor, you can use any library written in javascript or import from javascript any library written and built with Cor.
+Cor promotes modularity, conventions and code organization, it is built for scalable applications development. The syntax enforces to write mantainable code. You can use any library written in javascript or import from javascript any library written and built with Cor.
 
 
 ## Download
 
-Cor can be downloaded in several ways depending on different needs. The Cor compiler can run in any javascript environment however it's priority is the browser.
+Cor can be downloaded in several ways depending on different needs. The Cor compiler can run in any javascript environment however it's priority is the browser and Node.js.
 
 
 ### From GitHub
 
-Available releases can be downloaded from [here](https://github.com/yosbelms/cor/releases). Once downloaded, decompress the bundle (.zip or .tar). The main script can be found at `cor/dis/cor.js` ready to be included in production evironments.
+Available releases can be downloaded from [here](https://github.com/yosbelms/cor/releases). Once downloaded, decompress the bundle (.zip or .tar). The main script can be found at `cor/dis/cor.js` ready to be embedded in HTML pages for production see, [In the Browser](#inthebrowser).
 
 
 ### With NPM
@@ -83,7 +83,7 @@ For commands reference see [Commands](documentation.html#commands).
 
 ### In the browser
 
-Cor is designed with client-side development in mind, it dynamically load files using XHTTPRequest object, so that, hot-realoading is an amazing feature to keep you away from CLI compile/watch tools for a smooth client-side development. Because XHTTPRequest object, application source must be behind a web server (Apache HTTP Server, Nginx, or that you like). The Cor CLI tools provides a static HTTP server through `http` command which can be used with the same purpose.
+Cor is designed with client-side development in mind, it dynamically load files using XHTTPRequest object, so that, hot-realoading is an amazing feature to keep you away from CLI compile/watch tools for a smooth client-side development. Because the XHTTPRequest object, application source must be behind a web server (Apache HTTP Server, Nginx, or that you like). The Cor CLI tools provides a static HTTP server through `http` command which can be used with the same purpose.
 
 
 After install Cor globally, you may run:

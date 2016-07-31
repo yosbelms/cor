@@ -49,7 +49,7 @@ func prepareJasmine() {
             func(key, value) queryString.fullStringWithNewParam(key, value),
 
         getContainer:
-            func() document.body,
+            func() document.getElementById('body'),
 
         createElement:
             func() document.createElement.apply(document, arguments),

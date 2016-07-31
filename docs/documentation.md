@@ -1,6 +1,6 @@
 # Documentation
 
-This is a reference manual for the Cor programming language. It will guide you inside language aspects and concepts. Cor is a language designed with large web development in mind. Hence, is possible to develop your software without to execute any command to compile the source code, CLI tools are only needed to make the product able for production environments.
+This is the reference manual for the Cor programming language. It will guide you inside language aspects and concepts. Cor is a language designed with large web development in mind. Hence, is possible to develop your software without to execute any command to compile the source code, CLI tools are only needed to make the product able for production environments.
 
 <toc/>
 
