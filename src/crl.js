@@ -23,19 +23,25 @@ nativeTypes = {
     'Function' : Function
 };
 
-// copy properties from an object to another
-// returns the object which properties has been copied to
-CRL.copyObj = function copyObj(from, to) {
+// copy own properties from an souce to destiny object
+// returns the destiny object
+CRL.extendObj = Object.assign ? Object.assign : function extendObj(dest, source) {
     var name;
 
-    for (name in from) {
-        if (hasProp.call(from, name)) {
-            to[name] = from[name];
+    for (name in source) {
+        if (hasProp.call(source, name)) {
+            dest[name] = source[name];
         }
     }
 
-    return to;
+    return dest;
 };
+
+// returns a new object which will contain own combined
+// properties of the two passed object properties
+CRL.mergeObj = function mergeObj(obj1, obj2) {
+    return CRL.extendObj(CRL.extendObj({}, obj1), obj2);
+}
 
 // creates an instance of a class
 // CRL.create(Class, arg1, arg2, ...)
@@ -68,10 +74,10 @@ CRL.create = function create(Class) {
     return instancer(Class, args);
 };
 
-// convert a class in a subclass of other class
+// convert a class in a subclass of another
 // CRL.subclass(Subclass, Superclass)
 CRL.subclass = function subclass(subClass, superClass) {
-    CRL.copyObj(superClass, subClass);
+    CRL.extendObj(subClass, superClass);
 
     function Proto() {
         this.constructor = subClass;

@@ -1,7 +1,7 @@
 %nonassoc IDENT
 %nonassoc ',' IN '&'
 %left '(' '.'
-%left ASYNCOP
+%left ASYNCOP MERGEOP
 %left '-' '+'
 
 
@@ -389,6 +389,7 @@ OperationExpr
     | OperationExpr '+' OperationExprNotAdditive      { $$= new yy.Node($1, new yy.Lit($2, @2), $3) }
     | OperationExpr '-' OperationExprNotAdditive      { $$= new yy.Node($1, new yy.Lit($2, @2), $3) }
     | OperationExpr ASYNCOP OperationExpr             { $$= new yy.SendAsyncNode($1, new yy.Lit($2, @2), $3) }
+    | OperationExpr MERGEOP OperationExpr             { $$= new yy.MergeOpNode($1, new yy.Lit($2, @2), $3) }
     ;
 
 AssignmentExpr

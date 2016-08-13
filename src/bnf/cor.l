@@ -105,13 +105,13 @@ true\b|false\b              return 'BOOLEAN'
 
 "??"                        return 'COALESCEOP'
 
-
-"*="|"/="|"%="|"+="|"-="|"<<="|">>="|">>>="|"&="|"^="|"|="  return 'ASSIGNMENTOP'
+"*="|"/="|"%="|"+="|"-="|"<<="|">>="|">>>="|"&="|"^="|"|="|"..="  return 'ASSIGNMENTOP'
 "<-"                        return 'ASYNCOP'
 "<<"|">>"|">>>"             return 'SHIFTOP'
 "<="|">="|"=="|"!="|"<"|">" return 'COMPARISONOP'
 "&&"|"||"|"^"|"|"           return 'BINARYOP'
 "++"|"--"                   return 'INCDECOP'
+".."                        return 'MERGEOP'
 
 // this binary operator is separated form BINARYOP
 // because is used for object literal construction

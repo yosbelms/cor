@@ -819,6 +819,17 @@ yy.AssignmentNode = Class(yy.Node, {
         if (ch[0] instanceof yy.VarNode) {
             ch[0].markAsUsedVar();
         }
+    },
+
+    compile: function() {
+        var
+        ch = this.children;
+
+        if (ch[1].children === '..=') {
+            ch[1].children = ', ';
+            ch.splice(0, 0, new yy.Lit(this.runtimeFn('extendObj'), getLesserLineNumber(this)))
+            ch.push(new yy.Lit(')', this.lineno));
+        }
     }
 });
 
@@ -1910,6 +1921,21 @@ yy.TemplateLiteralNode = Class(yy.Node, {
             }
         }
     }
+})
+
+
+yy.MergeOpNode = Class(yy.Node, {
+
+    type: 'MergeOpNode',
+
+    compile: function() {
+        var ch = this.children;
+
+        ch[1].children = ', ';
+        ch.splice(0, 0, new yy.Lit(this.runtimeFn('mergeObj'), getLesserLineNumber(this)));
+        ch.push(new yy.Lit(')', this.lineno));
+    }
+
 })
 
 })(typeof cor === 'undefined' ? {} : cor);
