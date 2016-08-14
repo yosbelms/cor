@@ -23,18 +23,18 @@ nativeTypes = {
     'Function' : Function
 };
 
-// copy properties from an object to another
-// returns the object which properties has been copied to
-CRL.copyObj = function copyObj(from, to) {
+// copy object own properties from an source `src` to a destiny `dst`
+// returns the destiny object
+CRL.copyObj = Object.assign ? Object.assign : function copyObj(dest, src) {
     var name;
 
-    for (name in from) {
-        if (hasProp.call(from, name)) {
-            to[name] = from[name];
+    for (name in src) {
+        if (hasProp.call(src, name)) {
+            dest[name] = src[name];
         }
     }
 
-    return to;
+    return dest;
 };
 
 // creates an instance of a class
@@ -71,7 +71,7 @@ CRL.create = function create(Class) {
 // convert a class in a subclass of other class
 // CRL.subclass(Subclass, Superclass)
 CRL.subclass = function subclass(subClass, superClass) {
-    CRL.copyObj(superClass, subClass);
+    CRL.copyObj(subClass, superClass);
 
     function Proto() {
         this.constructor = subClass;
