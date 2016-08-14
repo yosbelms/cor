@@ -86,7 +86,8 @@ var builtinFn = [
     'super',
     'regex',
     'chan',
-    'timeout'
+    'timeout',
+    'copy'
 ];
 
 function isBuiltinFn(name) {
@@ -1420,8 +1421,12 @@ yy.CallNode = Class(yy.Node, {
         var ch = this.children;
         ch[0].children[0].children = this.runtimePrefix + 'timeout';
         ch.unshift(new yy.Lit('yield ', getLesserLineNumber(ch[0])))
-    }
+    },
 
+    copyBuiltin: function() {
+        var ch = this.children;
+        ch[0].children[0].children = this.runtimePrefix + 'copyObj';
+    }
 });
 
 yy.IfNode = Class(yy.Node, {
