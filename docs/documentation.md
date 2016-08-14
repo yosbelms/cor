@@ -807,6 +807,27 @@ In above example `Triangle` class inherits from `Shape` class.
 
 ## Builtin Functions
 
+
+### Copy
+
+The function `copy` copies object own properties from a source `src` to a destination `dst` and returns the destination object.
+
+Example:
+
+```
+orc = (name: 'Orgrim')
+copy(orc, (clan: 'Frostwolf'))
+
+---
+orc is now
+(
+    name: 'Orgrim',
+    clan: 'Frostwolf'
+)
+---
+```
+
+
 ### Super
 
 The `super` function calls a method of the super class. It will call the method with equal name to the current method where `super` is located. It should compile to `<SuperClass>.prototype.<Method>.apply(this, arguments)`
