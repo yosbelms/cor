@@ -1,0 +1,27 @@
+
+func init() {
+    describe('Copy function', func() {
+        it('Should copy props', func() {
+            dst = (a: 1)
+            src = (b: 2)
+
+            copy(dst, src)
+
+            expect(dst.a).toBe(1)
+            expect(dst.b).toBe(2)
+        })
+
+        it('Should copy just own props', func() {
+            func Obj() { }
+            Obj.prototype.b = 2
+
+            src = &Obj
+            dst = (a: 1)
+
+            copy(dst, src)
+
+            expect(dst.a).toBe(1)
+            expect(dst.b).not.toBe(2)
+        })
+    })
+}
