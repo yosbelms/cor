@@ -37,37 +37,6 @@ CRL.copyObj = Object.assign ? Object.assign : function copyObj(dest, src) {
     return dest;
 };
 
-// creates an instance of a class
-// CRL.create(Class, arg1, arg2, ...)
-CRL.create = function create(Class) {
-    if (typeof Class !== 'function') {
-        throw Error('Runtime Error: trying to instanstiate no class');
-    }
-
-    var
-    instancerArgs,        
-    args      = slice.call(arguments, 1),
-    argc      = args.length,
-    i         = -1,
-    instancer = instancers[argc];
-
-    if (! instancer) {
-        instancerArgs = [];
-
-        while (++i < argc) {
-            instancerArgs.push('args[' + i + ']');
-        }
-
-        instancer = instancers[argc] = new Function(
-            'cls',
-            'args',
-            'return new cls(' + instancerArgs.join(',') + ');'
-        );
-    }
-
-    return instancer(Class, args);
-};
-
 // convert a class in a subclass of other class
 // CRL.subclass(Subclass, Superclass)
 CRL.subclass = function subclass(subClass, superClass) {

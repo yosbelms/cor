@@ -16,22 +16,6 @@ class AccountDAO : DAO {
 func init() {
 
     describe('CRL', func() {
-
-        describe('create', func() {
-            it('Should work withs arguments', func() {
-                c = CRL.create(Client, 'Yosbel', 28)
-
-                expect(c.name).toBe('Yosbel')
-                expect(c.age).toBe(28)
-            })
-
-            it('Should work withs no arguments', func() {
-                c = CRL.create(Client)
-
-                expect(c.name).toBeUndefined()
-                expect(c.age).toBeUndefined()
-            })
-        })
         
         describe('keys', func(){
             it('From Arrays should extract just numeric indexes', func() {
