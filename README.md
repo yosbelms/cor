@@ -38,6 +38,29 @@ Compile a script:
 cor compile /path/to/source.cor
 ```
 
+## Build from sources
+
+Clone from GitHub
+
+```
+git clone https://github.com/yosbelms/cor.git
+```
+
+On *NIX platforms:
+
+```
+cd cor
+./make
+```
+
+On Windows:
+
+```
+cd cor
+.\make
+```
+
+`make` will run all development tasks including tests.
 
 ## Platform Compatibility
 

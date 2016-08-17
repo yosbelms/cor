@@ -288,7 +288,7 @@ CliApp = Class({
     */
     parseOption: function(v) {
         var
-        rOption = /^\-([a-z]+)(=(.+))*$/,
+        rOption = /^\-([a-z][a-z\-]*)(=(.+))*$/,
         parsed  = rOption.exec(v);
 
         if (parsed) {

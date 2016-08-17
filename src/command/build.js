@@ -60,8 +60,6 @@ function onLoaderReady() {
     }
 
     for (name in this.moduleCache) {
-        print('    ' + name);
-
         filename = this.moduleCache[name].filename;
         //console.log(filename);
         fileNameTable[filename] = filenames.length;
@@ -76,6 +74,8 @@ function onLoaderReady() {
              this.moduleCache[name].toJs().src  +
             '\n}'
         );
+
+        print('    ' + name + (this.moduleCache[name].usesRuntime ? ' (uses runtime)' : ''));
     }
 
     //console.log(fileNameTable);
@@ -174,7 +174,7 @@ cmd.addArgument('path', 'path to the entry file to be compiled whith it dependen
 cmd.addOption('o', 'name of the file to write the compiling result');
 cmd.addOption('type', 'type of the resulting package (domready, commonjs, amd and global)');
 cmd.addOption('conf', 'path to the .json file which contains environment variables for cor.Loader');
-cmd.addOption('no-crl', 'specify tht CRL(Cor Runtime Library) should not be embedded in the head of the compiling result');
+cmd.addOption('no-crl', 'specify the CRL(Cor Runtime Library) should not be embedded in the head of the compiling result');
 cmd.addOption('v',   'print additional information during build proccess');
 
 cmd.setAction(function (input, app){

@@ -86,7 +86,8 @@ var builtinFn = [
     'super',
     'regex',
     'chan',
-    'timeout'
+    'timeout',
+    'copy'
 ];
 
 function isBuiltinFn(name) {
@@ -240,7 +241,7 @@ yy.Node = Class({
 
     type: 'Node',
 
-    runtimePrefix: 'CRL.',
+    _runtimePrefix: 'CRL.',
 
     scope: null,
 
@@ -276,7 +277,12 @@ yy.Node = Class({
     },
 
     runtimeFn: function(name) {
-        return this.runtimePrefix + name + '(';
+        return this.runtimePrefix(name + '(');
+    },
+
+    runtimePrefix: function(txt) {
+        this.yy.env.usesRuntime = true;
+        return this._runtimePrefix + txt;
     },
 
     error: function(txt, lineno) {
@@ -1396,7 +1402,7 @@ yy.CallNode = Class(yy.Node, {
 
             return;
         } else {
-            ch[0].children[0].children = this.runtimePrefix + 'regex';
+            ch[0].children[0].children = this.runtimePrefix('regex');
         }
 
         if (patternNode instanceof yy.StringNode) {
@@ -1409,7 +1415,7 @@ yy.CallNode = Class(yy.Node, {
 
     chanBuiltin: function() {
         var ch = this.children;
-        ch[0].children[0].children = this.runtimePrefix + 'chan';
+        ch[0].children[0].children = this.runtimePrefix('chan');
     },
 
     timeoutBuiltin: function() {
@@ -1418,10 +1424,14 @@ yy.CallNode = Class(yy.Node, {
         }
 
         var ch = this.children;
-        ch[0].children[0].children = this.runtimePrefix + 'timeout';
+        ch[0].children[0].children = this.runtimePrefix('timeout');
         ch.unshift(new yy.Lit('yield ', getLesserLineNumber(ch[0])))
-    }
+    },
 
+    copyBuiltin: function() {
+        var ch = this.children;
+        ch[0].children[0].children = this.runtimePrefix('copyObj');
+    }
 });
 
 yy.IfNode = Class(yy.Node, {
@@ -1839,7 +1849,7 @@ yy.GoExprNode = Class(yy.Node, {
         var
         ch     = this.children,
         fnNode = ch[1];
-        ch[0].children = this.runtimePrefix + 'go(function* go()';
+        ch[0].children = this.runtimePrefix('go(function* go()');
 
         fnNode.children[fnNode.children.length - 1].children += ', this)';
     }

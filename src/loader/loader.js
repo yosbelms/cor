@@ -333,6 +333,7 @@ var Program = Class({
     src         : '',
     environment : null,
     loader      : null,
+    usesRuntime : false,
 
 
     init: function(path, src, deps, loader) {
@@ -408,7 +409,8 @@ var Program = Class({
             js = plugin.toJs(this.src, this.filename)
             if (typeof js === 'string') {
                 js = {src: js};
-            }            
+            }
+            this.usesRuntime = js.usesRuntime;
             return js;
         }
         else {
