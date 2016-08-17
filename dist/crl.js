@@ -39,11 +39,6 @@ CRL = (typeof CRL === 'undefined' ? {} : CRL);
 var
 hasProp     = Object.prototype.hasOwnProperty,
 toString    = Object.prototype.toString,
-slice       = Array.prototype.slice,
-
-// store function that instantiate classes
-// whith different quantity of arguments
-instancers  = [],
 nativeTypes = {
     'String'   : String,
     'Number'   : Number,
@@ -54,55 +49,24 @@ nativeTypes = {
     'Function' : Function
 };
 
-// copy properties from an object to another
-// returns the object which properties has been copied to
-CRL.copyObj = function copyObj(from, to) {
+// copy object own properties from an source `src` to a destiny `dst`
+// returns the destiny object
+CRL.copyObj = Object.assign ? Object.assign : function copyObj(dest, src) {
     var name;
 
-    for (name in from) {
-        if (hasProp.call(from, name)) {
-            to[name] = from[name];
+    for (name in src) {
+        if (hasProp.call(src, name)) {
+            dest[name] = src[name];
         }
     }
 
-    return to;
-};
-
-// creates an instance of a class
-// CRL.create(Class, arg1, arg2, ...)
-CRL.create = function create(Class) {
-    if (typeof Class !== 'function') {
-        throw Error('Runtime Error: trying to instanstiate no class');
-    }
-
-    var
-    instancerArgs,        
-    args      = slice.call(arguments, 1),
-    argc      = args.length,
-    i         = -1,
-    instancer = instancers[argc];
-
-    if (! instancer) {
-        instancerArgs = [];
-
-        while (++i < argc) {
-            instancerArgs.push('args[' + i + ']');
-        }
-
-        instancer = instancers[argc] = new Function(
-            'cls',
-            'args',
-            'return new cls(' + instancerArgs.join(',') + ');'
-        );
-    }
-
-    return instancer(Class, args);
+    return dest;
 };
 
 // convert a class in a subclass of other class
 // CRL.subclass(Subclass, Superclass)
 CRL.subclass = function subclass(subClass, superClass) {
-    CRL.copyObj(superClass, subClass);
+    CRL.copyObj(subClass, superClass);
 
     function Proto() {
         this.constructor = subClass;

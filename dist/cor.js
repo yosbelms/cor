@@ -39,11 +39,6 @@ CRL = (typeof CRL === 'undefined' ? {} : CRL);
 var
 hasProp     = Object.prototype.hasOwnProperty,
 toString    = Object.prototype.toString,
-slice       = Array.prototype.slice,
-
-// store function that instantiate classes
-// whith different quantity of arguments
-instancers  = [],
 nativeTypes = {
     'String'   : String,
     'Number'   : Number,
@@ -54,55 +49,24 @@ nativeTypes = {
     'Function' : Function
 };
 
-// copy properties from an object to another
-// returns the object which properties has been copied to
-CRL.copyObj = function copyObj(from, to) {
+// copy object own properties from an source `src` to a destiny `dst`
+// returns the destiny object
+CRL.copyObj = Object.assign ? Object.assign : function copyObj(dest, src) {
     var name;
 
-    for (name in from) {
-        if (hasProp.call(from, name)) {
-            to[name] = from[name];
+    for (name in src) {
+        if (hasProp.call(src, name)) {
+            dest[name] = src[name];
         }
     }
 
-    return to;
-};
-
-// creates an instance of a class
-// CRL.create(Class, arg1, arg2, ...)
-CRL.create = function create(Class) {
-    if (typeof Class !== 'function') {
-        throw Error('Runtime Error: trying to instanstiate no class');
-    }
-
-    var
-    instancerArgs,        
-    args      = slice.call(arguments, 1),
-    argc      = args.length,
-    i         = -1,
-    instancer = instancers[argc];
-
-    if (! instancer) {
-        instancerArgs = [];
-
-        while (++i < argc) {
-            instancerArgs.push('args[' + i + ']');
-        }
-
-        instancer = instancers[argc] = new Function(
-            'cls',
-            'args',
-            'return new cls(' + instancerArgs.join(',') + ');'
-        );
-    }
-
-    return instancer(Class, args);
+    return dest;
 };
 
 // convert a class in a subclass of other class
 // CRL.subclass(Subclass, Superclass)
 CRL.subclass = function subclass(subClass, superClass) {
-    CRL.copyObj(superClass, subClass);
+    CRL.copyObj(subClass, superClass);
 
     function Proto() {
         this.constructor = subClass;
@@ -2182,6 +2146,8 @@ yy.Context = Class({
 
 yy.Environment = Class({
 
+    usesRuntime: false,
+
     contexts: null,
 
     errors: null,
@@ -2361,7 +2327,8 @@ var builtinFn = [
     'super',
     'regex',
     'chan',
-    'timeout'
+    'timeout',
+    'copy'
 ];
 
 function isBuiltinFn(name) {
@@ -2515,7 +2482,7 @@ yy.Node = Class({
 
     type: 'Node',
 
-    runtimePrefix: 'CRL.',
+    _runtimePrefix: 'CRL.',
 
     scope: null,
 
@@ -2551,7 +2518,12 @@ yy.Node = Class({
     },
 
     runtimeFn: function(name) {
-        return this.runtimePrefix + name + '(';
+        return this.runtimePrefix(name + '(');
+    },
+
+    runtimePrefix: function(txt) {
+        this.yy.env.usesRuntime = true;
+        return this._runtimePrefix + txt;
     },
 
     error: function(txt, lineno) {
@@ -3671,7 +3643,7 @@ yy.CallNode = Class(yy.Node, {
 
             return;
         } else {
-            ch[0].children[0].children = this.runtimePrefix + 'regex';
+            ch[0].children[0].children = this.runtimePrefix('regex');
         }
 
         if (patternNode instanceof yy.StringNode) {
@@ -3684,7 +3656,7 @@ yy.CallNode = Class(yy.Node, {
 
     chanBuiltin: function() {
         var ch = this.children;
-        ch[0].children[0].children = this.runtimePrefix + 'chan';
+        ch[0].children[0].children = this.runtimePrefix('chan');
     },
 
     timeoutBuiltin: function() {
@@ -3693,10 +3665,14 @@ yy.CallNode = Class(yy.Node, {
         }
 
         var ch = this.children;
-        ch[0].children[0].children = this.runtimePrefix + 'timeout';
+        ch[0].children[0].children = this.runtimePrefix('timeout');
         ch.unshift(new yy.Lit('yield ', getLesserLineNumber(ch[0])))
-    }
+    },
 
+    copyBuiltin: function() {
+        var ch = this.children;
+        ch[0].children[0].children = this.runtimePrefix('copyObj');
+    }
 });
 
 yy.IfNode = Class(yy.Node, {
@@ -4114,7 +4090,7 @@ yy.GoExprNode = Class(yy.Node, {
         var
         ch     = this.children,
         fnNode = ch[1];
-        ch[0].children = this.runtimePrefix + 'go(function* go()';
+        ch[0].children = this.runtimePrefix('go(function* go()');
 
         fnNode.children[fnNode.children.length - 1].children += ', this)';
     }
@@ -4993,6 +4969,7 @@ var Program = Class({
     src         : '',
     environment : null,
     loader      : null,
+    usesRuntime : false,
 
 
     init: function(path, src, deps, loader) {
@@ -5068,7 +5045,8 @@ var Program = Class({
             js = plugin.toJs(this.src, this.filename)
             if (typeof js === 'string') {
                 js = {src: js};
-            }            
+            }
+            this.usesRuntime = js.usesRuntime;
             return js;
         }
         else {
@@ -5238,7 +5216,8 @@ loader.addPlugin({
         //console.log(src);
         return {
             src   : js,
-            suffix: suffix
+            suffix: suffix,
+            usesRuntime: comp.env.usesRuntime,
         };
     }
 
