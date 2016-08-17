@@ -8,11 +8,6 @@ CRL = (typeof CRL === 'undefined' ? {} : CRL);
 var
 hasProp     = Object.prototype.hasOwnProperty,
 toString    = Object.prototype.toString,
-slice       = Array.prototype.slice,
-
-// store function that instantiate classes
-// whith different quantity of arguments
-instancers  = [],
 nativeTypes = {
     'String'   : String,
     'Number'   : Number,
