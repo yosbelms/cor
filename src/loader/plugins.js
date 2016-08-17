@@ -107,7 +107,8 @@ loader.addPlugin({
         //console.log(src);
         return {
             src   : js,
-            suffix: suffix
+            suffix: suffix,
+            usesRuntime: comp.env.usesRuntime,
         };
     }
 

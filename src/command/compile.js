@@ -79,17 +79,17 @@ function makePath(sDirPath) {
 
 function writeFile(src, srcPath, outPath) {
     var
-    parsed, content,
+    parsed, content, js,
     plugin = cor.loader.plugins[cor.path.ext(srcPath)];
 
     //console.log(srcPath); return;
 
     if (plugin) {
-        print('    from: ' + srcPath);
-
+        js      = plugin.toJs(src, outPath);
         parsed  = cor.path.parse(outPath);
-        content = plugin.toJs(src, outPath).src;
+        content = js.src;
 
+        print('    from: ' + srcPath + (js.usesRuntime ? ' (uses runtime)' : ''));
         print('    to:   ' + outPath + '\n');
     }
     else {

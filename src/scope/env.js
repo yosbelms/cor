@@ -111,6 +111,8 @@ yy.Context = Class({
 
 yy.Environment = Class({
 
+    usesRuntime: false,
+
     contexts: null,
 
     errors: null,
