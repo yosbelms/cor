@@ -17,7 +17,7 @@
 
     cor.compile = function(src, filename) {
         var
-        comp = new cor.Compiler(src),
+        comp = new cor.Compiler(src, filename),
         ast  = comp.parse(),
         js   = comp.compile(ast);
 
