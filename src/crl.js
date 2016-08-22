@@ -544,7 +544,7 @@ Channel.prototype = {
                     this.data = void 0;
                     scheduledResolve(this.receiverPromises.shift(), this.transform(data));
                     // schedule the the sender coroutine
-                    return new timeout(0);
+                    return timeout(0);
                 }
             }
 
