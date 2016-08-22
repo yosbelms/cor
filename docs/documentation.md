@@ -891,7 +891,7 @@ Channels can be buffered or unbuffered. When sending data through unbuffered cha
 
 * The fist parameter defines the buffer size, if omitted or `nil` is provided the created channel will be unbuffered.
 
-* The transformer is a function that transfor values to send though the channel.
+* The transformer is a function that transfor values to send through the channel.
 
 The created channels are objects that can be closed using `.close()` method, to check whether is closed or not use `.closed` property.
 
@@ -919,9 +919,9 @@ Transformer example:
 ch = chan(nil, func(s) s*2)
 
 go {
-    for num in 1:3 {
-        ch <- num
-    }
+    ch <- 1
+    ch <- 2
+    ch <- 3
 }
 
 go {
@@ -932,6 +932,7 @@ go {
 output:
 2
 4
+6
 ---
 ```
 

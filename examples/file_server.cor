@@ -10,7 +10,7 @@ use 'fs'
 
 use './util/util'
 
-dfs = util.drive(fs)
+pfs = util.promisify(fs)
 
 
 // show 404
@@ -26,7 +26,7 @@ func serve(req, res) go {
     urlPath   = parsedUrl.pathname ?? ''
     filePath  = path.join(process.cwd(), urlPath)
 
-    catch stat = <- dfs.stat(filePath) {
+    catch stat = <- pfs.stat(filePath) {
         show404(res, urlPath)
         return
     }
@@ -34,13 +34,13 @@ func serve(req, res) go {
     // handle file
     if stat.isFile() {
         res.writeHead(200)
-        res.end(<- dfs.readFile(filePath), 'utf8')
+        res.end(<- pfs.readFile(filePath), 'utf8')
         return
     }
 
     // handle directory
     if stat.isDirectory() {
-        files = <- dfs.readdir(filePath)
+        files = <- pfs.readdir(filePath)
 
         if urlPath == '/' {
             dirPath = ''

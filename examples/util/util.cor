@@ -3,9 +3,9 @@
 wrap a node.js asynchronous function and make it
 to return a Promise
 ---
-func driveFn(fn, ctx) {
-    if !(fn.__drivenFn?) {
-        fn.__drivenFn = func drivenFn() {
+func promisifyFn(fn, ctx) {
+    if !(fn.__promisifiedFn?) {
+        fn.__promisifiedFn = func promisifynFn() {
             args     = Array.prototype.slice.call(arguments)
             deferred = CRL.Promise.defer()
 
@@ -23,13 +23,13 @@ func driveFn(fn, ctx) {
         }
     }
 
-    return fn.__drivenFn
+    return fn.__promisifiedFn
 }
 
 ---
 wrap all function in a node.js module
 ---
-func drive(obj, ctx) {
+func promisify(obj, ctx) {
     syncPrefix = regex('Sync$')
 
     if !obj { return }
@@ -37,7 +37,7 @@ func drive(obj, ctx) {
     ctx = ctx ?? obj
 
     if obj.(Function) {
-        return driveFn(obj, ctx)
+        return promisifyFn(obj, ctx)
     }
     
     newObj = (:)
@@ -47,7 +47,7 @@ func drive(obj, ctx) {
         }
 
         if value.(Function) {
-            newObj[name] = driveFn(value, ctx)
+            newObj[name] = promisifyFn(value, ctx)
         } else {
             newObj[name] = value
         }

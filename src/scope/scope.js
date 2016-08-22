@@ -541,7 +541,26 @@ yy.ModuleNode = Class(yy.ContextAwareNode, {
         var
         name,
         ret      = '',
+        basen    = basename(this.yy.env.filename),
         exported = this.yy.env.getExported();
+
+        function basename(filename) {
+            var parsed = /([a-zA-Z-0-9_\-]*)([a-zA-A-0-9_\-\.]*)$/.exec(filename);
+            return parsed ? parsed[1] : '';
+        }
+
+        function isCapitalized(txt) {
+            return /^[A-Z]/.test(txt);
+        }
+
+        if (isCapitalized(basen)) {
+            if (exported.hasOwnProperty(basen)) {
+                return 'module.exports = ' + basen + ';';
+            }
+            else {
+                this.error('undeclared default exported value', 1);
+            }
+        }
 
         for (name in exported) {
             if (name !== this.initializerName) {
@@ -890,8 +909,6 @@ yy.UseNode = Class(yy.Node, {
 
     rAlias: /([\w\-]+)*(?:\.[\w\-]+)*$/,
 
-    rCapitalLetter: /^[A-Z]/,
-
     rClearName: /[^\w]/,
 
     extractedAlias: '',
@@ -922,12 +939,7 @@ yy.UseNode = Class(yy.Node, {
         var
         ch     = this.children,
         route  = this.route,
-        alias  = this.alias || this.extractedAlias,
-        suffix = '';
-
-        if (this.rCapitalLetter.test(this.extractedAlias)) {
-            suffix = '.' + alias;
-        }
+        alias  = this.alias || this.extractedAlias;
 
         ch[0].children = 'require(';
 
@@ -944,7 +956,7 @@ yy.UseNode = Class(yy.Node, {
             this.aliasNode,
             ch[0],
             this.targetNode,
-            new yy.Lit(')' + suffix + ';', ch[1].lineno)
+            new yy.Lit(');', ch[1].lineno)
         ];
     }
    
