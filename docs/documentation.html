@@ -908,7 +908,7 @@ regf = regex('gi(t)+', 'ig')
 <ul>
 <li><p>The fist parameter defines the buffer size, if omitted or <code>nil</code> is provided the created channel will be unbuffered.</p></li>
 
-<li><p>The transformer is a function that transfor values to send though the channel.</p></li>
+<li><p>The transformer is a function that transfor values to send through the channel.</p></li>
 </ul>
 
 <p>The created channels are objects that can be closed using <code>.close()</code> method, to check whether is closed or not use <code>.closed</code> property.</p>
@@ -937,9 +937,9 @@ go {
 ch = chan(nil, func(s) s*2)
 
 go {
-    for num in 1:3 {
-        ch &lt;- num
-    }
+    ch &lt;- 1
+    ch &lt;- 2
+    ch &lt;- 3
 }
 
 go {
@@ -950,6 +950,7 @@ go {
 output:
 2
 4
+6
 ---
 </code></pre>
 
