@@ -266,7 +266,7 @@ function schedule(fn, time) {
 }
 
 function isPromise(p) {
-    return p && typeof p.then === 'function';
+    return p && typeof p.then === 'function' && typeof p.catch === 'function';
 }
 
 function isFunction(f) {
