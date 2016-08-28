@@ -2,7 +2,7 @@
 
 ![badge](https://circleci.com/gh/yosbelms/cor/tree/master.png?circle-token=687381b892447ef211dc27dd08a9752b9ec450af)
 
-**The Language of the Web**
+**Straightforward language for the Web**
 
 Cor is an opensource language that compiles to regular JavaScript. It is designed to make easy to write simple, fast and maintainable software for the Web.
 

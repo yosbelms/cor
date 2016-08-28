@@ -3,7 +3,7 @@
     "name"        : "cor-lang",
     "version"     : "0.11.1",
     "license"     : "BSD",
-    "description" : "The Language of the Web",
+    "description" : "Straightforward language for the Web",
     "repository"  : "https://github.com/yosbelms/cor.git",
 
     "preferGlobal": true,
