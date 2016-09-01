@@ -247,14 +247,6 @@ Promise.defer = function defer() {
     return deferred;
 }
 
-
-CRL.Promise = Promise;
-
-// polyfill Promise
-if (typeof global.Promise !== 'function') {
-    global.Promise = CRL.Promise;
-}
-
 // Coroutines
 // Schedule
 function schedule(fn, time) {
@@ -279,45 +271,6 @@ function isObject(obj) {
 
 function isArray(arr) {
     return Array.isArray(arr);
-}
-
-// Generator Runner
-CRL.go = function go(genf, ctx) {
-    var state, gen = genf.apply(ctx || {});
-
-    return new CRL.Promise(function(resolve, reject) {
-        // ensure it runs asynchronously
-        schedule(next);
-
-        function next(value) {
-            if (state && state.done) {
-                resolve(value);
-                return;
-            }
-
-            try {
-                state = gen.next(value);
-                value = state.value;
-            } catch (e) {
-                console.error(e.stack ? '\n' + e.stack : e);
-                return;
-            }
-
-            if (isPromise(value)) {
-                value.then(
-                    function onFulfilled(value) {
-                        next(value)
-                    },
-                    function onRejected(reason) {
-                        gen.throw(reason)
-                    }
-                )
-                return;
-            }
-
-            next(value);
-        }
-    })
 }
 
 // convert to promise as much possible
@@ -390,31 +343,6 @@ function objectToPromise(obj) {
     return ret;
 }
 
-// receiver
-CRL.receive = function receive(obj) {
-    var prom;
-
-    if (obj && isFunction(obj.receive)) {
-        return obj.receive();
-    }
-
-    prom = toPromise(obj);
-    if (isPromise(prom)) {
-        return prom;
-    }
-
-    return obj;
-}
-
-// sender
-CRL.send = function send(obj, value) {
-    if (obj && isFunction(obj.send)) {
-        return obj.send(value);
-    }
-    throw 'unable to receive values';
-}
-
-
 function timeout(time) {
     if (!isNaN(time) && time !== null) {
         return new CRL.Promise(function(resolve) {
@@ -424,8 +352,6 @@ function timeout(time) {
 
     throw 'Invalid time';
 }
-
-CRL.timeout = timeout;
 
 // Buffer: simple array based buffer to use with channels
 function Buffer(size) {
@@ -462,13 +388,13 @@ function isBuffer(b) {
         && isFunction(b.isEmpty));
 }
 
-// Channel: a structure to transport messages
 function indentityFn(x) {return x}
 
 function scheduledResolve(deferred, value) {
     schedule(function() { deferred.resolve(value) })
 }
 
+// Channel: a structure to transport messages
 function Channel(buffer, transform) {
     this.buffer           = buffer;
     this.closed           = false;
@@ -585,7 +511,98 @@ Channel.prototype = {
     }
 }
 
+CRL.Promise = Promise;
+
 CRL.Channel = Channel;
+
+CRL.timeout = timeout;
+
+// Generator Runner
+CRL.go = function go(genf, ctx) {
+    var state, gen = genf.apply(ctx || {});
+
+    return new CRL.Promise(function(resolve, reject) {
+        // ensure it runs asynchronously
+        schedule(next);
+
+        function next(value) {
+            if (state && state.done) {
+                resolve(value);
+                return;
+            }
+
+            try {
+                state = gen.next(value);
+                value = state.value;
+            } catch (e) {
+                console.error(e.stack ? '\n' + e.stack : e);
+                return;
+            }
+
+            if (isPromise(value)) {
+                value.then(
+                    function onFulfilled(value) {
+                        next(value)
+                    },
+                    function onRejected(reason) {
+                        gen.throw(reason)
+                    }
+                )
+                return;
+            }
+
+            next(value);
+        }
+    })
+}
+
+CRL.race = function race(array) {
+    var promise,
+    i          = -1,
+    len        = array.length,
+    isResolved = false;
+
+    return new CRL.Promise(function(resolve) {
+        while (++i < len) {
+            promise = array[i];
+            if (isPromise(promise)) {
+                setupThen(promise, i, resolve);
+            }
+        }
+
+        function setupThen(promise, key, resolve) {
+            promise.then(function(value) {
+                if (isResolved) { return }
+                isResolved = true;
+                resolve({which: key, value: value});
+            })
+        }
+    });
+}
+
+// receiver
+CRL.receive = function receive(obj) {
+    var prom;
+
+    if (obj && isFunction(obj.receive)) {
+        return obj.receive();
+    }
+
+    prom = toPromise(obj);
+    if (isPromise(prom)) {
+        return prom;
+    }
+
+    return obj;
+}
+
+// sender
+CRL.send = function send(obj, value) {
+    if (obj && isFunction(obj.send)) {
+        return obj.send(value);
+    }
+    throw 'unable to receive values';
+}
 
 CRL.chan = function chan(size, transform) {
     if (isBuffer(size)) {

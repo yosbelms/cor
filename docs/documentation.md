@@ -1179,7 +1179,7 @@ if a < b {
 
 ### Switch/Case/Default
 
-With Cor you don't need to remember to `break` after every `case`. Cor switch statements prevents accidental fall-though by automatically breaking at the end of each `case` clause.
+With Cor you don't need to remember to `break` after every `case`. Cor switch statements prevents accidental fall-through by automatically breaking at the end of each `case` clause.
 
 Switch statements in Cor can take multiple values for each `case` clause. If any of the values match, the clause runs.
 ```
@@ -1206,6 +1206,32 @@ switch {
     case x < 2 : doOtherThing()
 }
 ```
+
+
+### Race
+
+Race statemet is like `switch` statement but for asynchronic operations. It executes all cases in the same order as defined, once one of them has been resolved, it executes the instructions associated to resolved case. If none of the cases are resolved will block forever.
+```
+race {
+
+    // receive
+    case <- chan :
+
+    // send
+    case chan <- s :
+
+    // assign receive
+    case s = <- chan :
+
+    // timeout
+    case timeout(500) :
+
+    // default
+    default :
+}
+```
+
+If `default` is provided and none of the other operations it will choose to execute the default instructions.
 
 
 ### Inc/Dec

@@ -172,6 +172,10 @@ function preorder(node, fn) {
     len = ch.length;
 
     for (i = 0; i < len; i++) {
+        if (!ch[i]) {
+            continue;
+        }
+
         if (fn(ch[i]) === false) {
             return;
         }
@@ -180,6 +184,7 @@ function preorder(node, fn) {
 }
 
 function flattenToLine(node, lineno) {
+    node.lineno = lineno;
     preorder(node, function(node) {
         node.lineno = lineno;
     })
@@ -1281,6 +1286,8 @@ yy.CallNode = Class(yy.Node, {
 
     name: null,
 
+    useYield: true,
+
     initNode: function() {
         this.base('initNode', arguments);
         this.context = this.yy.env.context();
@@ -1437,7 +1444,7 @@ yy.CallNode = Class(yy.Node, {
 
         var ch = this.children;
         ch[0].children[0].children = this.runtimePrefix('timeout');
-        ch.unshift(new yy.Lit('yield ', getLesserLineNumber(ch[0])))
+        ch.unshift(new yy.Lit((this.useYield ? 'yield ' : ''), getLesserLineNumber(ch[0])))
     },
 
     copyBuiltin: function() {
@@ -1871,6 +1878,8 @@ yy.SendAsyncNode = Class(yy.Node, {
 
     type: 'SendAsyncNode',
 
+    useYield: true,
+
     compile: function() {
         if (! isInGoExpr(this)) {
             this.error('unexpected async operation', this.lineno);
@@ -1880,7 +1889,7 @@ yy.SendAsyncNode = Class(yy.Node, {
         ch = this.children;
         ch[1].children = ',';
 
-        ch.splice(0, 0, new yy.Lit('yield ' + this.runtimeFn('send'), ch[0].lineno));
+        ch.splice(0, 0, new yy.Lit((this.useYield ? 'yield ' : '') + this.runtimeFn('send'), ch[0].lineno));
         ch.push(new yy.Lit(')', ch[ch.length - 1].lineno));
     }
 })
@@ -1888,6 +1897,8 @@ yy.SendAsyncNode = Class(yy.Node, {
 yy.ReceiveAsyncNode = Class(yy.Node, {
 
     type: 'ReceiveAsyncNode',
+
+    useYield: true,
 
     compile: function() {
         if (! isInGoExpr(this)) {
@@ -1897,7 +1908,7 @@ yy.ReceiveAsyncNode = Class(yy.Node, {
         var
         ch = this.children;
 
-        ch[0].children = 'yield ' + this.runtimeFn('receive');
+        ch[0].children = (this.useYield ? 'yield ' : '') + this.runtimeFn('receive');
         ch.push(new yy.Lit(')', ch[ch.length - 1].lineno));
     }
 })
@@ -1932,6 +1943,109 @@ yy.TemplateLiteralNode = Class(yy.Node, {
             }
         }
     }
+})
+
+yy.RaceNode = Class(yy.Node, {
+
+    type: 'RaceNode',
+
+    racedVarName: '',
+
+    initNode: function() {
+        this.base('initNode', arguments);
+
+        var ctx = this.yy.env.context();
+        this.racedVarName = ctx.generateVar('raced');
+        ctx.addLocalVar(this.racedVarName);
+    },
+
+    processOperations: function() {
+        var
+        i, len, singleCase, cases,
+        leftHand, operator, body,
+        lineno = getLesserLineNumber(this),
+        count = 0, ch  = this.children,
+        collectedCases = [],
+        caseStmtList   = ch[0].children[1].children;
+
+        for (i = 0, len = caseStmtList.length; i < len; i++) {
+
+            singleCase = caseStmtList[i].children[1];
+
+            if (
+                singleCase instanceof yy.SendAsyncNode ||
+                singleCase instanceof yy.ReceiveAsyncNode ||
+                (singleCase instanceof yy.CallNode && singleCase.name == 'timeout') ||
+                singleCase instanceof yy.AssignmentNode
+            ) {
+                // process asignement node
+                if (singleCase instanceof yy.AssignmentNode) {
+                    if (singleCase.children[2] instanceof yy.ReceiveAsyncNode) {
+                        leftHand = singleCase.children.shift();
+                        operator = singleCase.children.shift();
+
+                        singleCase = singleCase.children[0];
+
+                        body = caseStmtList[i].children[3];
+                        body.addFront(leftHand, operator, new yy.Lit(this.racedVarName + '.value;', operator.lineno))    
+                    } else {
+                        this.error('unexpected ' + singleCase.type, singleCase.lineno);
+                    }
+                }
+
+                singleCase.useYield = false;
+                collectedCases.push(singleCase);
+                // setup case numbers
+                caseStmtList[i].children[1] = new yy.Lit(String(count++), getLesserLineNumber(singleCase));
+            } else {
+                this.error('unexpected ' + singleCase.type, singleCase.lineno);
+            }
+        }
+
+        // flatten
+        for (i = 0, len = collectedCases.length; i < len; i++) {
+            flattenToLine(collectedCases[i], lineno);
+        }
+
+        // insert commas
+        for (i = 1; i < collectedCases.length; i+=2) {
+            collectedCases.splice(i, 0, new yy.Lit(',', lineno));
+        }
+
+        this.children = collectedCases.concat(ch)
+    },
+
+    compile: function() {
+        var
+        ch    = this.children,
+        first = ch[0];
+
+        // remove first child
+        ch.shift();
+
+        // proc
+        this.processOperations();
+
+        ch = this.children;
+        ch.splice(0, 0, new yy.Lit('(' + this.racedVarName + ' = yield ' + this.runtimeFn('race') + '[', getLesserLineNumber(this)));
+
+        first.children = 'switch';
+        ch.unshift(first);
+
+        ch.splice(ch.length-1, 0, new yy.Lit(']), ' + this.racedVarName + '.which) ', ch[ch.length-2].lineno))
+    }
+
+})
+
+yy.RaceCaseNode = Class(yy.Node, {
+
+    type: 'RaceCaseNode',
+
+    compile: function() {
+        var ls = this.children[3];
+        ls.children.push(new yy.Lit(' break; ', ls.last().lineno - 1));
+    }
+
 })
 
 })(typeof cor === 'undefined' ? {} : cor);

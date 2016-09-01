@@ -84,6 +84,7 @@
 "for"                       return 'FOR'
 "in"                        return 'IN'
 "switch"                    return 'SWITCH'
+"race"                      return 'RACE'
 "case"                      return 'CASE'
 "default"                   return 'DEFAULT'
 "continue"                  return 'CONTINUE'
@@ -162,6 +163,7 @@ reactiveTerms = {
     'FOR'     : true,
     'IN'      : true,
     'SWITCH'  : true,
+    'RACE'    : true,
     'CASE'    : true,
     'DEFAULT' : true,
     'CONTINUE': true,
