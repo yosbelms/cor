@@ -378,7 +378,7 @@ Buffer.prototype = {
     },
 
     isFull: function() {
-        return !(this.array.length < this.size - 1);
+        return !(this.array.length < this.size);
     },
 
     isEmpty: function() {
