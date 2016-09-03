@@ -1868,7 +1868,7 @@ yy.GoExprNode = Class(yy.Node, {
         var
         ch     = this.children,
         fnNode = ch[1];
-        ch[0].children = this.runtimePrefix('go(function* go()');
+        ch[0].children = this.runtimePrefix('go(function* go($corCtx)');
 
         fnNode.children[fnNode.children.length - 1].children += ', this)';
     }
@@ -1945,18 +1945,18 @@ yy.TemplateLiteralNode = Class(yy.Node, {
     }
 })
 
-yy.RaceNode = Class(yy.Node, {
+yy.SelectNode = Class(yy.Node, {
 
-    type: 'RaceNode',
+    type: 'SelectNode',
 
-    racedVarName: '',
+    selectedVarName: '',
 
     initNode: function() {
         this.base('initNode', arguments);
 
         var ctx = this.yy.env.context();
-        this.racedVarName = ctx.generateVar('raced');
-        ctx.addLocalVar(this.racedVarName);
+        this.selectedVarName = ctx.generateVar('selected');
+        ctx.addLocalVar(this.selectedVarName);
     },
 
     processOperations: function() {
@@ -1987,7 +1987,7 @@ yy.RaceNode = Class(yy.Node, {
                         singleCase = singleCase.children[0];
 
                         body = caseStmtList[i].children[3];
-                        body.addFront(leftHand, operator, new yy.Lit(this.racedVarName + '.value;', operator.lineno))    
+                        body.addFront(leftHand, operator, new yy.Lit(this.selectedVarName + '.value;', operator.lineno))    
                     } else {
                         this.error('unexpected ' + singleCase.type, singleCase.lineno);
                     }
@@ -2027,19 +2027,19 @@ yy.RaceNode = Class(yy.Node, {
         this.processOperations();
 
         ch = this.children;
-        ch.splice(0, 0, new yy.Lit('(' + this.racedVarName + ' = yield ' + this.runtimeFn('race') + '[', getLesserLineNumber(this)));
+        ch.splice(0, 0, new yy.Lit('(' + this.selectedVarName + ' = yield ' + this.runtimeFn('select') + '[', getLesserLineNumber(this)));
 
         first.children = 'switch';
         ch.unshift(first);
 
-        ch.splice(ch.length-1, 0, new yy.Lit(']), ' + this.racedVarName + '.which) ', ch[ch.length-2].lineno))
+        ch.splice(ch.length-1, 0, new yy.Lit(']), ' + this.selectedVarName + '.which) ', ch[ch.length-2].lineno))
     }
 
 })
 
-yy.RaceCaseNode = Class(yy.Node, {
+yy.SelectCaseNode = Class(yy.Node, {
 
-    type: 'RaceCaseNode',
+    type: 'SelectCaseNode',
 
     compile: function() {
         var ls = this.children[3];

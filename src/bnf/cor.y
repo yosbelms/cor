@@ -285,24 +285,24 @@ CaseStmt
     ;
 
 // race statement
-RaceStmt
-    : RACE RaceCaseBlock                    { $$= new yy.RaceNode(new yy.Lit($1, @1), $2) }
+SelectStmt
+    : SELECT SelectCaseBlock                    { $$= new yy.SelectNode(new yy.Lit($1, @1), $2) }
     ;
 
-RaceCaseBlock
-    : '{' RaceCaseStmtList '}'              { $$= new yy.Node(new yy.Lit($1, @1), $2, new yy.Lit($3, @3)) }
+SelectCaseBlock
+    : '{' SelectCaseStmtList '}'              { $$= new yy.Node(new yy.Lit($1, @1), $2, new yy.Lit($3, @3)) }
     ;
 
-RaceCaseStmtList
-    : RaceCaseStmt                          { $$ = new yy.List($1) }
-    | RaceCaseStmtList RaceCaseStmt         { $1.add($2) }
+SelectCaseStmtList
+    : SelectCaseStmt                          { $$ = new yy.List($1) }
+    | SelectCaseStmtList SelectCaseStmt         { $1.add($2) }
     ;
 
-RaceCaseStmt
-    : CASE Expr ':' StrictStmtList          { $$= new yy.RaceCaseNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3), $4) }
+SelectCaseStmt
+    : CASE Expr ':' StrictStmtList          { $$= new yy.SelectCaseNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3), $4) }
     | DEFAULT ':' StrictStmtList            {
 
-                $$= new yy.RaceCaseNode(
+                $$= new yy.SelectCaseNode(
                     new yy.Lit('case', @1),
                     new yy.CallNode(
                         new yy.VarNode(new yy.Lit('timeout', @1)),
@@ -354,7 +354,7 @@ Stmt
     | ForInStmt
     | ForInRangeStmt
     | SwitchStmt
-    | RaceStmt
+    | SelectStmt
     | ReturnStmt
     | BreakStmt
     | ContinueStmt
@@ -500,7 +500,7 @@ Property
     | BOOLEAN
     | CATCH
     | GO
-    | RACE
+    | SELECT
     ;
 
 IndexExpr
