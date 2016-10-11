@@ -18,7 +18,7 @@ func init() go {
     producer(ch, 200)
     reader(out)
 
-    for (x = <- ch)? {
+    for x = <- ch {
         out <- x
     }
 

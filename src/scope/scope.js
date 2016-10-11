@@ -8,7 +8,7 @@ var EcmaReservedKeywords = [
     'continue', 'for', 'switch', 'while',
     'debugger', 'function', 'with',
     'default', 'if', 'throw',
-    'delete', 'in', 'try',
+    'delete', 'in', 'try', 'null',
 
     // Ecma-262 FutureReservedWord
     'class', 'enum', 'extends',
@@ -97,6 +97,10 @@ function isBuiltinFn(name) {
 
 function isEcmaReservedKeyWord(name) {
     return EcmaReservedKeywords.indexOf(name) !== -1;
+}
+
+function isUsedAsStatement(node) {
+    return node.parent instanceof yy.SimpleStmtNode;
 }
 
 yy.parseError = function parseError (msg, hash, replaceMsg) {
@@ -1449,7 +1453,7 @@ yy.CallNode = Class(yy.Node, {
 
     copyBuiltin: function() {
         var ch = this.children;
-        ch[0].children[0].children = this.runtimePrefix('copyObj');
+        ch[0].children[0].children = this.runtimePrefix('copy');
     }
 });
 
@@ -1541,10 +1545,28 @@ yy.ForNode = Class(yy.Node, {
     type: 'ForNode',
 
     compile: function() {
-        var ch = this.children;
+        var ch = this.children, operation, chanName, block;
 
         if (ch.length <= 3) {
             ch[0].children = 'while ';
+        }
+
+        // channel receiving
+        if (ch.length === 3 && ch[1] instanceof yy.AssignmentNode && ch[1].children[2] instanceof yy.ReceiveAsyncNode) {
+            operation = ch[1];
+            chanName  = operation.children[2].channelVarName;
+            block     = ch[2];
+
+            ch.splice(1, 1);
+
+            block.children.splice(1, 0,
+                new yy.Lit(
+                    '; if (' + this.runtimePrefix('isChannel(') + chanName + ') && ' + chanName + '.closed) break;',
+                    block.children[0].lineno
+                )
+            );
+
+            block.children.splice(1, 0, operation);
         }
 
         if (ch.length === 2) {
@@ -1868,7 +1890,7 @@ yy.GoExprNode = Class(yy.Node, {
         var
         ch     = this.children,
         fnNode = ch[1];
-        ch[0].children = this.runtimePrefix('go(function* go($corCtx)');
+        ch[0].children = this.runtimePrefix('go(function* go()');
 
         fnNode.children[fnNode.children.length - 1].children += ', this)';
     }
@@ -1878,7 +1900,18 @@ yy.SendAsyncNode = Class(yy.Node, {
 
     type: 'SendAsyncNode',
 
-    useYield: true,
+    initNode: function() {
+        this.base('initNode', arguments);
+        var ctx;
+
+        if (this.children[0] instanceof yy.VarNode) {
+            this.channelVarName = this.children[0].name;
+        } else {
+            ctx = this.yy.env.context();
+            this.channelVarName = ctx.generateVar('ch');
+            ctx.addLocalVar(this.channelVarName);    
+        }
+    },
 
     compile: function() {
         if (! isInGoExpr(this)) {
@@ -1886,11 +1919,53 @@ yy.SendAsyncNode = Class(yy.Node, {
         }
 
         var
-        ch = this.children;
-        ch[1].children = ',';
+        newChildren,
+        ch    = this.children,
+        isVar = ch[0] instanceof yy.VarNode;
 
-        ch.splice(0, 0, new yy.Lit((this.useYield ? 'yield ' : '') + this.runtimeFn('send'), ch[0].lineno));
-        ch.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+        if (isVar) {
+            newChildren = [];
+        } else {
+            newChildren = [
+                new yy.Lit('(', ch[0].lineno),
+                new yy.Lit(this.channelVarName + ' = ', ch[0].lineno),
+                ch[0],
+                new yy.Lit(',', ch[0].lineno),
+            ];
+        }
+
+        this.children = newChildren.concat(
+            this.compileRequest(),
+            [new yy.Lit('&&', ch[0].lineno)],
+            this.compilePerform()
+        );
+
+        if (isUsedAsStatement(this)) {
+            this.children.unshift(new yy.Lit(';', ch[0].lineno));
+        }
+
+        if (!isVar) {
+            this.children.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+        }
+    },
+
+    compileRequest: function() {
+        var
+        ch = this.children;
+        return [
+            new yy.Lit('(yield ' + this.runtimeFn('requestSend') + this.channelVarName, ch[0].lineno),
+            new yy.Lit('))', ch[0].lineno)
+        ]
+    },
+
+    compilePerform: function() {
+        var
+        ch = this.children;
+        return [
+            new yy.Lit('(yield ' + this.runtimeFn('performSend') + this.channelVarName + ', ', ch[2].lineno),
+            ch[2],
+            new yy.Lit('))', ch[2].lineno)
+        ]
     }
 })
 
@@ -1898,7 +1973,18 @@ yy.ReceiveAsyncNode = Class(yy.Node, {
 
     type: 'ReceiveAsyncNode',
 
-    useYield: true,
+    initNode: function() {
+        this.base('initNode', arguments);
+        var ctx;
+
+        if (this.children[1] instanceof yy.VarNode) {
+            this.channelVarName = this.children[1].name;
+        } else {
+            ctx = this.yy.env.context();
+            this.channelVarName = ctx.generateVar('ch');
+            ctx.addLocalVar(this.channelVarName);    
+        }
+    },
 
     compile: function() {
         if (! isInGoExpr(this)) {
@@ -1906,10 +1992,53 @@ yy.ReceiveAsyncNode = Class(yy.Node, {
         }
 
         var
-        ch = this.children;
+        newChildren,
+        ch    = this.children,
+        isVar = ch[1] instanceof yy.VarNode;
 
-        ch[0].children = (this.useYield ? 'yield ' : '') + this.runtimeFn('receive');
-        ch.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+        if (isVar) {
+            newChildren = [];
+        } else {
+            newChildren = [
+                new yy.Lit('(', ch[0].lineno),
+                new yy.Lit(this.channelVarName + ' = ', ch[0].lineno),
+                ch[1],
+                new yy.Lit(',', ch[1].lineno),
+            ];
+        }
+
+        this.children = newChildren.concat(
+            this.compileRequest(),
+            [new yy.Lit('? ', ch[1].lineno)],
+            this.compilePerform(),
+            [new yy.Lit(': void 0', ch[1].lineno)]
+        );
+
+        if (isUsedAsStatement(this)) {
+            this.children.unshift(new yy.Lit(';', ch[0].lineno));
+        }
+
+        if (!isVar) {
+            this.children.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+        }
+    },
+
+    compileRequest: function() {
+        var
+        ch = this.children;
+        return [
+            new yy.Lit('(yield ' + this.runtimeFn('requestRecv') + this.channelVarName, ch[1].lineno),
+            new yy.Lit('))', ch[1].lineno)
+        ]
+    },
+
+    compilePerform: function() {
+        var
+        ch = this.children;
+        return [
+            new yy.Lit('(yield ' + this.runtimeFn('performRecv')  + this.channelVarName, ch[1].lineno),
+            new yy.Lit('))', ch[1].lineno)
+        ]
     }
 })
 

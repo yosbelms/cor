@@ -71,25 +71,6 @@ go {
 }
 ```
 
-```
-// parallel
-go {
-    result = <- (
-        books    : fetch.get('http://api.com/books'),
-        articles : fetch.get('http://api.com/articles'),
-    )
-
-    for book in result.books {
-        //..
-    }
-
-    for articles in result.articles {
-        //..
-    }
-}
-
-```
-
 ### Slices/Coalesce Operator/Conditional Operator
 ```
 ---
@@ -646,24 +627,6 @@ go {
     accounts = <- fetch.get('http://api.com/accounts')
     for account in accounts {
         //...
-    }
-}
-```
-
-If receiving a array or object of future values it will resolve all values in parallel.
-```
-go {
-    result = <- (
-        books    : fetch.get('http://api.com/books'),
-        articles : fetch.get('http://api.com/articles'),
-    )
-
-    for book in result.books {
-        //..
-    }
-
-    for articles in result.articles {
-        //..
     }
 }
 ```
@@ -1596,4 +1559,4 @@ The Cor distribution for browsers is recomended only for development purpose, to
 
 ## The CRL (Cor Runtime Library)
 
-The CRL is a small (~13Kb unminified and uncompressed) library which makes possible to take advantage of features such as *for/in statements, inheritance, type assertions, among others*. Without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by the javascript resulting code.
+The CRL is a small (~11Kb unminified and uncompressed) library which makes possible to take advantage of features such as *for/in statements, inheritance, type assertions, among others*. Without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by the javascript resulting code.

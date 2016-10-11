@@ -2,44 +2,43 @@
 func test() {
 
     describe('Unbuffered channels', func() {
-
         it('Should behave sending and receving messages synchronously', func(done) {
-            func proc(ch, name) go {
-                m
-                for !ch.closed {
-                    m = <- ch
-                    m.stack.push(0)       // register receive
-                    m.procTick.push(name) // register this execution
 
-                    ch <- m
-                    m.stack.push(1) // register send
+            func proc(ch, name) go {
+                msg
+                for msg = <- ch {
+                    msg.stack.push(0)       // register receive
+                    msg.procTick.push(name) // register this execution
+                    catch ch <- msg {break}
+                    msg.stack.push(1)        // register send
                 }
             }
 
 
-            (func() go {
+            go {
                 ch  = chan()
                 msg = (stack: (,), procTick: (,))
 
                 // send inside another `go` block
                 // to don't affect the current coroutine
                 go { ch <- msg }
+                
+                proc(ch, 'a')
+                proc(ch, 'b')
 
-                proc(ch, 0)
-                proc(ch, 1)
-
-                timeout(20)
+                timeout(10)
                 ch.close()
 
                 // alternate get and send
                 expect(msg.stack[1:5]).toEqual((0, 1, 0, 1))
 
                 // altername procs execution
-                expect(msg.procTick[0:4]).toEqual((0, 1, 0, 1))
+                expect(msg.procTick[0:4]).toEqual(('a', 'b', 'a', 'b'))
                 done()
-            })()
+            }
 
         })
+        
 
     })
 
@@ -50,20 +49,18 @@ func test() {
 
             func procSend(ch) go {
                 for !ch.closed {
-                    ch <- 0
+                    catch ch <- 0 {break}
                     arr.push(0) // register send
                 }
             }
 
             func procReceive(ch) go {
-                for !ch.closed {
-                    <- ch
+                for x = <- ch {
                     arr.push(1) // register receive
                 }
             }
 
-
-            (func() go {
+            go {
                 ch = chan(5)
 
                 procSend(ch)
@@ -74,7 +71,7 @@ func test() {
 
                 expect(arr[0:3]).toEqual((0, 0, 0))
                 done()
-            })()
+            }
 
         })
 
