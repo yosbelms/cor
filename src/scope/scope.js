@@ -1290,7 +1290,7 @@ yy.CallNode = Class(yy.Node, {
 
     name: null,
 
-    useYield: true,
+    forSelect: false,
 
     initNode: function() {
         this.base('initNode', arguments);
@@ -1448,7 +1448,7 @@ yy.CallNode = Class(yy.Node, {
 
         var ch = this.children;
         ch[0].children[0].children = this.runtimePrefix('timeout');
-        ch.unshift(new yy.Lit((this.useYield ? 'yield ' : ''), getLesserLineNumber(ch[0])))
+        ch.unshift(new yy.Lit((this.forSelect ? '' : 'yield '), getLesserLineNumber(ch[0])))
     },
 
     copyBuiltin: function() {
@@ -1664,7 +1664,7 @@ yy.ForInRangeNode = Class(yy.Node, {
 
         i = ch[1].children[0].children;
         from = ch[3] || new yy.Lit('0', ch[0].lineno);
-        to   = ch[5] || new yy.Lit('9e9', ch[0].lineno);
+        to   = ch[5] || new yy.Lit('Infinity', ch[0].lineno);
 
         /*
         for i in n:m { }
@@ -1934,11 +1934,10 @@ yy.SendAsyncNode = Class(yy.Node, {
             ];
         }
 
-        this.children = newChildren.concat(
+        this.children = newChildren.concat([
             this.compileRequest(),
-            [new yy.Lit('&&', ch[0].lineno)],
-            this.compilePerform()
-        );
+            new yy.Lit('&&', ch[0].lineno)
+        ].concat(this.compilePerform()));
 
         if (isUsedAsStatement(this)) {
             this.children.unshift(new yy.Lit(';', ch[0].lineno));
@@ -1952,10 +1951,8 @@ yy.SendAsyncNode = Class(yy.Node, {
     compileRequest: function() {
         var
         ch = this.children;
-        return [
-            new yy.Lit('(yield ' + this.runtimeFn('requestSend') + this.channelVarName, ch[0].lineno),
-            new yy.Lit('))', ch[0].lineno)
-        ]
+
+        return new yy.Lit('(yield ' + this.runtimeFn('requestSend') + this.channelVarName + '))', ch[0].lineno);
     },
 
     compilePerform: function() {
@@ -1972,6 +1969,8 @@ yy.SendAsyncNode = Class(yy.Node, {
 yy.ReceiveAsyncNode = Class(yy.Node, {
 
     type: 'ReceiveAsyncNode',
+
+    forSelect: false,
 
     initNode: function() {
         this.base('initNode', arguments);
@@ -2007,12 +2006,20 @@ yy.ReceiveAsyncNode = Class(yy.Node, {
             ];
         }
 
-        this.children = newChildren.concat(
-            this.compileRequest(),
-            [new yy.Lit('? ', ch[1].lineno)],
-            this.compilePerform(),
-            [new yy.Lit(': void 0', ch[1].lineno)]
-        );
+        if (this.forSelect) {
+            this.children = newChildren.concat([
+                this.compileRequest()
+            ]);
+        } else {
+            this.children = newChildren.concat([
+                this.compileRequest(),
+                new yy.Lit('? ', ch[1].lineno),
+                new yy.Lit('(', ch[1].lineno),
+                this.compilePerform(),
+                new yy.Lit(')', ch[1].lineno),
+                new yy.Lit(': void 0', ch[1].lineno)
+            ]);
+        }
 
         if (isUsedAsStatement(this)) {
             this.children.unshift(new yy.Lit(';', ch[0].lineno));
@@ -2023,22 +2030,28 @@ yy.ReceiveAsyncNode = Class(yy.Node, {
         }
     },
 
-    compileRequest: function() {
+    compileRequest: function(lineno) {
         var
-        ch = this.children;
-        return [
-            new yy.Lit('(yield ' + this.runtimeFn('requestRecv') + this.channelVarName, ch[1].lineno),
-            new yy.Lit('))', ch[1].lineno)
-        ]
+        ch = this.children,
+        fnName = this.forSelect ? 'requestRecvForSelect': 'requestRecv';
+
+        lineno = lineno || ch[1].lineno;
+
+        return new yy.Lit(
+            (this.forSelect ? '' : '(yield ') +
+            this.runtimeFn(fnName) +
+            this.channelVarName +
+            (this.forSelect ? ')' : '))'),
+        lineno);
     },
 
-    compilePerform: function() {
+    compilePerform: function(lineno) {
         var
         ch = this.children;
-        return [
-            new yy.Lit('(yield ' + this.runtimeFn('performRecv')  + this.channelVarName, ch[1].lineno),
-            new yy.Lit('))', ch[1].lineno)
-        ]
+
+        lineno = lineno || ch[1].lineno;
+
+        return new yy.Lit('yield ' + this.runtimeFn('performRecv')  + this.channelVarName + ')' + (this.forSelect ? ';' : ''), lineno)
     }
 })
 
@@ -2078,16 +2091,6 @@ yy.SelectNode = Class(yy.Node, {
 
     type: 'SelectNode',
 
-    selectedVarName: '',
-
-    initNode: function() {
-        this.base('initNode', arguments);
-
-        var ctx = this.yy.env.context();
-        this.selectedVarName = ctx.generateVar('selected');
-        ctx.addLocalVar(this.selectedVarName);
-    },
-
     processOperations: function() {
         var
         i, len, singleCase, cases,
@@ -2102,7 +2105,6 @@ yy.SelectNode = Class(yy.Node, {
             singleCase = caseStmtList[i].children[1];
 
             if (
-                singleCase instanceof yy.SendAsyncNode ||
                 singleCase instanceof yy.ReceiveAsyncNode ||
                 (singleCase instanceof yy.CallNode && singleCase.name == 'timeout') ||
                 singleCase instanceof yy.AssignmentNode
@@ -2114,16 +2116,18 @@ yy.SelectNode = Class(yy.Node, {
                         operator = singleCase.children.shift();
 
                         singleCase = singleCase.children[0];
+                        singleCase.forSelect = true;
 
                         body = caseStmtList[i].children[3];
-                        body.addFront(leftHand, operator, new yy.Lit(this.selectedVarName + '.value;', operator.lineno))    
+                        body.addFront(leftHand, operator, singleCase.compilePerform(operator.lineno));
                     } else {
                         this.error('unexpected ' + singleCase.type, singleCase.lineno);
                     }
                 }
 
-                singleCase.useYield = false;
+                singleCase.forSelect = true;
                 collectedCases.push(singleCase);
+
                 // setup case numbers
                 caseStmtList[i].children[1] = new yy.Lit(String(count++), getLesserLineNumber(singleCase));
             } else {
@@ -2156,12 +2160,12 @@ yy.SelectNode = Class(yy.Node, {
         this.processOperations();
 
         ch = this.children;
-        ch.splice(0, 0, new yy.Lit('(' + this.selectedVarName + ' = yield ' + this.runtimeFn('select') + '[', getLesserLineNumber(this)));
+        ch.splice(0, 0, new yy.Lit('(yield ' + this.runtimeFn('select') + '[', getLesserLineNumber(this)));
 
         first.children = 'switch';
         ch.unshift(first);
 
-        ch.splice(ch.length-1, 0, new yy.Lit(']), ' + this.selectedVarName + '.which) ', ch[ch.length-2].lineno))
+        ch.splice(ch.length-1, 0, new yy.Lit('])) ', ch[ch.length-2].lineno))
     }
 
 })

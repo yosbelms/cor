@@ -286,16 +286,16 @@ CaseStmt
 
 // race statement
 SelectStmt
-    : SELECT SelectCaseBlock                    { $$= new yy.SelectNode(new yy.Lit($1, @1), $2) }
+    : SELECT SelectCaseBlock                { $$= new yy.SelectNode(new yy.Lit($1, @1), $2) }
     ;
 
 SelectCaseBlock
-    : '{' SelectCaseStmtList '}'              { $$= new yy.Node(new yy.Lit($1, @1), $2, new yy.Lit($3, @3)) }
+    : '{' SelectCaseStmtList '}'            { $$= new yy.Node(new yy.Lit($1, @1), $2, new yy.Lit($3, @3)) }
     ;
 
 SelectCaseStmtList
-    : SelectCaseStmt                          { $$ = new yy.List($1) }
-    | SelectCaseStmtList SelectCaseStmt         { $1.add($2) }
+    : SelectCaseStmt                        { $$ = new yy.List($1) }
+    | SelectCaseStmtList SelectCaseStmt     { $1.add($2) }
     ;
 
 SelectCaseStmt
