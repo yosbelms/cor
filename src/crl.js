@@ -20,7 +20,7 @@ nativeTypes = {
 
 // copy object own properties from an source `src` to a destiny `dst`
 // returns the destiny object
-CRL.copyObj = Object.assign ? Object.assign : function copyObj(dest, src) {
+CRL.copy = Object.assign ? Object.assign : function copy(dest, src) {
     var name;
 
     for (name in src) {
@@ -35,7 +35,7 @@ CRL.copyObj = Object.assign ? Object.assign : function copyObj(dest, src) {
 // convert a class in a subclass of other class
 // CRL.subclass(Subclass, Superclass)
 CRL.subclass = function subclass(subClass, superClass) {
-    CRL.copyObj(subClass, superClass);
+    CRL.copy(subClass, superClass);
 
     function Proto() {
         this.constructor = subClass;
@@ -184,7 +184,7 @@ Promise.doResolve = function doResolve(p, value) {
 Promise.doReject = function doReject(p, reason) {
 
     if (p.catchListeners.length === 0) {
-        console.log('Uncaught (in promise): ' + reason);
+        console.error('Uncaught (in promise): ' + reason);
     }
 
     p.catchListeners.forEach(function(listener) {
@@ -195,46 +195,6 @@ Promise.doReject = function doReject(p, reason) {
     p.reason    = reason;
     p.completed = true;
 };
-
-Promise.all = function all(array) {
-    var promise,
-    i          = -1,
-    numPending = 0,
-    result     = [],
-    len        = array.length;
-
-    return new Promise(function(resolve) {
-        while (++i < len) {
-            promise = array[i];
-            if (isPromise(promise)) {
-                setupThen(promise, i);
-            }
-            else {
-                result[i] = array[i];
-                tryToResolve();
-            }
-        }
-
-        function setupThen(promise, i) {
-            numPending++;
-
-            // default value
-            result[i] = void 0;
-
-            promise.then(function(value) {
-                result[i] = value;
-                numPending--;
-                tryToResolve();
-            })
-        }
-
-        function tryToResolve() {
-            if (numPending === 0) {
-                resolve(result)
-            }
-        }
-    })
-}
 
 Promise.defer = function defer() {
     var deferred     = {};
@@ -247,13 +207,7 @@ Promise.defer = function defer() {
     return deferred;
 }
 
-
 CRL.Promise = Promise;
-
-// polyfill Promise
-if (typeof global.Promise !== 'function') {
-    global.Promise = CRL.Promise;
-}
 
 // Coroutines
 // Schedule
@@ -273,23 +227,36 @@ function isFunction(f) {
     return typeof f === 'function';
 }
 
-function isObject(obj) {
-    return obj && Object == obj.constructor;
+function isChannel(ch) {
+    return ch instanceof Channel;
 }
 
-function isArray(arr) {
-    return Array.isArray(arr);
+CRL.isChannel = isChannel;
+
+function timeout(time, v) {
+    if (!isNaN(time) && time !== null) {
+        return new CRL.Promise(function(resolve) {
+            schedule(function() { resolve(v) }, time)
+        })
+    }
+
+    throw 'Invalid time';
 }
 
-// Generator Runner
-CRL.go = function go(genf, ctx) {
-    var state, gen = genf.apply(ctx || {});
+CRL.timeout = timeout;
+
+// Generator Runner (Corountines)
+CRL.go = function go(genf, _this) {
+    var state, promise,
+    gen = genf.call(_this || {});
 
     return new CRL.Promise(function(resolve, reject) {
+
         // ensure it runs asynchronously
         schedule(next);
 
         function next(value) {
+
             if (state && state.done) {
                 resolve(value);
                 return;
@@ -304,12 +271,13 @@ CRL.go = function go(genf, ctx) {
             }
 
             if (isPromise(value)) {
+                // blocked
                 value.then(
                     function onFulfilled(value) {
-                        next(value)
+                        next(value);
                     },
                     function onRejected(reason) {
-                        gen.throw(reason)
+                        gen.throw(reason);
                     }
                 )
                 return;
@@ -320,114 +288,7 @@ CRL.go = function go(genf, ctx) {
     })
 }
 
-// convert to promise as much possible
-function toPromise(obj) {
-    if (isPromise(obj)) {
-        return obj;
-    }
-
-    if (isArray(obj)) {
-        return arrayToPromise(obj);
-    }
-
-    if (isObject(obj)) {
-        return objectToPromise(obj);
-    }
-}
-
-// convert array to promise
-function arrayToPromise(array) {
-    var promise;
-    return CRL.Promise.all(array.map(function(value) {
-        promise = toPromise(value);
-        if (isPromise(promise)) {
-            return promise;
-        }
-
-        return value;
-    }));
-}
-
-// convert object to promise
-function objectToPromise(obj) {
-    var key, promise, ret,
-    promises = [],
-    result   = {},
-    i        = -1,
-    keys     = Object.keys(obj),
-    len      = keys.length;
-
-    ret = new CRL.Promise(function(resolve) {
-
-        while (++i < len) {
-            key     = keys[i];
-            promise = toPromise(obj[key]);
-            if (isPromise(promise)) {
-                setupThen(promise, key);
-            }
-            else {
-                result[key] = obj[key];
-            }
-        }
-
-        CRL.Promise.all(promises).then(function() {
-            resolve(result);
-        })
-
-        function setupThen(promise, key) {
-            // default value
-            result[key] = void 0;
-
-            promise.then(function(value) {
-                result[key] = value;
-            })
-
-            promises.push(promise);
-        }
-
-    })
-
-    return ret;
-}
-
-// receiver
-CRL.receive = function receive(obj) {
-    var prom;
-
-    if (obj && isFunction(obj.receive)) {
-        return obj.receive();
-    }
-
-    prom = toPromise(obj);
-    if (isPromise(prom)) {
-        return prom;
-    }
-
-    return obj;
-}
-
-// sender
-CRL.send = function send(obj, value) {
-    if (obj && isFunction(obj.send)) {
-        return obj.send(value);
-    }
-    throw 'unable to receive values';
-}
-
-
-function timeout(time) {
-    if (!isNaN(time) && time !== null) {
-        return new CRL.Promise(function(resolve) {
-            schedule(resolve, time)
-        })
-    }
-
-    throw 'Invalid time';
-}
-
-CRL.timeout = timeout;
-
-// Buffer: simple array based buffer to use with channels
+// Buffer: array based buffer to use with channels
 function Buffer(size) {
     this.size  = isNaN(size) ? 1 : size;
     this.array = [];
@@ -454,150 +315,236 @@ Buffer.prototype = {
     }
 }
 
-function isBuffer(b) {
-    return (b
-        && isFunction(b.read)
-        && isFunction(b.write)
-        && isFunction(b.isFull)
-        && isFunction(b.isEmpty));
-}
-
-// Channel: a structure to transport messages
-function indentityFn(x) {return x}
-
-function scheduledResolve(deferred, value) {
+function scheduleResolveDeferred(deferred, value) {
     schedule(function() { deferred.resolve(value) })
 }
 
-function Channel(buffer, transform) {
-    this.buffer           = buffer;
-    this.closed           = false;
-    this.data             = void 0;
-    this.senderPromises   = [];
-    this.receiverPromises = [];
-    this.transform        = transform || indentityFn;
+function detachAllPromises(array) {
+    var promise, reg, i, j;
+
+    for (i = 0; i < array.length; i++) {
+        promise = array[i];
+
+        if (isPromise(promise) && promise.registry) {
+            // detach the promise from its registry
+            reg = promise.registry;
+            for (j = 0; j < reg.length; j++) {
+                if (reg[j].promise === promise) {
+                    reg.splice(j, 1);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+// Channel: a structure to transport messages
+function Channel() {
+    this.closed         = false;
+    this.data           = void 0;
+    this.senderPromises = [];
+    this.recverPromises = [];
 }
 
 Channel.prototype = {
 
-    receive: function() {
-        var data, deferred;
+    isFull: function() {
+        return this.data !== void 0;
+    },
 
-        // is unbuffered
-        if (! this.buffer) {
-            // there is data?
-            if (this.data !== void 0) {
-                // resume the first sender coroutine
-                if (this.senderPromises[0]) {
-                    scheduledResolve(this.senderPromises.shift());
-                }
-                // clean and return
-                data      = this.data;
-                this.data = void 0;
-                return data;
+    hasData: function() {
+        return this.data !== void 0;
+    },
 
-            // if no data
-            } else {
-                // suspend the coroutine wanting to receive
-                deferred = Promise.defer();
-                this.receiverPromises.push(deferred);
-                return deferred.promise;
-            }
+    newSenderPromise: function() {
+        var deferred = Promise.defer();
+        this.senderPromises.push(deferred);
+        // add a reference to the regsitry for easy detach
+        deferred.promise.registry = this.senderPromises;
+        return deferred.promise;
+    },
+
+    newRecverPromise: function() {
+        var deferred = Promise.defer();
+        this.recverPromises.push(deferred);
+        // add a reference to the regsitry for easy detach
+        deferred.promise.registry = this.recverPromises;
+        return deferred.promise;
+    },
+
+    performRecv: function() {
+        var data  = this.data;
+        this.data = void 0;
+        this.unblockSender();
+        return data;
+    },
+
+    performSend: function(data) {
+        if (this.closed) {
+            throw 'closed channel'
         }
+        this.data = data;
+        this.unblockReceiver();
+        return timeout(0);
+    },
 
-        // if buffered
-        // empty buffer?
-        if (this.buffer.isEmpty()) {
-            // suspend the coroutine wanting to receive
-            deferred = Promise.defer();
-            this.receiverPromises.push(deferred);
-            return deferred.promise;
-
-        // some value in the buffer?
-        } else {
-            // resume the first sender coroutine
-            if (this.senderPromises[0]) {
-                scheduledResolve(this.senderPromises.shift());
-            }
-            // clean and return
-            return this.buffer.read();
+    unblockSender: function() {
+        if (this.senderPromises.length) {
+            // async unblock the first sender
+            scheduleResolveDeferred(this.senderPromises.shift(), true);
+            //this.senderPromises.shift().resolve(true);
         }
     },
 
-    send: function(data) {
-        if (this.closed) { throw 'closed channel' }
-        var deferred;
-
-        // is unbuffered
-        if (! this.buffer) {
-            // some stored data?
-            if (this.data !== void 0) {
-                // deliver data to the first waiting coroutine
-                if (this.receiverPromises[0]) {
-                    scheduledResolve(this.receiverPromises.shift(), this.data);
-                }
-
-            // no stored data?
-            } else {
-                // pass sent data directly to the first waiting for it
-                if (this.receiverPromises[0]) {
-                    this.data = void 0;
-                    scheduledResolve(this.receiverPromises.shift(), this.transform(data));
-                    // schedule the the sender coroutine
-                    return timeout(0);
-                }
-            }
-
-            // else, store the transformed data
-            this.data = this.transform(data);
-            deferred = Promise.defer();
-            this.senderPromises.push(deferred);
-            return deferred.promise;
-        }
-
-        // if buffered
-        // emty buffer?
-        if (! this.buffer.isFull()) {
-            // TODO: optimize below code
-            // store sent value in the buffer
-            this.buffer.write(this.transform(data));
-            // if any waiting for the data, give it
-            if (this.receiverPromises[0]) {
-                scheduledResolve(this.receiverPromises.shift(), this.buffer.read());
-            }
-        }
-
-        // full buffer?
-        if (this.buffer.isFull()) {
-            // stop until the buffer start to be drained
-            deferred = Promise.defer();
-            this.senderPromises.push(deferred);
-            return deferred.promise;
+    unblockReceiver: function() {
+        if (this.recverPromises.length) {
+            // inmediately unblock the first receiver
+            this.recverPromises.shift().resolve(true);
         }
     },
 
     close: function() {
         this.closed         = true;
         this.senderPromises = [];
-        while (this.receiverPromises.length) {
-            scheduledResolve(this.receiverPromises.shift());
+        while (this.recverPromises.length) {
+            scheduleResolveDeferred(this.recverPromises.shift(), false);
         }
     }
 }
 
-CRL.Channel = Channel;
+// Buffered Channel
+function BufferedChannel(buffer) {
+    Channel.call(this);
+    this.buffer = buffer;
+}
 
-CRL.chan = function chan(size, transform) {
-    if (isBuffer(size)) {
-        return new Channel(size, transform);
+BufferedChannel.prototype = new Channel();
+
+CRL.copy(BufferedChannel.prototype, {
+
+    senderPromises: null,
+
+    recverPromises: null,
+
+    isFull: function() {
+        return this.buffer.isFull();
+    },
+
+    hasData: function() {
+        return !this.buffer.isEmpty();
+    },
+
+    performRecv: function() {
+        var data = this.buffer.read();
+        this.unblockSender();
+        return data;
+    },
+
+    performSend: function(data) {
+        if (this.closed) { throw 'closed channel' }
+        this.buffer.write(data);
+        this.unblockReceiver();
+    }
+})
+
+// send
+CRL.requestSend = function requestSend(ch) {
+    if (! isChannel(ch)) {
+        throw 'invalid channel';
     }
 
+    if (ch.isFull()) {
+        return ch.newSenderPromise();
+    }
+
+    return true;
+}
+
+CRL.performSend = function performSend(ch, value) {
+    if (! isChannel(ch)) {
+        throw 'invalid channel';
+    }
+
+    return ch.performSend(value);
+}
+
+// receive
+// returns true if 'receive' can be performed
+// returns a promise otherwise
+CRL.requestRecv = function requestRecv(obj) {
+    if (isChannel(obj)) {
+        if (obj.hasData()) {
+            return true;
+        } else {
+            return obj.newRecverPromise();
+        }
+    }
+
+    return true;
+}
+
+// a special case is this request receiveing for select statement
+// where Promises are passed through
+CRL.requestRecvForSelect = function requestRecvForSelect(obj) {
+    if (isPromise(obj)) {
+        return obj;
+    }
+    return CRL.requestRecv(obj);
+}
+
+CRL.performRecv = function performRecv(obj) {
+    if (isChannel(obj)) {
+        return obj.performRecv();
+    }
+
+    return obj;
+}
+
+// select
+CRL.select = function select(array) {
+    var i, ready = [];
+
+    // look for ready promises
+    for (var i = 0; i < array.length; i++) {
+        if (array[i] === true) {
+            ready.push(i);
+        }
+    }
+
+    // select one of it if there is some value
+    if (ready.length) {
+        // perform random selection
+        return ready[Math.floor(Math.random() * ready.length)];
+    }
+
+    // return a Promise that resolves once some Promise
+    // is resolved. Detach promises from Channels where they are binded
+    return new CRL.Promise(function(resolve) {
+        var promise, isResolved = false;
+
+        array.forEach(function(promise, index) {
+            setupThen(promise, index, resolve);
+        })
+
+        function setupThen(promise, index, resolve) {
+            promise.then(function(value) {
+                if (isResolved) { return }
+                isResolved = true;
+                resolve(index);
+                // remove other promises
+                detachAllPromises(array);
+            })
+        }
+    })
+}
+
+CRL.chan = function chan(size) {
     // isNaN(null) == false  :O
     if (isNaN(size) || size === null) {
-        return new Channel(null, transform);
+        return new Channel();
     }
 
-    return new Channel(new Buffer(size), transform);
+    return new BufferedChannel(new Buffer(size));
 }
 
 })(this);

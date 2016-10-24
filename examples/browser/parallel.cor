@@ -6,6 +6,9 @@ We mock `fetch` API and iterate over future values
 that contains the result of each request
 ---
 
+// inject promise implementation
+CRL.Promise = Promise
+
 // append to the body
 func print(txt) document.body.innerHTML += $'<pre>{txt}</pre>'
 
@@ -21,11 +24,11 @@ fetch = (
 func init() go {
     print('Parallel Ajax resolution')
 
-    for result in <- (
+    r = <- Promise.all((
         fetch.get('github.com'),
         fetch.get('twitter.com'),
         fetch.get('facebook.com'),
-    ) {
-        print(result)
-    }
+    ))
+
+    print(r)
 }
