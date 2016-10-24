@@ -51,7 +51,7 @@ nativeTypes = {
 
 // copy object own properties from an source `src` to a destiny `dst`
 // returns the destiny object
-CRL.copyObj = Object.assign ? Object.assign : function copyObj(dest, src) {
+CRL.copy = Object.assign ? Object.assign : function copy(dest, src) {
     var name;
 
     for (name in src) {
@@ -66,7 +66,7 @@ CRL.copyObj = Object.assign ? Object.assign : function copyObj(dest, src) {
 // convert a class in a subclass of other class
 // CRL.subclass(Subclass, Superclass)
 CRL.subclass = function subclass(subClass, superClass) {
-    CRL.copyObj(subClass, superClass);
+    CRL.copy(subClass, superClass);
 
     function Proto() {
         this.constructor = subClass;
@@ -215,7 +215,7 @@ Promise.doResolve = function doResolve(p, value) {
 Promise.doReject = function doReject(p, reason) {
 
     if (p.catchListeners.length === 0) {
-        console.log('Uncaught (in promise): ' + reason);
+        console.error('Uncaught (in promise): ' + reason);
     }
 
     p.catchListeners.forEach(function(listener) {
@@ -226,46 +226,6 @@ Promise.doReject = function doReject(p, reason) {
     p.reason    = reason;
     p.completed = true;
 };
-
-Promise.all = function all(array) {
-    var promise,
-    i          = -1,
-    numPending = 0,
-    result     = [],
-    len        = array.length;
-
-    return new Promise(function(resolve) {
-        while (++i < len) {
-            promise = array[i];
-            if (isPromise(promise)) {
-                setupThen(promise, i);
-            }
-            else {
-                result[i] = array[i];
-                tryToResolve();
-            }
-        }
-
-        function setupThen(promise, i) {
-            numPending++;
-
-            // default value
-            result[i] = void 0;
-
-            promise.then(function(value) {
-                result[i] = value;
-                numPending--;
-                tryToResolve();
-            })
-        }
-
-        function tryToResolve() {
-            if (numPending === 0) {
-                resolve(result)
-            }
-        }
-    })
-}
 
 Promise.defer = function defer() {
     var deferred     = {};
@@ -278,13 +238,7 @@ Promise.defer = function defer() {
     return deferred;
 }
 
-
 CRL.Promise = Promise;
-
-// polyfill Promise
-if (typeof global.Promise !== 'function') {
-    global.Promise = CRL.Promise;
-}
 
 // Coroutines
 // Schedule
@@ -297,30 +251,43 @@ function schedule(fn, time) {
 }
 
 function isPromise(p) {
-    return p && typeof p.then === 'function';
+    return p && typeof p.then === 'function' && typeof p.catch === 'function';
 }
 
 function isFunction(f) {
     return typeof f === 'function';
 }
 
-function isObject(obj) {
-    return obj && Object == obj.constructor;
+function isChannel(ch) {
+    return ch instanceof Channel;
 }
 
-function isArray(arr) {
-    return Array.isArray(arr);
+CRL.isChannel = isChannel;
+
+function timeout(time, v) {
+    if (!isNaN(time) && time !== null) {
+        return new CRL.Promise(function(resolve) {
+            schedule(function() { resolve(v) }, time)
+        })
+    }
+
+    throw 'Invalid time';
 }
 
-// Generator Runner
-CRL.go = function go(genf, ctx) {
-    var state, gen = genf.apply(ctx || {});
+CRL.timeout = timeout;
+
+// Generator Runner (Corountines)
+CRL.go = function go(genf, _this) {
+    var state, promise,
+    gen = genf.call(_this || {});
 
     return new CRL.Promise(function(resolve, reject) {
+
         // ensure it runs asynchronously
         schedule(next);
 
         function next(value) {
+
             if (state && state.done) {
                 resolve(value);
                 return;
@@ -335,12 +302,13 @@ CRL.go = function go(genf, ctx) {
             }
 
             if (isPromise(value)) {
+                // blocked
                 value.then(
                     function onFulfilled(value) {
-                        next(value)
+                        next(value);
                     },
                     function onRejected(reason) {
-                        gen.throw(reason)
+                        gen.throw(reason);
                     }
                 )
                 return;
@@ -351,114 +319,7 @@ CRL.go = function go(genf, ctx) {
     })
 }
 
-// convert to promise as much possible
-function toPromise(obj) {
-    if (isPromise(obj)) {
-        return obj;
-    }
-
-    if (isArray(obj)) {
-        return arrayToPromise(obj);
-    }
-
-    if (isObject(obj)) {
-        return objectToPromise(obj);
-    }
-}
-
-// convert array to promise
-function arrayToPromise(array) {
-    var promise;
-    return CRL.Promise.all(array.map(function(value) {
-        promise = toPromise(value);
-        if (isPromise(promise)) {
-            return promise;
-        }
-
-        return value;
-    }));
-}
-
-// convert object to promise
-function objectToPromise(obj) {
-    var key, promise, ret,
-    promises = [],
-    result   = {},
-    i        = -1,
-    keys     = Object.keys(obj),
-    len      = keys.length;
-
-    ret = new CRL.Promise(function(resolve) {
-
-        while (++i < len) {
-            key     = keys[i];
-            promise = toPromise(obj[key]);
-            if (isPromise(promise)) {
-                setupThen(promise, key);
-            }
-            else {
-                result[key] = obj[key];
-            }
-        }
-
-        CRL.Promise.all(promises).then(function() {
-            resolve(result);
-        })
-
-        function setupThen(promise, key) {
-            // default value
-            result[key] = void 0;
-
-            promise.then(function(value) {
-                result[key] = value;
-            })
-
-            promises.push(promise);
-        }
-
-    })
-
-    return ret;
-}
-
-// receiver
-CRL.receive = function receive(obj) {
-    var prom;
-
-    if (obj && isFunction(obj.receive)) {
-        return obj.receive();
-    }
-
-    prom = toPromise(obj);
-    if (isPromise(prom)) {
-        return prom;
-    }
-
-    return obj;
-}
-
-// sender
-CRL.send = function send(obj, value) {
-    if (obj && isFunction(obj.send)) {
-        return obj.send(value);
-    }
-    throw 'unable to receive values';
-}
-
-
-function timeout(time) {
-    if (!isNaN(time) && time !== null) {
-        return new CRL.Promise(function(resolve) {
-            schedule(resolve, time)
-        })
-    }
-
-    throw 'Invalid time';
-}
-
-CRL.timeout = timeout;
-
-// Buffer: simple array based buffer to use with channels
+// Buffer: array based buffer to use with channels
 function Buffer(size) {
     this.size  = isNaN(size) ? 1 : size;
     this.array = [];
@@ -485,154 +346,239 @@ Buffer.prototype = {
     }
 }
 
-function isBuffer(b) {
-    return (b
-        && isFunction(b.read)
-        && isFunction(b.write)
-        && isFunction(b.isFull)
-        && isFunction(b.isEmpty));
-}
-
-// Channel: a structure to transport messages
-function indentityFn(x) {return x}
-
-function scheduledResolve(deferred, value) {
+function scheduleResolveDeferred(deferred, value) {
     schedule(function() { deferred.resolve(value) })
 }
 
-function Channel(buffer, transform) {
-    this.buffer           = buffer;
-    this.closed           = false;
-    this.data             = void 0;
-    this.senderPromises   = [];
-    this.receiverPromises = [];
-    this.transform        = transform || indentityFn;
+function detachAllPromises(array) {
+    var promise, reg, i, j;
+
+    for (i = 0; i < array.length; i++) {
+        promise = array[i];
+
+        if (isPromise(promise) && promise.registry) {
+            // detach the promise from its registry
+            reg = promise.registry;
+            for (j = 0; j < reg.length; j++) {
+                if (reg[j].promise === promise) {
+                    reg.splice(j, 1);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+// Channel: a structure to transport messages
+function Channel() {
+    this.closed         = false;
+    this.data           = void 0;
+    this.senderPromises = [];
+    this.recverPromises = [];
 }
 
 Channel.prototype = {
 
-    receive: function() {
-        var data, deferred;
+    isFull: function() {
+        return this.data !== void 0;
+    },
 
-        // is unbuffered
-        if (! this.buffer) {
-            // there is data?
-            if (this.data !== void 0) {
-                // resume the first sender coroutine
-                if (this.senderPromises[0]) {
-                    scheduledResolve(this.senderPromises.shift());
-                }
-                // clean and return
-                data      = this.data;
-                this.data = void 0;
-                return data;
+    hasData: function() {
+        return this.data !== void 0;
+    },
 
-            // if no data
-            } else {
-                // suspend the coroutine wanting to receive
-                deferred = Promise.defer();
-                this.receiverPromises.push(deferred);
-                return deferred.promise;
-            }
+    newSenderPromise: function() {
+        var deferred = Promise.defer();
+        this.senderPromises.push(deferred);
+        // add a reference to the regsitry for easy detach
+        deferred.promise.registry = this.senderPromises;
+        return deferred.promise;
+    },
+
+    newRecverPromise: function() {
+        var deferred = Promise.defer();
+        this.recverPromises.push(deferred);
+        // add a reference to the regsitry for easy detach
+        deferred.promise.registry = this.recverPromises;
+        return deferred.promise;
+    },
+
+    performRecv: function() {
+        var data  = this.data;
+        this.data = void 0;
+        this.unblockSender();
+        return data;
+    },
+
+    performSend: function(data) {
+        if (this.closed) {
+            throw 'closed channel'
         }
+        this.data = data;
+        this.unblockReceiver();
+        return timeout(0);
+    },
 
-        // if buffered
-        // empty buffer?
-        if (this.buffer.isEmpty()) {
-            // suspend the coroutine wanting to receive
-            deferred = Promise.defer();
-            this.receiverPromises.push(deferred);
-            return deferred.promise;
-
-        // some value in the buffer?
-        } else {
-            // resume the first sender coroutine
-            if (this.senderPromises[0]) {
-                scheduledResolve(this.senderPromises.shift());
-            }
-            // clean and return
-            return this.buffer.read();
+    unblockSender: function() {
+        if (this.senderPromises.length) {
+            // async unblock the first sender
+            scheduleResolveDeferred(this.senderPromises.shift(), true);
+            //this.senderPromises.shift().resolve(true);
         }
     },
 
-    send: function(data) {
-        if (this.closed) { throw 'closed channel' }
-        var deferred;
-
-        // is unbuffered
-        if (! this.buffer) {
-            // some stored data?
-            if (this.data !== void 0) {
-                // deliver data to the first waiting coroutine
-                if (this.receiverPromises[0]) {
-                    scheduledResolve(this.receiverPromises.shift(), this.data);
-                }
-
-            // no stored data?
-            } else {
-                // pass sent data directly to the first waiting for it
-                if (this.receiverPromises[0]) {
-                    this.data = void 0;
-                    scheduledResolve(this.receiverPromises.shift(), this.transform(data));
-                    // schedule the the sender coroutine
-                    return timeout(0);
-                }
-            }
-
-            // else, store the transformed data
-            this.data = this.transform(data);
-            deferred = Promise.defer();
-            this.senderPromises.push(deferred);
-            return deferred.promise;
-        }
-
-        // if buffered
-        // emty buffer?
-        if (! this.buffer.isFull()) {
-            // TODO: optimize below code
-            // store sent value in the buffer
-            this.buffer.write(this.transform(data));
-            // if any waiting for the data, give it
-            if (this.receiverPromises[0]) {
-                scheduledResolve(this.receiverPromises.shift(), this.buffer.read());
-            }
-        }
-
-        // full buffer?
-        if (this.buffer.isFull()) {
-            // stop until the buffer start to be drained
-            deferred = Promise.defer();
-            this.senderPromises.push(deferred);
-            return deferred.promise;
+    unblockReceiver: function() {
+        if (this.recverPromises.length) {
+            // inmediately unblock the first receiver
+            this.recverPromises.shift().resolve(true);
         }
     },
 
     close: function() {
         this.closed         = true;
         this.senderPromises = [];
-        while (this.receiverPromises.length) {
-            scheduledResolve(this.receiverPromises.shift());
+        while (this.recverPromises.length) {
+            scheduleResolveDeferred(this.recverPromises.shift(), false);
         }
     }
 }
 
-CRL.Channel = Channel;
+// Buffered Channel
+function BufferedChannel(buffer) {
+    Channel.call(this);
+    this.buffer = buffer;
+}
 
-CRL.chan = function chan(size, transform) {
-    if (isBuffer(size)) {
-        return new Channel(size, transform);
+BufferedChannel.prototype = new Channel();
+
+CRL.copy(BufferedChannel.prototype, {
+
+    senderPromises: null,
+
+    recverPromises: null,
+
+    isFull: function() {
+        return this.buffer.isFull();
+    },
+
+    hasData: function() {
+        return !this.buffer.isEmpty();
+    },
+
+    performRecv: function() {
+        var data = this.buffer.read();
+        this.unblockSender();
+        return data;
+    },
+
+    performSend: function(data) {
+        if (this.closed) { throw 'closed channel' }
+        this.buffer.write(data);
+        this.unblockReceiver();
+    }
+})
+
+// send
+CRL.requestSend = function requestSend(ch) {
+    if (! isChannel(ch)) {
+        throw 'invalid channel';
     }
 
+    if (ch.isFull()) {
+        return ch.newSenderPromise();
+    }
+
+    return true;
+}
+
+CRL.performSend = function performSend(ch, value) {
+    if (! isChannel(ch)) {
+        throw 'invalid channel';
+    }
+
+    return ch.performSend(value);
+}
+
+// receive
+// returns true if 'receive' can be performed
+// returns a promise otherwise
+CRL.requestRecv = function requestRecv(obj) {
+    if (isChannel(obj)) {
+        if (obj.hasData()) {
+            return true;
+        } else {
+            return obj.newRecverPromise();
+        }
+    }
+
+    return true;
+}
+
+// a special case is this request receiveing for select statement
+// where Promises are passed through
+CRL.requestRecvForSelect = function requestRecvForSelect(obj) {
+    if (isPromise(obj)) {
+        return obj;
+    }
+    return CRL.requestRecv(obj);
+}
+
+CRL.performRecv = function performRecv(obj) {
+    if (isChannel(obj)) {
+        return obj.performRecv();
+    }
+
+    return obj;
+}
+
+// select
+CRL.select = function select(array) {
+    var i, ready = [];
+
+    // look for ready promises
+    for (var i = 0; i < array.length; i++) {
+        if (array[i] === true) {
+            ready.push(i);
+        }
+    }
+
+    // select one of it if there is some value
+    if (ready.length) {
+        // perform random selection
+        return ready[Math.floor(Math.random() * ready.length)];
+    }
+
+    // return a Promise that resolves once some Promise
+    // is resolved. Detach promises from Channels where they are binded
+    return new CRL.Promise(function(resolve) {
+        var promise, isResolved = false;
+
+        array.forEach(function(promise, index) {
+            setupThen(promise, index, resolve);
+        })
+
+        function setupThen(promise, index, resolve) {
+            promise.then(function(value) {
+                if (isResolved) { return }
+                isResolved = true;
+                resolve(index);
+                // remove other promises
+                detachAllPromises(array);
+            })
+        }
+    })
+}
+
+CRL.chan = function chan(size) {
     // isNaN(null) == false  :O
     if (isNaN(size) || size === null) {
-        return new Channel(null, transform);
+        return new Channel();
     }
 
-    return new Channel(new Buffer(size), transform);
+    return new BufferedChannel(new Buffer(size));
 }
 
 })(this);
-
 (function(){
     cor = (typeof cor === 'undefined' ? {} : cor);
 
@@ -849,12 +795,12 @@ cor.Class = Class;
   }
 */
 var CorParser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[2,4],$V1=[1,11],$V2=[1,14],$V3=[1,9],$V4=[1,10],$V5=[1,12],$V6=[5,9,10,22,26,37],$V7=[1,24],$V8=[5,9,10,14,16,18,22,24,26,28,30,33,37,49,100,101,104,106,107,108,109,110,111,112,113,117,118,121,126,132,134],$V9=[5,22],$Va=[1,42],$Vb=[1,55],$Vc=[1,51],$Vd=[1,50],$Ve=[1,52],$Vf=[1,53],$Vg=[1,54],$Vh=[1,46],$Vi=[1,47],$Vj=[1,48],$Vk=[1,49],$Vl=[1,63],$Vm=[1,40],$Vn=[1,66],$Vo=[1,64],$Vp=[1,65],$Vq=[5,9,10,14,16,18,22,26,30,33,37,132,134],$Vr=[2,158],$Vs=[1,74],$Vt=[1,75],$Vu=[1,76],$Vv=[1,77],$Vw=[5,9,10,14,16,18,22,26,30,33,37,49,100,101,113,117,121,132,134],$Vx=[1,78],$Vy=[1,79],$Vz=[1,80],$VA=[1,81],$VB=[1,82],$VC=[1,83],$VD=[1,84],$VE=[2,87],$VF=[5,9,10,14,16,18,22,26,30,33,37,49,100,101,106,107,108,109,110,111,112,113,117,121,132,134],$VG=[5,9,10,14,16,18,22,24,26,28,30,33,37,49,100,101,104,106,107,108,109,110,111,112,113,115,117,118,121,126,132,134],$VH=[2,84],$VI=[2,101],$VJ=[1,91],$VK=[1,88],$VL=[1,89],$VM=[1,90],$VN=[5,9,10,14,16,18,22,26,28,30,33,37,49,100,101,104,106,107,108,109,110,111,112,113,117,118,121,126,132,134],$VO=[2,89],$VP=[1,103],$VQ=[1,104],$VR=[1,109],$VS=[30,33],$VT=[1,118],$VU=[2,10],$VV=[1,117],$VW=[1,134],$VX=[1,132],$VY=[1,133],$VZ=[1,142],$V_=[1,140],$V$=[1,143],$V01=[1,141],$V11=[1,147],$V21=[1,148],$V31=[1,149],$V41=[1,150],$V51=[1,151],$V61=[1,152],$V71=[1,153],$V81=[1,157],$V91=[1,146],$Va1=[1,155],$Vb1=[1,154],$Vc1=[1,144],$Vd1=[1,156],$Ve1=[1,145],$Vf1=[1,158],$Vg1=[1,170],$Vh1=[1,171],$Vi1=[2,33],$Vj1=[1,196],$Vk1=[1,197],$Vl1=[1,198],$Vm1=[1,199],$Vn1=[1,203],$Vo1=[1,200],$Vp1=[1,201],$Vq1=[1,202],$Vr1=[10,18,22,26],$Vs1=[18,22],$Vt1=[14,100,101,106,107,108,109,110,111,112,113],$Vu1=[1,225],$Vv1=[10,26,28,30,38,88,89,90,91,100,101,102,103,112,113,128,130,133],$Vw1=[10,18,22,26,28,38,51,56,64,69,71,73,75,79,82,88,89,90,91,100,101,102,103,112,113,128,130,133],$Vx1=[1,242],$Vy1=[2,39],$Vz1=[1,243],$VA1=[2,40],$VB1=[1,244],$VC1=[2,205],$VD1=[1,255],$VE1=[1,256],$VF1=[16,18,22],$VG1=[2,122],$VH1=[1,277],$VI1=[2,206],$VJ1=[1,298],$VK1=[1,299],$VL1=[18,69,71],$VM1=[1,328],$VN1=[1,329],$VO1=[1,330];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[2,4],$V1=[1,11],$V2=[1,14],$V3=[1,9],$V4=[1,10],$V5=[1,12],$V6=[5,9,10,22,26,37],$V7=[1,24],$V8=[5,9,10,14,16,18,22,24,26,28,30,33,37,49,105,106,109,111,112,113,114,115,116,117,118,122,123,126,131,137,139],$V9=[5,22],$Va=[1,42],$Vb=[1,55],$Vc=[1,51],$Vd=[1,50],$Ve=[1,52],$Vf=[1,53],$Vg=[1,54],$Vh=[1,46],$Vi=[1,47],$Vj=[1,48],$Vk=[1,49],$Vl=[1,63],$Vm=[1,40],$Vn=[1,66],$Vo=[1,64],$Vp=[1,65],$Vq=[5,9,10,14,16,18,22,26,30,33,37,137,139],$Vr=[2,166],$Vs=[1,74],$Vt=[1,75],$Vu=[1,76],$Vv=[1,77],$Vw=[5,9,10,14,16,18,22,26,30,33,37,49,105,106,118,122,126,137,139],$Vx=[1,78],$Vy=[1,79],$Vz=[1,80],$VA=[1,81],$VB=[1,82],$VC=[1,83],$VD=[1,84],$VE=[2,94],$VF=[5,9,10,14,16,18,22,26,30,33,37,49,105,106,111,112,113,114,115,116,117,118,122,126,137,139],$VG=[5,9,10,14,16,18,22,24,26,28,30,33,37,49,105,106,109,111,112,113,114,115,116,117,118,120,122,123,126,131,137,139],$VH=[2,91],$VI=[2,108],$VJ=[1,91],$VK=[1,88],$VL=[1,89],$VM=[1,90],$VN=[5,9,10,14,16,18,22,26,28,30,33,37,49,105,106,109,111,112,113,114,115,116,117,118,122,123,126,131,137,139],$VO=[2,96],$VP=[1,103],$VQ=[1,104],$VR=[1,109],$VS=[30,33],$VT=[1,118],$VU=[2,10],$VV=[1,117],$VW=[1,134],$VX=[1,132],$VY=[1,133],$VZ=[1,142],$V_=[1,140],$V$=[1,143],$V01=[1,141],$V11=[1,147],$V21=[1,148],$V31=[1,149],$V41=[1,150],$V51=[1,151],$V61=[1,152],$V71=[1,153],$V81=[1,159],$V91=[1,157],$Va1=[1,146],$Vb1=[1,155],$Vc1=[1,154],$Vd1=[1,144],$Ve1=[1,156],$Vf1=[1,145],$Vg1=[1,158],$Vh1=[1,171],$Vi1=[1,172],$Vj1=[2,33],$Vk1=[1,198],$Vl1=[1,199],$Vm1=[1,200],$Vn1=[1,201],$Vo1=[1,202],$Vp1=[1,206],$Vq1=[1,203],$Vr1=[1,204],$Vs1=[1,205],$Vt1=[10,18,22,26],$Vu1=[18,22],$Vv1=[14,105,106,111,112,113,114,115,116,117,118],$Vw1=[1,228],$Vx1=[10,26,28,30,38,93,94,95,96,105,106,107,108,117,118,133,135,138],$Vy1=[10,18,22,26,28,38,51,56,64,69,71,73,78,80,84,87,93,94,95,96,105,106,107,108,117,118,133,135,138],$Vz1=[1,245],$VA1=[2,39],$VB1=[1,246],$VC1=[2,40],$VD1=[1,247],$VE1=[2,213],$VF1=[1,260],$VG1=[1,261],$VH1=[16,18,22],$VI1=[2,129],$VJ1=[1,282],$VK1=[1,287],$VL1=[1,288],$VM1=[2,214],$VN1=[1,307],$VO1=[1,308],$VP1=[18,69,71],$VQ1=[1,333],$VR1=[1,334],$VS1=[1,335];
 var parser = {trace: function trace() { },
 yy: {},
-symbols_: {"error":2,"Module":3,"Source":4,"EOF":5,"GlobalStmt":6,"GlobalStmtNoSemicolon":7,"ClassStmt":8,"CLASS":9,"IDENT":10,"ClassStmt_option0":11,"ClassBlock":12,"ExtendsStmt":13,":":14,"QualifiedIdent":15,"{":16,"MemberList":17,"}":18,"Member":19,"MemberNotSemicolon":20,"PropertyDecl":21,";":22,"FunctionStmt":23,"=":24,"Value":25,"FUNC":26,"FunctionStmt_option0":27,"(":28,"FunctionStmt_option1":29,")":30,"FunctionStmt_group0":31,"FunctionArgs":32,",":33,"Block":34,"StmtList":35,"UseStmt":36,"USE":37,"STRING":38,"UseStmt_option0":39,"GlobalDeclarationStmt":40,"Stmt":41,"StmtNotSemicolon":42,"StrictStmtList":43,"SimpleStmt":44,"Expr":45,"IncDecStmt":46,"SimpleStmtNotSemicolon":47,"OperationExpr":48,"INCDECOP":49,"IfStmt":50,"IF":51,"IfStmt_option0":52,"ElseStmt":53,"ELSE":54,"ForStmt":55,"FOR":56,"ForStmt_option0":57,"ForStmt_option1":58,"ForStmt_option2":59,"ForInStmt":60,"IN":61,"ForInRangeStmt":62,"SwitchStmt":63,"SWITCH":64,"SwitchStmt_option0":65,"CaseBlock":66,"CaseStmtList":67,"CaseStmt":68,"CASE":69,"ExprList":70,"DEFAULT":71,"CatchStmt":72,"CATCH":73,"ReturnStmt":74,"RETURN":75,"ReturnStmt_option0":76,"ReturnStmtNotSemicolon":77,"BreakStmt":78,"BREAK":79,"BreakStmtNotSemicolon":80,"ContinueStmt":81,"CONTINUE":82,"ContinueStmtNotSemicolon":83,"LeftHandExpr":84,"IndexExpr":85,"SelectorExpr":86,"PrimaryExpr":87,"ME":88,"BOOLEAN":89,"NUMBER":90,"NIL":91,"SliceExpr":92,"CallExpr":93,"TypeAssertExpr":94,"ObjectConstructor":95,"ArrayConstructor":96,"TemplateLiteral":97,"GoExpr":98,"UnaryExpr":99,"+":100,"-":101,"!":102,"~":103,"?":104,"OperationExprNotAdditive":105,"*":106,"/":107,"%":108,"SHIFTOP":109,"COMPARISONOP":110,"BINARYOP":111,"&":112,"ASYNCOP":113,"AssignmentExpr":114,"ASSIGNMENTOP":115,"CoalesceExpr":116,"COALESCEOP":117,"[":118,"SliceExpr_option0":119,"SliceExpr_option1":120,"]":121,"SliceExpr_option2":122,"SliceExpr_option3":123,"CallExpr_option0":124,"CallExpr_option1":125,".":126,"Property":127,"GO":128,"TypeAssertExpr_option0":129,"TPL_BEGIN":130,"TemplateLiteralBody":131,"TPL_END":132,"TPL_SIMPLE":133,"TPL_CONTINUATION":134,"TemplateLiteralBody_option0":135,"ReceiveExpr":136,"KeyValueElementList":137,"ObjectConstructorArgs":138,"SimpleElementList":139,"KeyedElement":140,"KeyValueElementList_option0":141,"SimpleElementList_option0":142,"ArrayItems":143,"ArrayConstructor_option0":144,"ValueList":145,"ValueList_option0":146,"$accept":0,"$end":1},
-terminals_: {2:"error",5:"EOF",9:"CLASS",10:"IDENT",14:":",16:"{",18:"}",22:";",24:"=",26:"FUNC",28:"(",30:")",33:",",37:"USE",38:"STRING",49:"INCDECOP",51:"IF",54:"ELSE",56:"FOR",61:"IN",64:"SWITCH",69:"CASE",71:"DEFAULT",73:"CATCH",75:"RETURN",79:"BREAK",82:"CONTINUE",88:"ME",89:"BOOLEAN",90:"NUMBER",91:"NIL",100:"+",101:"-",102:"!",103:"~",104:"?",106:"*",107:"/",108:"%",109:"SHIFTOP",110:"COMPARISONOP",111:"BINARYOP",112:"&",113:"ASYNCOP",115:"ASSIGNMENTOP",117:"COALESCEOP",118:"[",121:"]",126:".",128:"GO",130:"TPL_BEGIN",132:"TPL_END",133:"TPL_SIMPLE",134:"TPL_CONTINUATION"},
-productions_: [0,[3,2],[4,2],[4,1],[4,0],[8,4],[13,2],[12,3],[17,2],[17,1],[17,0],[19,2],[19,2],[19,1],[20,1],[20,1],[21,3],[21,1],[23,6],[32,1],[32,3],[34,3],[36,3],[40,3],[6,1],[6,1],[6,2],[6,2],[6,1],[7,1],[7,1],[35,2],[35,1],[35,0],[43,1],[43,2],[44,2],[44,2],[44,1],[47,1],[47,1],[46,2],[50,4],[53,2],[53,2],[55,7],[55,3],[55,2],[60,5],[60,7],[62,7],[62,6],[62,6],[62,5],[63,3],[66,3],[67,1],[67,2],[68,4],[68,3],[72,3],[74,3],[77,2],[77,1],[78,2],[80,1],[81,2],[83,1],[41,1],[41,1],[41,1],[41,1],[41,1],[41,1],[41,1],[41,1],[41,1],[41,1],[41,2],[42,1],[42,1],[42,1],[42,1],[42,1],[84,1],[84,1],[84,1],[87,1],[87,1],[87,1],[87,1],[87,1],[87,1],[87,3],[87,1],[87,1],[87,1],[87,1],[87,1],[87,1],[87,1],[99,1],[99,2],[99,2],[99,2],[99,2],[99,2],[105,1],[105,3],[105,3],[105,3],[105,3],[105,3],[105,3],[105,3],[48,1],[48,3],[48,3],[48,3],[114,3],[114,3],[116,3],[70,1],[70,3],[92,6],[92,7],[93,4],[93,5],[86,3],[86,4],[127,1],[127,1],[127,1],[127,1],[127,1],[127,1],[127,1],[127,1],[127,1],[127,1],[127,1],[127,1],[127,1],[127,1],[127,1],[127,1],[127,1],[127,1],[127,1],[85,4],[85,5],[94,5],[97,3],[97,1],[131,1],[131,3],[98,2],[136,2],[45,1],[45,1],[45,1],[45,1],[95,3],[95,3],[95,3],[95,2],[138,2],[138,3],[138,3],[15,1],[15,3],[137,1],[137,3],[140,3],[140,3],[139,1],[139,3],[96,3],[96,4],[143,2],[143,3],[25,1],[25,1],[145,1],[145,3],[11,0],[11,1],[27,0],[27,1],[29,0],[29,1],[31,1],[31,1],[39,0],[39,1],[52,0],[52,1],[57,0],[57,1],[58,0],[58,1],[59,0],[59,1],[65,0],[65,1],[76,0],[76,1],[119,0],[119,1],[120,0],[120,1],[122,0],[122,1],[123,0],[123,1],[124,0],[124,1],[125,0],[125,1],[129,0],[129,1],[135,0],[135,1],[141,0],[141,1],[142,0],[142,1],[144,0],[144,1],[146,0],[146,1]],
+symbols_: {"error":2,"Module":3,"Source":4,"EOF":5,"GlobalStmt":6,"GlobalStmtNoSemicolon":7,"ClassStmt":8,"CLASS":9,"IDENT":10,"ClassStmt_option0":11,"ClassBlock":12,"ExtendsStmt":13,":":14,"QualifiedIdent":15,"{":16,"MemberList":17,"}":18,"Member":19,"MemberNotSemicolon":20,"PropertyDecl":21,";":22,"FunctionStmt":23,"=":24,"Value":25,"FUNC":26,"FunctionStmt_option0":27,"(":28,"FunctionStmt_option1":29,")":30,"FunctionStmt_group0":31,"FunctionArgs":32,",":33,"Block":34,"StmtList":35,"UseStmt":36,"USE":37,"STRING":38,"UseStmt_option0":39,"GlobalDeclarationStmt":40,"Stmt":41,"StmtNotSemicolon":42,"StrictStmtList":43,"SimpleStmt":44,"Expr":45,"IncDecStmt":46,"SimpleStmtNotSemicolon":47,"OperationExpr":48,"INCDECOP":49,"IfStmt":50,"IF":51,"IfStmt_option0":52,"ElseStmt":53,"ELSE":54,"ForStmt":55,"FOR":56,"ForStmt_option0":57,"ForStmt_option1":58,"ForStmt_option2":59,"ForInStmt":60,"IN":61,"ForInRangeStmt":62,"SwitchStmt":63,"SWITCH":64,"SwitchStmt_option0":65,"CaseBlock":66,"CaseStmtList":67,"CaseStmt":68,"CASE":69,"ExprList":70,"DEFAULT":71,"SelectStmt":72,"SELECT":73,"SelectCaseBlock":74,"SelectCaseStmtList":75,"SelectCaseStmt":76,"CatchStmt":77,"CATCH":78,"ReturnStmt":79,"RETURN":80,"ReturnStmt_option0":81,"ReturnStmtNotSemicolon":82,"BreakStmt":83,"BREAK":84,"BreakStmtNotSemicolon":85,"ContinueStmt":86,"CONTINUE":87,"ContinueStmtNotSemicolon":88,"LeftHandExpr":89,"IndexExpr":90,"SelectorExpr":91,"PrimaryExpr":92,"ME":93,"BOOLEAN":94,"NUMBER":95,"NIL":96,"SliceExpr":97,"CallExpr":98,"TypeAssertExpr":99,"ObjectConstructor":100,"ArrayConstructor":101,"TemplateLiteral":102,"GoExpr":103,"UnaryExpr":104,"+":105,"-":106,"!":107,"~":108,"?":109,"OperationExprNotAdditive":110,"*":111,"/":112,"%":113,"SHIFTOP":114,"COMPARISONOP":115,"BINARYOP":116,"&":117,"ASYNCOP":118,"AssignmentExpr":119,"ASSIGNMENTOP":120,"CoalesceExpr":121,"COALESCEOP":122,"[":123,"SliceExpr_option0":124,"SliceExpr_option1":125,"]":126,"SliceExpr_option2":127,"SliceExpr_option3":128,"CallExpr_option0":129,"CallExpr_option1":130,".":131,"Property":132,"GO":133,"TypeAssertExpr_option0":134,"TPL_BEGIN":135,"TemplateLiteralBody":136,"TPL_END":137,"TPL_SIMPLE":138,"TPL_CONTINUATION":139,"TemplateLiteralBody_option0":140,"ReceiveExpr":141,"KeyValueElementList":142,"ObjectConstructorArgs":143,"SimpleElementList":144,"KeyedElement":145,"KeyValueElementList_option0":146,"SimpleElementList_option0":147,"ArrayItems":148,"ArrayConstructor_option0":149,"ValueList":150,"ValueList_option0":151,"$accept":0,"$end":1},
+terminals_: {2:"error",5:"EOF",9:"CLASS",10:"IDENT",14:":",16:"{",18:"}",22:";",24:"=",26:"FUNC",28:"(",30:")",33:",",37:"USE",38:"STRING",49:"INCDECOP",51:"IF",54:"ELSE",56:"FOR",61:"IN",64:"SWITCH",69:"CASE",71:"DEFAULT",73:"SELECT",78:"CATCH",80:"RETURN",84:"BREAK",87:"CONTINUE",93:"ME",94:"BOOLEAN",95:"NUMBER",96:"NIL",105:"+",106:"-",107:"!",108:"~",109:"?",111:"*",112:"/",113:"%",114:"SHIFTOP",115:"COMPARISONOP",116:"BINARYOP",117:"&",118:"ASYNCOP",120:"ASSIGNMENTOP",122:"COALESCEOP",123:"[",126:"]",131:".",133:"GO",135:"TPL_BEGIN",137:"TPL_END",138:"TPL_SIMPLE",139:"TPL_CONTINUATION"},
+productions_: [0,[3,2],[4,2],[4,1],[4,0],[8,4],[13,2],[12,3],[17,2],[17,1],[17,0],[19,2],[19,2],[19,1],[20,1],[20,1],[21,3],[21,1],[23,6],[32,1],[32,3],[34,3],[36,3],[40,3],[6,1],[6,1],[6,2],[6,2],[6,1],[7,1],[7,1],[35,2],[35,1],[35,0],[43,1],[43,2],[44,2],[44,2],[44,1],[47,1],[47,1],[46,2],[50,4],[53,2],[53,2],[55,7],[55,3],[55,2],[60,5],[60,7],[62,7],[62,6],[62,6],[62,5],[63,3],[66,3],[67,1],[67,2],[68,4],[68,3],[72,2],[74,3],[75,1],[75,2],[76,4],[76,3],[77,3],[79,3],[82,2],[82,1],[83,2],[85,1],[86,2],[88,1],[41,1],[41,1],[41,1],[41,1],[41,1],[41,1],[41,1],[41,1],[41,1],[41,1],[41,1],[41,2],[42,1],[42,1],[42,1],[42,1],[42,1],[89,1],[89,1],[89,1],[92,1],[92,1],[92,1],[92,1],[92,1],[92,1],[92,3],[92,1],[92,1],[92,1],[92,1],[92,1],[92,1],[92,1],[104,1],[104,2],[104,2],[104,2],[104,2],[104,2],[110,1],[110,3],[110,3],[110,3],[110,3],[110,3],[110,3],[110,3],[48,1],[48,3],[48,3],[48,3],[119,3],[119,3],[121,3],[70,1],[70,3],[97,6],[97,7],[98,4],[98,5],[91,3],[91,4],[132,1],[132,1],[132,1],[132,1],[132,1],[132,1],[132,1],[132,1],[132,1],[132,1],[132,1],[132,1],[132,1],[132,1],[132,1],[132,1],[132,1],[132,1],[132,1],[132,1],[90,4],[90,5],[99,5],[102,3],[102,1],[136,1],[136,3],[103,2],[141,2],[45,1],[45,1],[45,1],[45,1],[100,3],[100,3],[100,3],[100,2],[143,2],[143,3],[143,3],[15,1],[15,3],[142,1],[142,3],[145,3],[145,3],[144,1],[144,3],[101,3],[101,4],[148,2],[148,3],[25,1],[25,1],[150,1],[150,3],[11,0],[11,1],[27,0],[27,1],[29,0],[29,1],[31,1],[31,1],[39,0],[39,1],[52,0],[52,1],[57,0],[57,1],[58,0],[58,1],[59,0],[59,1],[65,0],[65,1],[81,0],[81,1],[124,0],[124,1],[125,0],[125,1],[127,0],[127,1],[128,0],[128,1],[129,0],[129,1],[130,0],[130,1],[134,0],[134,1],[140,0],[140,1],[146,0],[146,1],[147,0],[147,1],[149,0],[149,1],[151,0],[151,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -899,10 +845,10 @@ case 5:
             )
         
 break;
-case 6: case 43: case 44: case 62:
+case 6: case 43: case 44: case 68:
  this.$= new yy.Node(new yy.Lit($$[$0-1], _$[$0-1]), $$[$0]) 
 break;
-case 7: case 55:
+case 7: case 55: case 61:
  this.$= new yy.Node(new yy.Lit($$[$0-2], _$[$0-2]), $$[$0-1], new yy.Lit($$[$0], _$[$0])) 
 break;
 case 8:
@@ -919,7 +865,7 @@ case 8:
             }
         
 break;
-case 9: case 34: case 122: case 154: case 171: case 175:
+case 9: case 34: case 129: case 162: case 179: case 183:
  this.$= new yy.List($$[$0]) 
 break;
 case 11:
@@ -952,10 +898,10 @@ case 18:
             )
         
 break;
-case 19: case 169:
+case 19: case 177:
  this.$= new yy.List(new yy.Lit($$[$0], _$[$0])) 
 break;
-case 20: case 170:
+case 20: case 178:
  $$[$0-2].add(new yy.Lit($$[$0-1], _$[$0-1]), new yy.Lit($$[$0], _$[$0])) 
 break;
 case 21:
@@ -970,7 +916,7 @@ break;
 case 22:
  this.$= new yy.UseNode(new yy.Str($$[$0-2], _$[$0-2]), new yy.Lit($$[$0-1], _$[$0-1]), $$[$0] ? new yy.Lit($$[$0], _$[$0]) : null) 
 break;
-case 23: case 119: case 120:
+case 23: case 126: case 127:
  this.$= new yy.AssignmentNode($$[$0-2], new yy.Lit($$[$0-1], _$[$0-1]), $$[$0]) 
 break;
 case 26: case 27:
@@ -979,7 +925,7 @@ break;
 case 28: case 38:
  this.$= new yy.Lit(';', _$[$0]) 
 break;
-case 35: case 57:
+case 35: case 57: case 63:
  $$[$0-1].add($$[$0]) 
 break;
 case 36: case 37:
@@ -1082,7 +1028,7 @@ break;
 case 54:
  this.$= new yy.SwitchNode(new yy.Lit($$[$0-2], _$[$0-2]), $$[$0-1], $$[$0]) 
 break;
-case 56:
+case 56: case 62:
  this.$ = new yy.List($$[$0]) 
 break;
 case 58:
@@ -1092,51 +1038,74 @@ case 59:
  this.$= new yy.CaseNode(new yy.Lit($$[$0-2], _$[$0-2]), new yy.Lit($$[$0-1], _$[$0-1]), $$[$0]) 
 break;
 case 60:
+ this.$= new yy.SelectNode(new yy.Lit($$[$0-1], _$[$0-1]), $$[$0]) 
+break;
+case 64:
+ this.$= new yy.SelectCaseNode(new yy.Lit($$[$0-3], _$[$0-3]), $$[$0-2], new yy.Lit($$[$0-1], _$[$0-1]), $$[$0]) 
+break;
+case 65:
+
+
+                this.$= new yy.SelectCaseNode(
+                    new yy.Lit('case', _$[$0-2]),
+                    new yy.CallNode(
+                        new yy.VarNode(new yy.Lit('timeout', _$[$0-2])),
+                        new yy.Lit('(', _$[$0-2]),
+                        new yy.List(new yy.Lit('0', _$[$0-2])),
+                        new yy.Lit(')', _$[$0-2])
+                    ),
+                    new yy.Lit($$[$0-1], _$[$0-1]),
+                    $$[$0]
+                )
+
+        
+break;
+case 66:
  this.$= new yy.CatchNode(new yy.Lit($$[$0-2], _$[$0-2]), $$[$0-1], $$[$0]) 
 break;
-case 61:
+case 67:
  this.$= new yy.Node(new yy.Lit($$[$0-2], _$[$0-2]), $$[$0-1], new yy.Lit(';', _$[$0])) 
 break;
-case 63: case 90: case 91: case 92:
+case 69: case 97: case 98: case 99:
  this.$= new yy.Lit($$[$0], _$[$0]) 
 break;
-case 64: case 66:
+case 70: case 72:
  this.$= new yy.Node(new yy.Lit($$[$0-1], _$[$0-1]), new yy.Lit(';', _$[$0])) 
 break;
-case 65: case 67:
+case 71: case 73:
  this.$= new yy.Node(new yy.Lit($$[$0], _$[$0])) 
 break;
-case 84:
+case 91:
  this.$= new yy.VarNode(new yy.Lit($$[$0], _$[$0])) 
 break;
-case 88:
+case 95:
  this.$= new yy.MeNode($$[$0], _$[$0]) 
 break;
-case 89:
+case 96:
  this.$= new yy.Str($$[$0], _$[$0]) 
 break;
-case 93:
+case 100:
  this.$= new yy.AssociationNode(new yy.Lit($$[$0-2], _$[$0-2]), $$[$0-1], new yy.Lit($$[$0], _$[$0])) 
 break;
-case 102: case 103: case 104: case 105:
+case 109: case 110: case 111: case 112:
  this.$= new yy.UnaryExprNode(new yy.Lit($$[$0-1], _$[$0-1]), $$[$0]) 
 break;
-case 106:
+case 113:
  this.$= new yy.UnaryExistenceNode($$[$0-1], new yy.Lit($$[$0], _$[$0])) 
 break;
-case 108: case 109: case 110: case 111: case 112: case 113: case 114: case 116: case 117:
+case 115: case 116: case 117: case 118: case 119: case 120: case 121: case 123: case 124:
  this.$= new yy.Node($$[$0-2], new yy.Lit($$[$0-1], _$[$0-1]), $$[$0]) 
 break;
-case 118:
+case 125:
  this.$= new yy.SendAsyncNode($$[$0-2], new yy.Lit($$[$0-1], _$[$0-1]), $$[$0]) 
 break;
-case 121:
+case 128:
  this.$= new yy.CoalesceNode($$[$0-2], new yy.Lit($$[$0-1], _$[$0-1]), $$[$0]) 
 break;
-case 123: case 184:
+case 130: case 192:
  $$[$0-2].add(new yy.Lit($$[$0-1], _$[$0-1]), $$[$0]) 
 break;
-case 124:
+case 131:
 
             this.$= new yy.SliceNode(
                 $$[$0-5],
@@ -1148,7 +1117,7 @@ case 124:
             )
         
 break;
-case 125:
+case 132:
 
             this.$= new yy.ExistenceNode(
                 new yy.SliceNode(
@@ -1162,25 +1131,25 @@ case 125:
             )
         
 break;
-case 126:
+case 133:
  this.$= new yy.CallNode($$[$0-3], new yy.Lit($$[$0-2], _$[$0-2]), $$[$0-1], new yy.Lit($$[$0], _$[$0])) 
 break;
-case 127:
+case 134:
  this.$= new yy.ExistenceNode(new yy.CallNode($$[$0-4], new yy.Lit($$[$0-2], _$[$0-2]), $$[$0-1], new yy.Lit($$[$0], _$[$0]))) 
 break;
-case 128:
+case 135:
  this.$= new yy.Node($$[$0-2], new yy.Lit($$[$0-1], _$[$0-1]), new yy.ObjectPropertyNode($$[$0], _$[$0])) 
 break;
-case 129:
+case 136:
  this.$= new yy.ExistenceNode(new yy.Node($$[$0-3], new yy.Lit($$[$0-1], _$[$0-1]), new yy.ObjectPropertyNode($$[$0], _$[$0]))) 
 break;
-case 149:
+case 157:
  this.$= new yy.Node($$[$0-3], new yy.Lit($$[$0-2], _$[$0-2]), $$[$0-1], new yy.Lit($$[$0], _$[$0])) 
 break;
-case 150:
+case 158:
  this.$= new yy.ExistenceNode(new yy.Node($$[$0-4], new yy.Lit($$[$0-2], _$[$0-2]), $$[$0-1], new yy.Lit($$[$0], _$[$0]))) 
 break;
-case 151:
+case 159:
 
             this.$= new yy.TypeAssertNode(
                 $$[$0-4],
@@ -1191,13 +1160,13 @@ case 151:
             )
         
 break;
-case 152:
+case 160:
  this.$= new yy.TemplateLiteralNode(new yy.Lit($$[$0-2], _$[$0-2]), $$[$0-1], new yy.Lit($$[$0], _$[$0])) 
 break;
-case 153:
+case 161:
  this.$= new yy.TemplateLiteralNode(new yy.Lit($$[$0], _$[$0])) 
 break;
-case 155: case 172:
+case 163: case 180:
 
             if ($$[$0] instanceof yy.List)   {
                 $$[$0].addFront($$[$0-2], new yy.Lit($$[$0-1], _$[$0-1]))
@@ -1208,13 +1177,13 @@ case 155: case 172:
             }
         
 break;
-case 156:
+case 164:
  this.$= new yy.GoExprNode(new yy.Lit($$[$0-1], _$[$0-1]), $$[$0]) 
 break;
-case 157:
+case 165:
  this.$= new yy.ReceiveAsyncNode(new yy.Lit($$[$0-1], _$[$0-1]), $$[$0]) 
 break;
-case 162:
+case 170:
 
             this.$= new yy.ObjectConstructorNode(
                 new yy.Lit('&', _$[$0-2]),
@@ -1227,7 +1196,7 @@ case 162:
             )
         
 break;
-case 163:
+case 171:
 
             this.$= new yy.ObjectConstructorNode(
                 new yy.Lit('&', _$[$0-2]),
@@ -1241,28 +1210,28 @@ case 163:
             )
         
 break;
-case 164:
+case 172:
  this.$= new yy.ObjectConstructorNode(new yy.Lit($$[$0-2], _$[$0-2]), $$[$0-1], $$[$0]) 
 break;
-case 165:
+case 173:
  this.$= new yy.ObjectConstructorNode(new yy.Lit($$[$0-1], _$[$0-1]), $$[$0]) 
 break;
-case 166:
+case 174:
  this.$= new yy.ObjectConstructorArgsNode(new yy.Lit($$[$0-1], _$[$0-1]), null, new yy.Lit($$[$0], _$[$0])) 
 break;
-case 167:
+case 175:
  this.$= new yy.ObjectConstructorArgsNode(new yy.Lit($$[$0-2], _$[$0-2]), $$[$0-1], new yy.Lit($$[$0], _$[$0])) 
 break;
-case 168:
+case 176:
  this.$= new yy.ObjectConstructorArgsNode(new yy.Lit($$[$0-2], _$[$0-2]), $$[$0-1], new yy.Lit($$[$0], _$[$0]), true) 
 break;
-case 173:
+case 181:
  this.$= new yy.Node(new yy.Lit($$[$0-2], _$[$0-2]), new yy.Lit($$[$0-1], _$[$0-1]), $$[$0]) 
 break;
-case 174:
+case 182:
  this.$= new yy.Node(new yy.Str($$[$0-2], _$[$0-2]), new yy.Lit($$[$0-1], _$[$0-1]), $$[$0]) 
 break;
-case 176:
+case 184:
 
             if ($$[$0] instanceof yy.List) {
                 $$[$0].addFront($$[$0-2], new yy.Lit($$[$0-1], _$[$0-1]))
@@ -1273,7 +1242,7 @@ case 176:
             }
         
 break;
-case 177:
+case 185:
 
             this.$= new yy.ArrayConstructorNode(
                 new yy.Lit('[', _$[$0-2]),
@@ -1282,7 +1251,7 @@ case 177:
             )
         
 break;
-case 178:
+case 186:
 
             if ($$[$0-1]) $$[$0-2].add($$[$0-1]);
             this.$= new yy.ArrayConstructorNode(
@@ -1292,10 +1261,10 @@ case 178:
             )
         
 break;
-case 179:
+case 187:
  this.$= new yy.List($$[$0-1]); this.$.add(new yy.Lit($$[$0], _$[$0])) 
 break;
-case 180:
+case 188:
 
             if ($$[$0-2] instanceof yy.List) {
                 $$[$0-2].add($$[$0-1], new yy.Lit($$[$0], _$[$0]))
@@ -1303,13 +1272,13 @@ case 180:
             }
         
 break;
-case 183:
+case 191:
  this.$= new yy.ValueList($$[$0]) 
 break;
 }
 },
-table: [{3:1,4:2,5:$V0,6:3,7:4,8:6,9:$V1,10:$V2,15:13,22:$V3,23:5,26:$V4,36:7,37:$V5,40:8},{1:[3]},{5:[1,15]},{4:16,5:$V0,6:3,7:4,8:6,9:$V1,10:$V2,15:13,22:$V3,23:5,26:$V4,36:7,37:$V5,40:8},{5:[2,3]},o($V6,[2,24]),o($V6,[2,25]),{5:[2,29],22:[1,17]},{5:[2,30],22:[1,18]},o($V6,[2,28]),{10:[1,20],27:19,28:[2,187]},{10:[1,21]},{38:[1,22]},{24:[1,23],126:$V7},o($V8,[2,169]),{1:[2,1]},{5:[2,2]},o($V6,[2,26]),o($V6,[2,27]),{28:[1,25]},{28:[2,188]},{11:26,13:27,14:[1,28],16:[2,185]},o($V9,[2,193],{39:29,10:[1,30]}),{10:$Va,23:33,25:31,26:$V4,28:$Vb,38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},{10:[1,67]},{10:[1,70],29:68,30:[2,189],32:69},{12:71,16:[1,72]},{16:[2,186]},{10:$V2,15:73},o($V9,[2,22]),o($V9,[2,194]),o($V9,[2,23]),o($Vq,[2,181]),o($Vq,[2,182]),o($Vq,$Vr,{100:$Vs,101:$Vt,113:$Vu,117:$Vv}),o($Vq,[2,159]),o($Vq,[2,160]),o($Vq,[2,161]),o($Vw,[2,115],{106:$Vx,107:$Vy,108:$Vz,109:$VA,110:$VB,111:$VC,112:$VD}),o([5,9,10,14,16,18,22,26,28,30,33,37,49,100,101,104,106,107,108,109,110,111,112,113,117,118,126,132,134],$VE,{24:[1,86],115:[1,85]}),{10:$Va,23:33,25:87,26:$V4,28:$Vb,38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},o($VF,[2,107]),o($VG,$VH),o($VG,[2,85]),o($VG,[2,86]),o($VF,$VI,{28:$VJ,104:$VK,118:$VL,126:$VM}),{10:$Va,28:$Vb,38:$Vc,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:92,100:$Vh,101:$Vi,102:$Vj,103:$Vk,112:$Vl,128:$Vn,130:$Vo,133:$Vp},{10:$Va,28:$Vb,38:$Vc,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:94,100:$Vh,101:$Vi,102:$Vj,103:$Vk,112:$Vl,128:$Vn,130:$Vo,133:$Vp},{10:$Va,28:$Vb,38:$Vc,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:95,100:$Vh,101:$Vi,102:$Vj,103:$Vk,112:$Vl,128:$Vn,130:$Vo,133:$Vp},{10:$Va,28:$Vb,38:$Vc,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:96,100:$Vh,101:$Vi,102:$Vj,103:$Vk,112:$Vl,128:$Vn,130:$Vo,133:$Vp},o($VN,[2,88]),o($VN,$VO),o($VN,[2,90]),o($VN,[2,91]),o($VN,[2,92]),{10:$VP,14:[1,98],23:33,25:97,26:$V4,28:$Vb,33:[1,100],38:$VQ,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37,137:99,140:102,143:101},o($VN,[2,94]),o($VN,[2,95]),o($VN,[2,96]),o($VN,[2,97]),o($VN,[2,98]),o($VN,[2,99]),o($VN,[2,100]),{10:$V2,15:105},{10:$Va,28:$Vb,38:$Vc,45:107,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,131:106,133:$Vp,136:37},o($VN,[2,153]),{16:$VR,34:108},o($V8,[2,170]),{30:[1,110]},{30:[2,190],33:[1,111]},o($VS,[2,19]),o($V6,[2,5]),{10:$VT,17:112,18:$VU,19:113,20:114,21:115,22:$VV,23:116,26:$V4},{16:[2,6],126:$V7},{10:$Va,28:$Vb,38:$Vc,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:119,112:$Vl,128:$Vn,130:$Vo,133:$Vp},{10:$Va,28:$Vb,38:$Vc,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:120,112:$Vl,128:$Vn,130:$Vo,133:$Vp},{10:$Va,28:$Vb,38:$Vc,48:121,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,128:$Vn,130:$Vo,133:$Vp},{10:$Va,23:33,25:122,26:$V4,28:$Vb,38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},{10:$Va,28:$Vb,38:$Vc,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:123,100:$Vh,101:$Vi,102:$Vj,103:$Vk,112:$Vl,128:$Vn,130:$Vo,133:$Vp},{10:$Va,28:$Vb,38:$Vc,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:124,100:$Vh,101:$Vi,102:$Vj,103:$Vk,112:$Vl,128:$Vn,130:$Vo,133:$Vp},{10:$Va,28:$Vb,38:$Vc,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:125,100:$Vh,101:$Vi,102:$Vj,103:$Vk,112:$Vl,128:$Vn,130:$Vo,133:$Vp},{10:$Va,28:$Vb,38:$Vc,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:126,100:$Vh,101:$Vi,102:$Vj,103:$Vk,112:$Vl,128:$Vn,130:$Vo,133:$Vp},{10:$Va,28:$Vb,38:$Vc,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:127,100:$Vh,101:$Vi,102:$Vj,103:$Vk,112:$Vl,128:$Vn,130:$Vo,133:$Vp},{10:$Va,28:$Vb,38:$Vc,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:128,100:$Vh,101:$Vi,102:$Vj,103:$Vk,112:$Vl,128:$Vn,130:$Vo,133:$Vp},{10:$Va,28:$Vb,38:$Vc,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:129,100:$Vh,101:$Vi,102:$Vj,103:$Vk,112:$Vl,128:$Vn,130:$Vo,133:$Vp},{10:$Va,23:33,25:130,26:$V4,28:$Vb,38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},{10:$Va,23:33,25:131,26:$V4,28:$Vb,38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},o($Vq,[2,157]),o($VF,[2,106],{28:$VW,118:$VX,126:$VY}),{10:$Va,14:[2,207],28:$Vb,38:$Vc,48:137,84:93,85:43,86:44,87:135,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,119:136,128:$Vn,130:$Vo,133:$Vp},{9:$VZ,10:$V_,26:$V$,28:[1,139],37:$V01,51:$V11,54:$V21,56:$V31,61:$V41,64:$V51,69:$V61,71:$V71,73:$V81,75:$V91,79:$Va1,82:$Vb1,88:$Vc1,89:$Vd1,91:$Ve1,127:138,128:$Vf1},{10:$Va,23:33,25:161,26:$V4,28:$Vb,30:[2,215],38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,124:159,128:$Vn,130:$Vo,133:$Vp,136:37,145:160},o($VF,[2,102]),o($VN,$VE),o($VF,[2,103]),o($VF,[2,104]),o($VF,[2,105]),{30:[1,162],33:[1,163]},{30:[1,164]},{30:[1,165]},{30:[1,166]},{10:$Va,23:33,25:168,26:$V4,28:$Vb,30:[2,227],38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37,144:167},{30:[2,171],33:[1,169]},o([24,28,30,33,100,101,104,106,107,108,109,110,111,112,113,115,117,118,126],$VH,{14:$Vg1}),o([28,30,33,100,101,104,106,107,108,109,110,111,112,113,117,118,126],$VO,{14:$Vh1}),o([5,9,10,14,16,18,22,26,30,33,37,49,100,101,104,106,107,108,109,110,111,112,113,117,118,121,132,134],[2,165],{138:172,28:[1,173],126:$V7}),{132:[1,174]},{132:[2,154],134:[1,175]},o($VN,[2,156]),{10:$Va,18:$Vi1,22:$Vj1,23:189,26:$V4,28:$Vb,35:176,38:$Vc,41:177,42:178,44:179,45:194,46:195,47:190,48:204,50:180,51:$Vk1,55:181,56:$Vl1,60:182,62:183,63:184,64:$Vm1,72:188,73:$Vn1,74:185,75:$Vo1,77:191,78:186,79:$Vp1,80:192,81:187,82:$Vq1,83:193,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},{10:$Va,16:$VR,23:33,25:207,26:$V4,28:$Vb,31:205,34:206,38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},{10:[1,208]},{18:[1,209]},{10:$VT,17:210,18:$VU,19:113,20:114,21:115,22:$VV,23:116,26:$V4},{18:[2,9]},{18:[2,14],22:[1,211]},{18:[2,15],22:[1,212]},o($Vr1,[2,13]),o($Vs1,[2,17],{24:[1,213]}),o($Vw,[2,116],{106:$Vx,107:$Vy,108:$Vz,109:$VA,110:$VB,111:$VC,112:$VD}),o($Vw,[2,117],{106:$Vx,107:$Vy,108:$Vz,109:$VA,110:$VB,111:$VC,112:$VD}),o([5,9,10,14,16,18,22,26,30,33,37,49,113,117,121,132,134],[2,118],{100:$Vs,101:$Vt}),o($Vq,[2,121]),o($VF,[2,108]),o($VF,[2,109]),o($VF,[2,110]),o($VF,[2,111]),o($VF,[2,112]),o($VF,[2,113]),o($VF,[2,114]),o($Vq,[2,119]),o($Vq,[2,120]),{10:$Va,14:[2,211],28:$Vb,38:$Vc,48:216,84:93,85:43,86:44,87:214,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,122:215,128:$Vn,130:$Vo,133:$Vp},{9:$VZ,10:$V_,26:$V$,37:$V01,51:$V11,54:$V21,56:$V31,61:$V41,64:$V51,69:$V61,71:$V71,73:$V81,75:$V91,79:$Va1,82:$Vb1,88:$Vc1,89:$Vd1,91:$Ve1,127:217,128:$Vf1},{10:$Va,23:33,25:161,26:$V4,28:$Vb,30:[2,217],38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,125:218,128:$Vn,130:$Vo,133:$Vp,136:37,145:219},o($Vt1,$VI,{28:$VJ,104:$VK,118:$VL,121:[1,220],126:$VM}),{14:[1,221]},{14:[2,208],100:$Vs,101:$Vt,113:$Vu},o($VG,[2,128]),{10:$Va,28:$Vb,30:[2,219],38:$Vc,84:93,85:43,86:44,87:223,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,112:$Vl,128:$Vn,129:222,130:$Vo,133:$Vp},o($VG,[2,130]),o($VG,[2,131]),o($VG,[2,132]),o($VG,[2,133]),o($VG,[2,134]),o($VG,[2,135]),o($VG,[2,136]),o($VG,[2,137]),o($VG,[2,138]),o($VG,[2,139]),o($VG,[2,140]),o($VG,[2,141]),o($VG,[2,142]),o($VG,[2,143]),o($VG,[2,144]),o($VG,[2,145]),o($VG,[2,146]),o($VG,[2,147]),o($VG,[2,148]),{30:[1,224]},{30:[2,216],33:$Vu1},o($VS,[2,183]),o($VN,[2,93]),o($Vv1,[2,179]),o($VN,[2,162]),o($VN,[2,163]),o($VN,[2,177]),{30:[1,226]},{30:[2,228],33:[1,227]},{10:[1,230],30:[2,223],38:[1,231],137:229,140:102,141:228},{10:$Va,23:33,25:232,26:$V4,28:$Vb,38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},{10:$Va,23:33,25:233,26:$V4,28:$Vb,38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},o($VN,[2,164]),{10:$VP,23:33,25:237,26:$V4,28:$Vb,30:[1,234],38:$VQ,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37,137:236,139:235,140:102},o($VN,[2,152]),{10:$Va,28:$Vb,38:$Vc,45:107,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,131:239,132:[2,221],133:$Vp,135:238,136:37},{18:[1,240]},{10:$Va,18:$Vi1,22:$Vj1,23:189,26:$V4,28:$Vb,35:241,38:$Vc,41:177,42:178,44:179,45:194,46:195,47:190,48:204,50:180,51:$Vk1,55:181,56:$Vl1,60:182,62:183,63:184,64:$Vm1,72:188,73:$Vn1,74:185,75:$Vo1,77:191,78:186,79:$Vp1,80:192,81:187,82:$Vq1,83:193,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},{18:[2,32]},o($Vw1,[2,68]),o($Vw1,[2,69]),o($Vw1,[2,70]),o($Vw1,[2,71]),o($Vw1,[2,72]),o($Vw1,[2,73]),o($Vw1,[2,74]),o($Vw1,[2,75]),o($Vw1,[2,76]),o($Vw1,[2,77]),{18:[2,83],22:$Vx1},{18:[2,79]},{18:[2,80]},{18:[2,81]},{18:[2,82]},{18:$Vy1,22:$Vz1},{18:$VA1,22:$VB1},o($Vw1,[2,38]),{10:$Va,28:$Vb,38:$Vc,48:245,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,128:$Vn,130:$Vo,133:$Vp},{10:[1,249],16:$VR,22:[2,197],28:$Vb,34:248,38:$Vc,45:247,48:34,57:246,70:250,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},{10:$Va,16:[2,203],28:$Vb,38:$Vc,48:252,65:251,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,128:$Vn,130:$Vo,133:$Vp},{10:$Va,18:[2,63],22:$VC1,23:33,25:254,26:$V4,28:$Vb,38:$Vc,45:32,48:34,76:253,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},{18:[2,65],22:$VD1},{18:[2,67],22:$VE1},{10:$Va,28:$Vb,38:$Vc,45:257,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},o($VF1,$Vr,{49:[1,258],100:$Vs,101:$Vt,113:$Vu,117:$Vv}),o($Vq,[2,18]),o($Vq,[2,191]),o($Vq,[2,192]),o($VS,[2,20]),o($V6,[2,7]),{18:[2,8]},o($Vr1,[2,11]),o($Vr1,[2,12]),{10:$Va,23:33,25:259,26:$V4,28:$Vb,38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},o($Vt1,$VI,{28:$VJ,104:$VK,118:$VL,121:[1,260],126:$VM}),{14:[1,261]},{14:[2,212],100:$Vs,101:$Vt,113:$Vu},o($VG,[2,129]),{30:[1,262]},{30:[2,218],33:$Vu1},o($VG,[2,149]),{10:$Va,28:$Vb,38:$Vc,48:264,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,120:263,121:[2,209],128:$Vn,130:$Vo,133:$Vp},{30:[1,265]},{28:$VJ,30:[2,220],104:[1,266],118:$VL,126:$VM},o($VN,[2,126]),o($VS,[2,229],{45:32,23:33,48:34,114:35,116:36,136:37,105:38,84:39,99:41,85:43,86:44,87:45,92:56,93:57,94:58,95:59,96:60,97:61,98:62,146:267,25:268,10:$Va,26:$V4,28:$Vb,38:$Vc,88:$Vd,89:$Ve,90:$Vf,91:$Vg,100:$Vh,101:$Vi,102:$Vj,103:$Vk,112:$Vl,113:$Vm,128:$Vn,130:$Vo,133:$Vp}),o($VN,[2,178]),o($Vv1,[2,180]),{30:[2,172]},{30:[2,224]},{14:$Vg1},{14:$Vh1},o($VS,[2,173]),o($VS,[2,174]),o($VN,[2,166]),{30:[1,269]},{30:[1,270]},{30:[2,175],33:[1,271]},{132:[2,155]},{132:[2,222]},o([5,9,10,14,16,18,22,26,28,30,33,37,38,49,51,54,56,64,69,71,73,75,79,82,88,89,90,91,100,101,102,103,104,106,107,108,109,110,111,112,113,117,118,121,126,128,130,132,133,134],[2,21]),{18:[2,31]},o($Vw1,[2,78]),o($Vw1,[2,36]),o($Vw1,[2,37]),{16:$VR,34:272,100:$Vs,101:$Vt,113:$Vu},{22:[1,273]},o([22,33],$VG1,{34:274,16:$VR}),o($Vw1,[2,47]),o([16,22,24,28,100,101,104,106,107,108,109,110,111,112,113,115,117,118,126],$VH,{33:[1,276],61:[1,275]}),{22:[2,198],33:$VH1},{16:[1,279],66:278},{16:[2,204],100:$Vs,101:$Vt,113:$Vu},{22:[1,280]},{18:[2,62],22:$VI1},o($Vw1,[2,64]),o($Vw1,[2,66]),{16:$VR,34:281},o($VF1,[2,41]),o($Vs1,[2,16]),o($VG,[2,150]),{10:$Va,28:$Vb,38:$Vc,48:283,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,121:[2,213],123:282,128:$Vn,130:$Vo,133:$Vp},o($VN,[2,127]),{121:[1,284]},{100:$Vs,101:$Vt,113:$Vu,121:[2,210]},o($VN,[2,151]),{28:$VW,118:$VX,126:$VY},o($VS,[2,184]),o($VS,[2,230]),o($VN,[2,167]),o($VN,[2,168]),{10:$Va,23:33,25:237,26:$V4,28:$Vb,30:[2,225],38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37,139:286,142:285},o($Vw1,[2,195],{52:287,53:288,54:[1,289]}),{10:$Va,22:[2,199],28:$Vb,38:$Vc,48:291,58:290,84:93,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,128:$Vn,130:$Vo,133:$Vp},o($Vw1,[2,46]),{10:$Va,14:[1,293],23:33,25:292,26:$V4,28:$Vb,38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},{10:[1,294]},{10:$Va,28:$Vb,38:$Vc,45:295,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},o($Vw1,[2,54]),{67:296,68:297,69:$VJ1,71:$VK1},o($Vw1,[2,61]),o($Vw1,[2,60]),{121:[1,300]},{100:$Vs,101:$Vt,113:$Vu,121:[2,214]},o($VN,[2,124]),{30:[2,176]},{30:[2,226]},o($Vw1,[2,42]),o($Vw1,[2,196]),{16:$VR,34:301,50:302,51:$Vk1},{22:[1,303]},{22:[2,200],100:$Vs,101:$Vt,113:$Vu},{14:[1,305],16:$VR,34:304},{10:$Va,16:$VR,23:33,25:306,26:$V4,28:$Vb,34:307,38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},{61:[1,308]},o([14,22,33],[2,123]),{18:[1,309],68:310,69:$VJ1,71:$VK1},o($VL1,[2,56]),{10:$Va,28:$Vb,38:$Vc,45:312,48:34,70:311,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},{14:[1,313]},o($VN,[2,125]),o($Vw1,[2,43]),o($Vw1,[2,44]),{10:$Va,16:[2,201],28:$Vb,38:$Vc,45:316,46:317,47:315,48:204,59:314,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},o($Vw1,[2,48]),{10:$Va,16:$VR,23:33,25:318,26:$V4,28:$Vb,34:319,38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},{16:$VR,34:320},o($Vw1,[2,53]),{10:$Va,23:33,25:321,26:$V4,28:$Vb,38:$Vc,45:32,48:34,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},o($Vw1,[2,55]),o($VL1,[2,57]),{14:[1,322],33:$VH1},o([14,33],$VG1),{10:$Va,22:$Vj1,23:325,26:$V4,28:$Vb,38:$Vc,41:324,43:323,44:179,45:326,46:327,48:204,50:180,51:$Vk1,55:181,56:$Vl1,60:182,62:183,63:184,64:$Vm1,72:188,73:$Vn1,74:185,75:$VM1,78:186,79:$VN1,81:187,82:$VO1,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},{16:$VR,34:331},{16:[2,202]},{16:$Vy1},{16:$VA1},{16:$VR,34:332},o($Vw1,[2,51]),o($Vw1,[2,52]),{16:$VR,34:333},{10:$Va,22:$Vj1,23:325,26:$V4,28:$Vb,38:$Vc,41:324,43:334,44:179,45:326,46:327,48:204,50:180,51:$Vk1,55:181,56:$Vl1,60:182,62:183,63:184,64:$Vm1,72:188,73:$Vn1,74:185,75:$VM1,78:186,79:$VN1,81:187,82:$VO1,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},o($VL1,[2,59],{114:35,116:36,136:37,105:38,84:39,99:41,85:43,86:44,87:45,92:56,93:57,94:58,95:59,96:60,97:61,98:62,44:179,50:180,55:181,60:182,62:183,63:184,74:185,78:186,81:187,72:188,48:204,23:325,45:326,46:327,41:335,10:$Va,22:$Vj1,26:$V4,28:$Vb,38:$Vc,51:$Vk1,56:$Vl1,64:$Vm1,73:$Vn1,75:$VM1,79:$VN1,82:$VO1,88:$Vd,89:$Ve,90:$Vf,91:$Vg,100:$Vh,101:$Vi,102:$Vj,103:$Vk,112:$Vl,113:$Vm,128:$Vn,130:$Vo,133:$Vp}),o($Vw1,[2,34]),{22:$Vx1},{22:$Vz1},{22:$VB1},{10:$Va,22:$VC1,23:33,25:336,26:$V4,28:$Vb,38:$Vc,45:32,48:34,76:253,84:39,85:43,86:44,87:45,88:$Vd,89:$Ve,90:$Vf,91:$Vg,92:56,93:57,94:58,95:59,96:60,97:61,98:62,99:41,100:$Vh,101:$Vi,102:$Vj,103:$Vk,105:38,112:$Vl,113:$Vm,114:35,116:36,128:$Vn,130:$Vo,133:$Vp,136:37},{22:$VD1},{22:$VE1},o($Vw1,[2,45]),o($Vw1,[2,50]),o($Vw1,[2,49]),o($VL1,[2,58],{114:35,116:36,136:37,105:38,84:39,99:41,85:43,86:44,87:45,92:56,93:57,94:58,95:59,96:60,97:61,98:62,44:179,50:180,55:181,60:182,62:183,63:184,74:185,78:186,81:187,72:188,48:204,23:325,45:326,46:327,41:335,10:$Va,22:$Vj1,26:$V4,28:$Vb,38:$Vc,51:$Vk1,56:$Vl1,64:$Vm1,73:$Vn1,75:$VM1,79:$VN1,82:$VO1,88:$Vd,89:$Ve,90:$Vf,91:$Vg,100:$Vh,101:$Vi,102:$Vj,103:$Vk,112:$Vl,113:$Vm,128:$Vn,130:$Vo,133:$Vp}),o($Vw1,[2,35]),{22:$VI1}],
-defaultActions: {4:[2,3],15:[2,1],16:[2,2],20:[2,188],27:[2,186],114:[2,9],178:[2,32],190:[2,79],191:[2,80],192:[2,81],193:[2,82],210:[2,8],228:[2,172],229:[2,224],238:[2,155],239:[2,222],241:[2,31],285:[2,176],286:[2,226],315:[2,202],316:[2,39],317:[2,40],336:[2,206]},
+table: [{3:1,4:2,5:$V0,6:3,7:4,8:6,9:$V1,10:$V2,15:13,22:$V3,23:5,26:$V4,36:7,37:$V5,40:8},{1:[3]},{5:[1,15]},{4:16,5:$V0,6:3,7:4,8:6,9:$V1,10:$V2,15:13,22:$V3,23:5,26:$V4,36:7,37:$V5,40:8},{5:[2,3]},o($V6,[2,24]),o($V6,[2,25]),{5:[2,29],22:[1,17]},{5:[2,30],22:[1,18]},o($V6,[2,28]),{10:[1,20],27:19,28:[2,195]},{10:[1,21]},{38:[1,22]},{24:[1,23],131:$V7},o($V8,[2,177]),{1:[2,1]},{5:[2,2]},o($V6,[2,26]),o($V6,[2,27]),{28:[1,25]},{28:[2,196]},{11:26,13:27,14:[1,28],16:[2,193]},o($V9,[2,201],{39:29,10:[1,30]}),{10:$Va,23:33,25:31,26:$V4,28:$Vb,38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{10:[1,67]},{10:[1,70],29:68,30:[2,197],32:69},{12:71,16:[1,72]},{16:[2,194]},{10:$V2,15:73},o($V9,[2,22]),o($V9,[2,202]),o($V9,[2,23]),o($Vq,[2,189]),o($Vq,[2,190]),o($Vq,$Vr,{105:$Vs,106:$Vt,118:$Vu,122:$Vv}),o($Vq,[2,167]),o($Vq,[2,168]),o($Vq,[2,169]),o($Vw,[2,122],{111:$Vx,112:$Vy,113:$Vz,114:$VA,115:$VB,116:$VC,117:$VD}),o([5,9,10,14,16,18,22,26,28,30,33,37,49,105,106,109,111,112,113,114,115,116,117,118,122,123,131,137,139],$VE,{24:[1,86],120:[1,85]}),{10:$Va,23:33,25:87,26:$V4,28:$Vb,38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},o($VF,[2,114]),o($VG,$VH),o($VG,[2,92]),o($VG,[2,93]),o($VF,$VI,{28:$VJ,109:$VK,123:$VL,131:$VM}),{10:$Va,28:$Vb,38:$Vc,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:92,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,133:$Vn,135:$Vo,138:$Vp},{10:$Va,28:$Vb,38:$Vc,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:94,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,133:$Vn,135:$Vo,138:$Vp},{10:$Va,28:$Vb,38:$Vc,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:95,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,133:$Vn,135:$Vo,138:$Vp},{10:$Va,28:$Vb,38:$Vc,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:96,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,133:$Vn,135:$Vo,138:$Vp},o($VN,[2,95]),o($VN,$VO),o($VN,[2,97]),o($VN,[2,98]),o($VN,[2,99]),{10:$VP,14:[1,98],23:33,25:97,26:$V4,28:$Vb,33:[1,100],38:$VQ,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37,142:99,145:102,148:101},o($VN,[2,101]),o($VN,[2,102]),o($VN,[2,103]),o($VN,[2,104]),o($VN,[2,105]),o($VN,[2,106]),o($VN,[2,107]),{10:$V2,15:105},{10:$Va,28:$Vb,38:$Vc,45:107,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,136:106,138:$Vp,141:37},o($VN,[2,161]),{16:$VR,34:108},o($V8,[2,178]),{30:[1,110]},{30:[2,198],33:[1,111]},o($VS,[2,19]),o($V6,[2,5]),{10:$VT,17:112,18:$VU,19:113,20:114,21:115,22:$VV,23:116,26:$V4},{16:[2,6],131:$V7},{10:$Va,28:$Vb,38:$Vc,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:119,117:$Vl,133:$Vn,135:$Vo,138:$Vp},{10:$Va,28:$Vb,38:$Vc,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:120,117:$Vl,133:$Vn,135:$Vo,138:$Vp},{10:$Va,28:$Vb,38:$Vc,48:121,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,133:$Vn,135:$Vo,138:$Vp},{10:$Va,23:33,25:122,26:$V4,28:$Vb,38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{10:$Va,28:$Vb,38:$Vc,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:123,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,133:$Vn,135:$Vo,138:$Vp},{10:$Va,28:$Vb,38:$Vc,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:124,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,133:$Vn,135:$Vo,138:$Vp},{10:$Va,28:$Vb,38:$Vc,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:125,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,133:$Vn,135:$Vo,138:$Vp},{10:$Va,28:$Vb,38:$Vc,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:126,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,133:$Vn,135:$Vo,138:$Vp},{10:$Va,28:$Vb,38:$Vc,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:127,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,133:$Vn,135:$Vo,138:$Vp},{10:$Va,28:$Vb,38:$Vc,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:128,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,133:$Vn,135:$Vo,138:$Vp},{10:$Va,28:$Vb,38:$Vc,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:129,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,133:$Vn,135:$Vo,138:$Vp},{10:$Va,23:33,25:130,26:$V4,28:$Vb,38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{10:$Va,23:33,25:131,26:$V4,28:$Vb,38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},o($Vq,[2,165]),o($VF,[2,113],{28:$VW,123:$VX,131:$VY}),{10:$Va,14:[2,215],28:$Vb,38:$Vc,48:137,89:93,90:43,91:44,92:135,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,124:136,133:$Vn,135:$Vo,138:$Vp},{9:$VZ,10:$V_,26:$V$,28:[1,139],37:$V01,51:$V11,54:$V21,56:$V31,61:$V41,64:$V51,69:$V61,71:$V71,73:$V81,78:$V91,80:$Va1,84:$Vb1,87:$Vc1,93:$Vd1,94:$Ve1,96:$Vf1,132:138,133:$Vg1},{10:$Va,23:33,25:162,26:$V4,28:$Vb,30:[2,223],38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,129:160,133:$Vn,135:$Vo,138:$Vp,141:37,150:161},o($VF,[2,109]),o($VN,$VE),o($VF,[2,110]),o($VF,[2,111]),o($VF,[2,112]),{30:[1,163],33:[1,164]},{30:[1,165]},{30:[1,166]},{30:[1,167]},{10:$Va,23:33,25:169,26:$V4,28:$Vb,30:[2,235],38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37,149:168},{30:[2,179],33:[1,170]},o([24,28,30,33,105,106,109,111,112,113,114,115,116,117,118,120,122,123,131],$VH,{14:$Vh1}),o([28,30,33,105,106,109,111,112,113,114,115,116,117,118,122,123,131],$VO,{14:$Vi1}),o([5,9,10,14,16,18,22,26,30,33,37,49,105,106,109,111,112,113,114,115,116,117,118,122,123,126,137,139],[2,173],{143:173,28:[1,174],131:$V7}),{137:[1,175]},{137:[2,162],139:[1,176]},o($VN,[2,164]),{10:$Va,18:$Vj1,22:$Vk1,23:191,26:$V4,28:$Vb,35:177,38:$Vc,41:178,42:179,44:180,45:196,46:197,47:192,48:207,50:181,51:$Vl1,55:182,56:$Vm1,60:183,62:184,63:185,64:$Vn1,72:186,73:$Vo1,77:190,78:$Vp1,79:187,80:$Vq1,82:193,83:188,84:$Vr1,85:194,86:189,87:$Vs1,88:195,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{10:$Va,16:$VR,23:33,25:210,26:$V4,28:$Vb,31:208,34:209,38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{10:[1,211]},{18:[1,212]},{10:$VT,17:213,18:$VU,19:113,20:114,21:115,22:$VV,23:116,26:$V4},{18:[2,9]},{18:[2,14],22:[1,214]},{18:[2,15],22:[1,215]},o($Vt1,[2,13]),o($Vu1,[2,17],{24:[1,216]}),o($Vw,[2,123],{111:$Vx,112:$Vy,113:$Vz,114:$VA,115:$VB,116:$VC,117:$VD}),o($Vw,[2,124],{111:$Vx,112:$Vy,113:$Vz,114:$VA,115:$VB,116:$VC,117:$VD}),o([5,9,10,14,16,18,22,26,30,33,37,49,118,122,126,137,139],[2,125],{105:$Vs,106:$Vt}),o($Vq,[2,128]),o($VF,[2,115]),o($VF,[2,116]),o($VF,[2,117]),o($VF,[2,118]),o($VF,[2,119]),o($VF,[2,120]),o($VF,[2,121]),o($Vq,[2,126]),o($Vq,[2,127]),{10:$Va,14:[2,219],28:$Vb,38:$Vc,48:219,89:93,90:43,91:44,92:217,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,127:218,133:$Vn,135:$Vo,138:$Vp},{9:$VZ,10:$V_,26:$V$,37:$V01,51:$V11,54:$V21,56:$V31,61:$V41,64:$V51,69:$V61,71:$V71,73:$V81,78:$V91,80:$Va1,84:$Vb1,87:$Vc1,93:$Vd1,94:$Ve1,96:$Vf1,132:220,133:$Vg1},{10:$Va,23:33,25:162,26:$V4,28:$Vb,30:[2,225],38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,130:221,133:$Vn,135:$Vo,138:$Vp,141:37,150:222},o($Vv1,$VI,{28:$VJ,109:$VK,123:$VL,126:[1,223],131:$VM}),{14:[1,224]},{14:[2,216],105:$Vs,106:$Vt,118:$Vu},o($VG,[2,135]),{10:$Va,28:$Vb,30:[2,227],38:$Vc,89:93,90:43,91:44,92:226,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,117:$Vl,133:$Vn,134:225,135:$Vo,138:$Vp},o($VG,[2,137]),o($VG,[2,138]),o($VG,[2,139]),o($VG,[2,140]),o($VG,[2,141]),o($VG,[2,142]),o($VG,[2,143]),o($VG,[2,144]),o($VG,[2,145]),o($VG,[2,146]),o($VG,[2,147]),o($VG,[2,148]),o($VG,[2,149]),o($VG,[2,150]),o($VG,[2,151]),o($VG,[2,152]),o($VG,[2,153]),o($VG,[2,154]),o($VG,[2,155]),o($VG,[2,156]),{30:[1,227]},{30:[2,224],33:$Vw1},o($VS,[2,191]),o($VN,[2,100]),o($Vx1,[2,187]),o($VN,[2,170]),o($VN,[2,171]),o($VN,[2,185]),{30:[1,229]},{30:[2,236],33:[1,230]},{10:[1,233],30:[2,231],38:[1,234],142:232,145:102,146:231},{10:$Va,23:33,25:235,26:$V4,28:$Vb,38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{10:$Va,23:33,25:236,26:$V4,28:$Vb,38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},o($VN,[2,172]),{10:$VP,23:33,25:240,26:$V4,28:$Vb,30:[1,237],38:$VQ,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37,142:239,144:238,145:102},o($VN,[2,160]),{10:$Va,28:$Vb,38:$Vc,45:107,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,136:242,137:[2,229],138:$Vp,140:241,141:37},{18:[1,243]},{10:$Va,18:$Vj1,22:$Vk1,23:191,26:$V4,28:$Vb,35:244,38:$Vc,41:178,42:179,44:180,45:196,46:197,47:192,48:207,50:181,51:$Vl1,55:182,56:$Vm1,60:183,62:184,63:185,64:$Vn1,72:186,73:$Vo1,77:190,78:$Vp1,79:187,80:$Vq1,82:193,83:188,84:$Vr1,85:194,86:189,87:$Vs1,88:195,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{18:[2,32]},o($Vy1,[2,74]),o($Vy1,[2,75]),o($Vy1,[2,76]),o($Vy1,[2,77]),o($Vy1,[2,78]),o($Vy1,[2,79]),o($Vy1,[2,80]),o($Vy1,[2,81]),o($Vy1,[2,82]),o($Vy1,[2,83]),o($Vy1,[2,84]),{18:[2,90],22:$Vz1},{18:[2,86]},{18:[2,87]},{18:[2,88]},{18:[2,89]},{18:$VA1,22:$VB1},{18:$VC1,22:$VD1},o($Vy1,[2,38]),{10:$Va,28:$Vb,38:$Vc,48:248,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,133:$Vn,135:$Vo,138:$Vp},{10:[1,252],16:$VR,22:[2,205],28:$Vb,34:251,38:$Vc,45:250,48:34,57:249,70:253,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{10:$Va,16:[2,211],28:$Vb,38:$Vc,48:255,65:254,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,133:$Vn,135:$Vo,138:$Vp},{16:[1,257],74:256},{10:$Va,18:[2,69],22:$VE1,23:33,25:259,26:$V4,28:$Vb,38:$Vc,45:32,48:34,81:258,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{18:[2,71],22:$VF1},{18:[2,73],22:$VG1},{10:$Va,28:$Vb,38:$Vc,45:262,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},o($VH1,$Vr,{49:[1,263],105:$Vs,106:$Vt,118:$Vu,122:$Vv}),o($Vq,[2,18]),o($Vq,[2,199]),o($Vq,[2,200]),o($VS,[2,20]),o($V6,[2,7]),{18:[2,8]},o($Vt1,[2,11]),o($Vt1,[2,12]),{10:$Va,23:33,25:264,26:$V4,28:$Vb,38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},o($Vv1,$VI,{28:$VJ,109:$VK,123:$VL,126:[1,265],131:$VM}),{14:[1,266]},{14:[2,220],105:$Vs,106:$Vt,118:$Vu},o($VG,[2,136]),{30:[1,267]},{30:[2,226],33:$Vw1},o($VG,[2,157]),{10:$Va,28:$Vb,38:$Vc,48:269,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,125:268,126:[2,217],133:$Vn,135:$Vo,138:$Vp},{30:[1,270]},{28:$VJ,30:[2,228],109:[1,271],123:$VL,131:$VM},o($VN,[2,133]),o($VS,[2,237],{45:32,23:33,48:34,119:35,121:36,141:37,110:38,89:39,104:41,90:43,91:44,92:45,97:56,98:57,99:58,100:59,101:60,102:61,103:62,151:272,25:273,10:$Va,26:$V4,28:$Vb,38:$Vc,93:$Vd,94:$Ve,95:$Vf,96:$Vg,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,118:$Vm,133:$Vn,135:$Vo,138:$Vp}),o($VN,[2,186]),o($Vx1,[2,188]),{30:[2,180]},{30:[2,232]},{14:$Vh1},{14:$Vi1},o($VS,[2,181]),o($VS,[2,182]),o($VN,[2,174]),{30:[1,274]},{30:[1,275]},{30:[2,183],33:[1,276]},{137:[2,163]},{137:[2,230]},o([5,9,10,14,16,18,22,26,28,30,33,37,38,49,51,54,56,64,69,71,73,78,80,84,87,93,94,95,96,105,106,107,108,109,111,112,113,114,115,116,117,118,122,123,126,131,133,135,137,138,139],[2,21]),{18:[2,31]},o($Vy1,[2,85]),o($Vy1,[2,36]),o($Vy1,[2,37]),{16:$VR,34:277,105:$Vs,106:$Vt,118:$Vu},{22:[1,278]},o([22,33],$VI1,{34:279,16:$VR}),o($Vy1,[2,47]),o([16,22,24,28,105,106,109,111,112,113,114,115,116,117,118,120,122,123,131],$VH,{33:[1,281],61:[1,280]}),{22:[2,206],33:$VJ1},{16:[1,284],66:283},{16:[2,212],105:$Vs,106:$Vt,118:$Vu},o($Vy1,[2,60]),{69:$VK1,71:$VL1,75:285,76:286},{22:[1,289]},{18:[2,68],22:$VM1},o($Vy1,[2,70]),o($Vy1,[2,72]),{16:$VR,34:290},o($VH1,[2,41]),o($Vu1,[2,16]),o($VG,[2,158]),{10:$Va,28:$Vb,38:$Vc,48:292,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,126:[2,221],128:291,133:$Vn,135:$Vo,138:$Vp},o($VN,[2,134]),{126:[1,293]},{105:$Vs,106:$Vt,118:$Vu,126:[2,218]},o($VN,[2,159]),{28:$VW,123:$VX,131:$VY},o($VS,[2,192]),o($VS,[2,238]),o($VN,[2,175]),o($VN,[2,176]),{10:$Va,23:33,25:240,26:$V4,28:$Vb,30:[2,233],38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37,144:295,147:294},o($Vy1,[2,203],{52:296,53:297,54:[1,298]}),{10:$Va,22:[2,207],28:$Vb,38:$Vc,48:300,58:299,89:93,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,133:$Vn,135:$Vo,138:$Vp},o($Vy1,[2,46]),{10:$Va,14:[1,302],23:33,25:301,26:$V4,28:$Vb,38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{10:[1,303]},{10:$Va,28:$Vb,38:$Vc,45:304,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},o($Vy1,[2,54]),{67:305,68:306,69:$VN1,71:$VO1},{18:[1,309],69:$VK1,71:$VL1,76:310},o($VP1,[2,62]),{10:$Va,28:$Vb,38:$Vc,45:311,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{14:[1,312]},o($Vy1,[2,67]),o($Vy1,[2,66]),{126:[1,313]},{105:$Vs,106:$Vt,118:$Vu,126:[2,222]},o($VN,[2,131]),{30:[2,184]},{30:[2,234]},o($Vy1,[2,42]),o($Vy1,[2,204]),{16:$VR,34:314,50:315,51:$Vl1},{22:[1,316]},{22:[2,208],105:$Vs,106:$Vt,118:$Vu},{14:[1,318],16:$VR,34:317},{10:$Va,16:$VR,23:33,25:319,26:$V4,28:$Vb,34:320,38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{61:[1,321]},o([14,22,33],[2,130]),{18:[1,322],68:323,69:$VN1,71:$VO1},o($VP1,[2,56]),{10:$Va,28:$Vb,38:$Vc,45:325,48:34,70:324,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{14:[1,326]},o($Vy1,[2,61]),o($VP1,[2,63]),{14:[1,327]},{10:$Va,22:$Vk1,23:330,26:$V4,28:$Vb,38:$Vc,41:329,43:328,44:180,45:331,46:332,48:207,50:181,51:$Vl1,55:182,56:$Vm1,60:183,62:184,63:185,64:$Vn1,72:186,73:$Vo1,77:190,78:$Vp1,79:187,80:$VQ1,83:188,84:$VR1,86:189,87:$VS1,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},o($VN,[2,132]),o($Vy1,[2,43]),o($Vy1,[2,44]),{10:$Va,16:[2,209],28:$Vb,38:$Vc,45:338,46:339,47:337,48:207,59:336,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},o($Vy1,[2,48]),{10:$Va,16:$VR,23:33,25:340,26:$V4,28:$Vb,34:341,38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{16:$VR,34:342},o($Vy1,[2,53]),{10:$Va,23:33,25:343,26:$V4,28:$Vb,38:$Vc,45:32,48:34,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},o($Vy1,[2,55]),o($VP1,[2,57]),{14:[1,344],33:$VJ1},o([14,33],$VI1),{10:$Va,22:$Vk1,23:330,26:$V4,28:$Vb,38:$Vc,41:329,43:345,44:180,45:331,46:332,48:207,50:181,51:$Vl1,55:182,56:$Vm1,60:183,62:184,63:185,64:$Vn1,72:186,73:$Vo1,77:190,78:$Vp1,79:187,80:$VQ1,83:188,84:$VR1,86:189,87:$VS1,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{10:$Va,22:$Vk1,23:330,26:$V4,28:$Vb,38:$Vc,41:329,43:346,44:180,45:331,46:332,48:207,50:181,51:$Vl1,55:182,56:$Vm1,60:183,62:184,63:185,64:$Vn1,72:186,73:$Vo1,77:190,78:$Vp1,79:187,80:$VQ1,83:188,84:$VR1,86:189,87:$VS1,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},o($VP1,[2,65],{119:35,121:36,141:37,110:38,89:39,104:41,90:43,91:44,92:45,97:56,98:57,99:58,100:59,101:60,102:61,103:62,44:180,50:181,55:182,60:183,62:184,63:185,72:186,79:187,83:188,86:189,77:190,48:207,23:330,45:331,46:332,41:347,10:$Va,22:$Vk1,26:$V4,28:$Vb,38:$Vc,51:$Vl1,56:$Vm1,64:$Vn1,73:$Vo1,78:$Vp1,80:$VQ1,84:$VR1,87:$VS1,93:$Vd,94:$Ve,95:$Vf,96:$Vg,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,118:$Vm,133:$Vn,135:$Vo,138:$Vp}),o($Vy1,[2,34]),{22:$Vz1},{22:$VB1},{22:$VD1},{10:$Va,22:$VE1,23:33,25:348,26:$V4,28:$Vb,38:$Vc,45:32,48:34,81:258,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},{22:$VF1},{22:$VG1},{16:$VR,34:349},{16:[2,210]},{16:$VA1},{16:$VC1},{16:$VR,34:350},o($Vy1,[2,51]),o($Vy1,[2,52]),{16:$VR,34:351},{10:$Va,22:$Vk1,23:330,26:$V4,28:$Vb,38:$Vc,41:329,43:352,44:180,45:331,46:332,48:207,50:181,51:$Vl1,55:182,56:$Vm1,60:183,62:184,63:185,64:$Vn1,72:186,73:$Vo1,77:190,78:$Vp1,79:187,80:$VQ1,83:188,84:$VR1,86:189,87:$VS1,89:39,90:43,91:44,92:45,93:$Vd,94:$Ve,95:$Vf,96:$Vg,97:56,98:57,99:58,100:59,101:60,102:61,103:62,104:41,105:$Vh,106:$Vi,107:$Vj,108:$Vk,110:38,117:$Vl,118:$Vm,119:35,121:36,133:$Vn,135:$Vo,138:$Vp,141:37},o($VP1,[2,59],{119:35,121:36,141:37,110:38,89:39,104:41,90:43,91:44,92:45,97:56,98:57,99:58,100:59,101:60,102:61,103:62,44:180,50:181,55:182,60:183,62:184,63:185,72:186,79:187,83:188,86:189,77:190,48:207,23:330,45:331,46:332,41:347,10:$Va,22:$Vk1,26:$V4,28:$Vb,38:$Vc,51:$Vl1,56:$Vm1,64:$Vn1,73:$Vo1,78:$Vp1,80:$VQ1,84:$VR1,87:$VS1,93:$Vd,94:$Ve,95:$Vf,96:$Vg,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,118:$Vm,133:$Vn,135:$Vo,138:$Vp}),o($VP1,[2,64],{119:35,121:36,141:37,110:38,89:39,104:41,90:43,91:44,92:45,97:56,98:57,99:58,100:59,101:60,102:61,103:62,44:180,50:181,55:182,60:183,62:184,63:185,72:186,79:187,83:188,86:189,77:190,48:207,23:330,45:331,46:332,41:347,10:$Va,22:$Vk1,26:$V4,28:$Vb,38:$Vc,51:$Vl1,56:$Vm1,64:$Vn1,73:$Vo1,78:$Vp1,80:$VQ1,84:$VR1,87:$VS1,93:$Vd,94:$Ve,95:$Vf,96:$Vg,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,118:$Vm,133:$Vn,135:$Vo,138:$Vp}),o($Vy1,[2,35]),{22:$VM1},o($Vy1,[2,45]),o($Vy1,[2,50]),o($Vy1,[2,49]),o($VP1,[2,58],{119:35,121:36,141:37,110:38,89:39,104:41,90:43,91:44,92:45,97:56,98:57,99:58,100:59,101:60,102:61,103:62,44:180,50:181,55:182,60:183,62:184,63:185,72:186,79:187,83:188,86:189,77:190,48:207,23:330,45:331,46:332,41:347,10:$Va,22:$Vk1,26:$V4,28:$Vb,38:$Vc,51:$Vl1,56:$Vm1,64:$Vn1,73:$Vo1,78:$Vp1,80:$VQ1,84:$VR1,87:$VS1,93:$Vd,94:$Ve,95:$Vf,96:$Vg,105:$Vh,106:$Vi,107:$Vj,108:$Vk,117:$Vl,118:$Vm,133:$Vn,135:$Vo,138:$Vp})],
+defaultActions: {4:[2,3],15:[2,1],16:[2,2],20:[2,196],27:[2,194],114:[2,9],179:[2,32],192:[2,86],193:[2,87],194:[2,88],195:[2,89],213:[2,8],231:[2,180],232:[2,232],241:[2,163],242:[2,230],244:[2,31],294:[2,184],295:[2,234],337:[2,210],338:[2,39],339:[2,40],348:[2,214]},
 parseError: function parseError(str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -1787,7 +1756,7 @@ switch($avoiding_name_collisions) {
 case 0:/* skip whitespace */
 break;
 case 1:
-                                yy.env.addComment(
+                                yy.env.addSingleLineComment(
                                     new yy.SingleLineCommentNode(yy_.yytext, yy_.yylloc)
                                 );
                             
@@ -1809,7 +1778,7 @@ case 2:
                                     throw yy.parseError('comments must end with a new line', {loc: {first_line: yy_.yylloc.last_line }}, true);
                                 }
 
-                                yy.env.addComment(
+                                yy.env.addMultipleLineComment(
                                     new yy.MultiLineCommentNode(yy_.yytext, yy_.yylloc)
                                 );
                             
@@ -1821,12 +1790,12 @@ case 3:
                                 }
 
                                 this.tplState = true;
-                                return 130
+                                return 135
                             
 break;
 case 4:
                                 if (this.tplState) {
-                                    return 134
+                                    return 139
                                 }
                                 else {
                                     // return just a `}` char
@@ -1838,7 +1807,7 @@ break;
 case 5:
                                 if (this.tplState) {
                                     this.tplState = false;
-                                    return 132
+                                    return 137
                                 }
                                 else {
                                     // return just a `}` char
@@ -1847,7 +1816,7 @@ case 5:
                                 }
                             
 break;
-case 6:return 133
+case 6:return 138
 break;
 case 7:return 38
 break;
@@ -1859,11 +1828,11 @@ case 10: yy.env.newContext(); return 9
 break;
 case 11: yy.env.newContext(); return 26 
 break;
-case 12:return 88
+case 12:return 93
 break;
-case 13:return 91
+case 13:return 96
 break;
-case 14:return 75
+case 14:return 80
 break;
 case 15:return 51
 break;
@@ -1875,86 +1844,88 @@ case 18:return 61
 break;
 case 19:return 64
 break;
-case 20:return 69
+case 20:return 73
 break;
-case 21:return 71
+case 21:return 69
 break;
-case 22:return 82
+case 22:return 71
 break;
-case 23:return 79
+case 23:return 87
 break;
-case 24:return 89
+case 24:return 84
 break;
-case 25:return 73
+case 25:return 94
 break;
-case 26:return 128
+case 26:return 78
 break;
-case 27:return 90
+case 27:return 133
 break;
-case 28:return 10
+case 28:return 95
 break;
-case 29:return 16
+case 29:return 10
 break;
-case 30:return 18
+case 30:return 16
 break;
-case 31:return 28
+case 31:return 18
 break;
-case 32:return 30
+case 32:return 28
 break;
-case 33:return 118
+case 33:return 30
 break;
-case 34:return 121
+case 34:return 123
 break;
-case 35:return 117
+case 35:return 126
 break;
-case 36:return 115
+case 36:return 122
 break;
-case 37:return 113
+case 37:return 120
 break;
-case 38:return 109
+case 38:return 118
 break;
-case 39:return 110
+case 39:return 114
 break;
-case 40:return 111
+case 40:return 115
 break;
-case 41:return 49
+case 41:return 116
 break;
-case 42:return 112
+case 42:return 49
 break;
-case 43:return 24
+case 43:return 117
 break;
-case 44:return 14
+case 44:return 24
 break;
-case 45:return 33
+case 45:return 14
 break;
-case 46:return 126
+case 46:return 33
 break;
-case 47:return 22
+case 47:return 131
 break;
-case 48:return 102
+case 48:return 22
 break;
-case 49:return 103
+case 49:return 107
 break;
-case 50:return 100
+case 50:return 108
 break;
-case 51:return 101
+case 51:return 105
 break;
 case 52:return 106
 break;
-case 53:return 107
+case 53:return 111
 break;
-case 54:return 108
+case 54:return 112
 break;
-case 55:return 104
+case 55:return 113
 break;
-case 56: yy.parseError('character ' + yy_.yytext + ' with code: ' + yy_.yytext.charCodeAt(0), {loc: yy_.yylloc}); 
+case 56:return 109
 break;
-case 57:return 5
+case 57: yy.parseError('character ' + yy_.yytext + ' with code: ' + yy_.yytext.charCodeAt(0), {loc: yy_.yylloc}); 
+break;
+case 58:return 5
 break;
 }
 },
-rules: [/^(?:[ \f\t\u00A0\u2028\u2029\uFEFF]+)/,/^(?:\/\/.*)/,/^(?:---([\s\S]*?)---)/,/^(?:\$'([^\\']|\\[\s\S])*?\{)/,/^(?:\}([^\\']|\\[\s\S])*?\{)/,/^(?:\}([^\\']|\\[\s\S])*?')/,/^(?:\$'([^\\']|\\[\s\S])*')/,/^(?:'([^\\']|\\[\s\S])*')/,/^(?:(\r\n|\n))/,/^(?:use\b)/,/^(?:class\b)/,/^(?:func\b)/,/^(?:me\b)/,/^(?:nil\b)/,/^(?:return\b)/,/^(?:if\b)/,/^(?:else\b)/,/^(?:for\b)/,/^(?:in\b)/,/^(?:switch\b)/,/^(?:case\b)/,/^(?:default\b)/,/^(?:continue\b)/,/^(?:break\b)/,/^(?:true\b|false\b)/,/^(?:catch\b)/,/^(?:go\b)/,/^(?:0x[\da-fA-F]+|^\d*\.?\d+(?:[eE][+-]?\d+)?\b)/,/^(?:[\$_a-zA-Z\x7f-\uffff]+[\$\w\x7f-\uffff]*)/,/^(?:\{)/,/^(?:\})/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:\?\?)/,/^(?:\*=|\/=|%=|\+=|-=|<<=|>>=|>>>=|&=|\^=|\|=)/,/^(?:<-)/,/^(?:<<|>>|>>>)/,/^(?:<=|>=|==|!=|<|>)/,/^(?:&&|\|\||\^|\|)/,/^(?:\+\+|--)/,/^(?:&)/,/^(?:=)/,/^(?::)/,/^(?:,)/,/^(?:\.)/,/^(?:;)/,/^(?:!)/,/^(?:~)/,/^(?:\+)/,/^(?:-)/,/^(?:\*)/,/^(?:\/)/,/^(?:%)/,/^(?:\?)/,/^(?:.)/,/^(?:$)/],
-conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57],"inclusive":true}}
+rules: [/^(?:[ \f\t\u00A0\u2028\u2029\uFEFF]+)/,/^(?:\/\/.*)/,/^(?:---([\s\S]*?)---)/,/^(?:\$'([^\\']|\\[\s\S])*?\{)/,/^(?:\}([^\\']|\\[\s\S])*?\{)/,/^(?:\}([^\\']|\\[\s\S])*?')/,/^(?:\$'([^\\']|\\[\s\S])*')/,/^(?:'([^\\']|\\[\s\S])*')/,/^(?:(\r\n|\n))/,/^(?:use\b)/,/^(?:class\b)/,/^(?:func\b)/,/^(?:me\b)/,/^(?:nil\b)/,/^(?:return\b)/,/^(?:if\b)/,/^(?:else\b)/,/^(?:for\b)/,/^(?:in\b)/,/^(?:switch\b)/,/^(?:select\b)/,/^(?:case\b)/,/^(?:default\b)/,/^(?:continue\b)/,/^(?:break\b)/,/^(?:true\b|false\b)/,/^(?:catch\b)/,/^(?:go\b)/,/^(?:0x[\da-fA-F]+|^\d*\.?\d+(?:[eE][+-]?\d+)?\b)/,/^(?:[\$_a-zA-Z\x7f-\uffff]+[\$\w\x7f-\uffff]*)/,/^(?:\{)/,/^(?:\})/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:\?\?)/,/^(?:\*=|\/=|%=|\+=|-=|<<=|>>=|>>>=|&=|\^=|\|=)/,/^(?:<-)/,/^(?:<<|>>|>>>)/,/^(?:<=|>=|==|!=|<|>)/,/^(?:&&|\|\||\^|\|)/,/^(?:\+\+|--)/,/^(?:&)/,/^(?:=)/,/^(?::)/,/^(?:,)/,/^(?:\.)/,/^(?:;)/,/^(?:!)/,/^(?:~)/,/^(?:\+)/,/^(?:-)/,/^(?:\*)/,/^(?:\/)/,/^(?:%)/,/^(?:\?)/,/^(?:.)/,/^(?:$)/],
+conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58],"inclusive":true}}
 });
 // lexer customization
 var
@@ -1982,6 +1953,7 @@ reactiveTerms = {
     'FOR'     : true,
     'IN'      : true,
     'SWITCH'  : true,
+    'SELECT'  : true,
     'CASE'    : true,
     'DEFAULT' : true,
     'CONTINUE': true,
@@ -2170,18 +2142,19 @@ yy.Environment = Class({
         this.errors     = [];
         this.exported   = {};
         this.classNodes = [];
-        this.comments   = [];
+        this.singleLineComments = [];
+        this.multipleLineComments = [];
 
         // initialize the first context (module)
         this.newContext();
     },
 
-    addComment: function(node) {
-        this.comments.push(node);
+    addSingleLineComment: function(node) {
+        this.singleLineComments.push(node);
     },
 
-    getComments: function() {
-        return this.comments;
+    addMultipleLineComment: function(node) {
+        this.multipleLineComments.push(node);
     },
 
     addExported: function(k, v) {
@@ -2249,7 +2222,7 @@ var EcmaReservedKeywords = [
     'continue', 'for', 'switch', 'while',
     'debugger', 'function', 'with',
     'default', 'if', 'throw',
-    'delete', 'in', 'try',
+    'delete', 'in', 'try', 'null',
 
     // Ecma-262 FutureReservedWord
     'class', 'enum', 'extends',
@@ -2340,6 +2313,10 @@ function isEcmaReservedKeyWord(name) {
     return EcmaReservedKeywords.indexOf(name) !== -1;
 }
 
+function isUsedAsStatement(node) {
+    return node.parent instanceof yy.SimpleStmtNode;
+}
+
 yy.parseError = function parseError (msg, hash, replaceMsg) {
     var filename = yy.env.filename;
     //is non recoverable parser error?
@@ -2413,6 +2390,10 @@ function preorder(node, fn) {
     len = ch.length;
 
     for (i = 0; i < len; i++) {
+        if (!ch[i]) {
+            continue;
+        }
+
         if (fn(ch[i]) === false) {
             return;
         }
@@ -2421,6 +2402,7 @@ function preorder(node, fn) {
 }
 
 function flattenToLine(node, lineno) {
+    node.lineno = lineno;
     preorder(node, function(node) {
         node.lineno = lineno;
     })
@@ -3522,6 +3504,8 @@ yy.CallNode = Class(yy.Node, {
 
     name: null,
 
+    forSelect: false,
+
     initNode: function() {
         this.base('initNode', arguments);
         this.context = this.yy.env.context();
@@ -3678,12 +3662,12 @@ yy.CallNode = Class(yy.Node, {
 
         var ch = this.children;
         ch[0].children[0].children = this.runtimePrefix('timeout');
-        ch.unshift(new yy.Lit('yield ', getLesserLineNumber(ch[0])))
+        ch.unshift(new yy.Lit((this.forSelect ? '' : 'yield '), getLesserLineNumber(ch[0])))
     },
 
     copyBuiltin: function() {
         var ch = this.children;
-        ch[0].children[0].children = this.runtimePrefix('copyObj');
+        ch[0].children[0].children = this.runtimePrefix('copy');
     }
 });
 
@@ -3775,10 +3759,28 @@ yy.ForNode = Class(yy.Node, {
     type: 'ForNode',
 
     compile: function() {
-        var ch = this.children;
+        var ch = this.children, operation, chanName, block;
 
         if (ch.length <= 3) {
             ch[0].children = 'while ';
+        }
+
+        // channel receiving
+        if (ch.length === 3 && ch[1] instanceof yy.AssignmentNode && ch[1].children[2] instanceof yy.ReceiveAsyncNode) {
+            operation = ch[1];
+            chanName  = operation.children[2].channelVarName;
+            block     = ch[2];
+
+            ch.splice(1, 1);
+
+            block.children.splice(1, 0,
+                new yy.Lit(
+                    '; if (' + this.runtimePrefix('isChannel(') + chanName + ') && ' + chanName + '.closed) break;',
+                    block.children[0].lineno
+                )
+            );
+
+            block.children.splice(1, 0, operation);
         }
 
         if (ch.length === 2) {
@@ -3876,7 +3878,7 @@ yy.ForInRangeNode = Class(yy.Node, {
 
         i = ch[1].children[0].children;
         from = ch[3] || new yy.Lit('0', ch[0].lineno);
-        to   = ch[5] || new yy.Lit('9e9', ch[0].lineno);
+        to   = ch[5] || new yy.Lit('Infinity', ch[0].lineno);
 
         /*
         for i in n:m { }
@@ -4112,17 +4114,69 @@ yy.SendAsyncNode = Class(yy.Node, {
 
     type: 'SendAsyncNode',
 
+    initNode: function() {
+        this.base('initNode', arguments);
+        var ctx;
+
+        if (this.children[0] instanceof yy.VarNode) {
+            this.channelVarName = this.children[0].name;
+        } else {
+            ctx = this.yy.env.context();
+            this.channelVarName = ctx.generateVar('ch');
+            ctx.addLocalVar(this.channelVarName);    
+        }
+    },
+
     compile: function() {
         if (! isInGoExpr(this)) {
             this.error('unexpected async operation', this.lineno);
         }
 
         var
-        ch = this.children;
-        ch[1].children = ',';
+        newChildren,
+        ch    = this.children,
+        isVar = ch[0] instanceof yy.VarNode;
 
-        ch.splice(0, 0, new yy.Lit('yield ' + this.runtimeFn('send'), ch[0].lineno));
-        ch.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+        if (isVar) {
+            newChildren = [];
+        } else {
+            newChildren = [
+                new yy.Lit('(', ch[0].lineno),
+                new yy.Lit(this.channelVarName + ' = ', ch[0].lineno),
+                ch[0],
+                new yy.Lit(',', ch[0].lineno),
+            ];
+        }
+
+        this.children = newChildren.concat([
+            this.compileRequest(),
+            new yy.Lit('&&', ch[0].lineno)
+        ].concat(this.compilePerform()));
+
+        if (isUsedAsStatement(this)) {
+            this.children.unshift(new yy.Lit(';', ch[0].lineno));
+        }
+
+        if (!isVar) {
+            this.children.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+        }
+    },
+
+    compileRequest: function() {
+        var
+        ch = this.children;
+
+        return new yy.Lit('(yield ' + this.runtimeFn('requestSend') + this.channelVarName + '))', ch[0].lineno);
+    },
+
+    compilePerform: function() {
+        var
+        ch = this.children;
+        return [
+            new yy.Lit('(yield ' + this.runtimeFn('performSend') + this.channelVarName + ', ', ch[2].lineno),
+            ch[2],
+            new yy.Lit('))', ch[2].lineno)
+        ]
     }
 })
 
@@ -4130,16 +4184,88 @@ yy.ReceiveAsyncNode = Class(yy.Node, {
 
     type: 'ReceiveAsyncNode',
 
+    forSelect: false,
+
+    initNode: function() {
+        this.base('initNode', arguments);
+        var ctx;
+
+        if (this.children[1] instanceof yy.VarNode) {
+            this.channelVarName = this.children[1].name;
+        } else {
+            ctx = this.yy.env.context();
+            this.channelVarName = ctx.generateVar('ch');
+            ctx.addLocalVar(this.channelVarName);    
+        }
+    },
+
     compile: function() {
         if (! isInGoExpr(this)) {
             this.error('unexpected async operation', this.lineno);
         }
 
         var
+        newChildren,
+        ch    = this.children,
+        isVar = ch[1] instanceof yy.VarNode;
+
+        if (isVar) {
+            newChildren = [];
+        } else {
+            newChildren = [
+                new yy.Lit('(', ch[0].lineno),
+                new yy.Lit(this.channelVarName + ' = ', ch[0].lineno),
+                ch[1],
+                new yy.Lit(',', ch[1].lineno),
+            ];
+        }
+
+        if (this.forSelect) {
+            this.children = newChildren.concat([
+                this.compileRequest()
+            ]);
+        } else {
+            this.children = newChildren.concat([
+                this.compileRequest(),
+                new yy.Lit('? ', ch[1].lineno),
+                new yy.Lit('(', ch[1].lineno),
+                this.compilePerform(),
+                new yy.Lit(')', ch[1].lineno),
+                new yy.Lit(': void 0', ch[1].lineno)
+            ]);
+        }
+
+        if (isUsedAsStatement(this)) {
+            this.children.unshift(new yy.Lit(';', ch[0].lineno));
+        }
+
+        if (!isVar) {
+            this.children.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+        }
+    },
+
+    compileRequest: function(lineno) {
+        var
+        ch = this.children,
+        fnName = this.forSelect ? 'requestRecvForSelect': 'requestRecv';
+
+        lineno = lineno || ch[1].lineno;
+
+        return new yy.Lit(
+            (this.forSelect ? '' : '(yield ') +
+            this.runtimeFn(fnName) +
+            this.channelVarName +
+            (this.forSelect ? ')' : '))'),
+        lineno);
+    },
+
+    compilePerform: function(lineno) {
+        var
         ch = this.children;
 
-        ch[0].children = 'yield ' + this.runtimeFn('receive');
-        ch.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+        lineno = lineno || ch[1].lineno;
+
+        return new yy.Lit('yield ' + this.runtimeFn('performRecv')  + this.channelVarName + ')' + (this.forSelect ? ';' : ''), lineno)
     }
 })
 
@@ -4173,6 +4299,100 @@ yy.TemplateLiteralNode = Class(yy.Node, {
             }
         }
     }
+})
+
+yy.SelectNode = Class(yy.Node, {
+
+    type: 'SelectNode',
+
+    processOperations: function() {
+        var
+        i, len, singleCase, cases,
+        leftHand, operator, body,
+        lineno = getLesserLineNumber(this),
+        count = 0, ch  = this.children,
+        collectedCases = [],
+        caseStmtList   = ch[0].children[1].children;
+
+        for (i = 0, len = caseStmtList.length; i < len; i++) {
+
+            singleCase = caseStmtList[i].children[1];
+
+            if (
+                singleCase instanceof yy.ReceiveAsyncNode ||
+                (singleCase instanceof yy.CallNode && singleCase.name == 'timeout') ||
+                singleCase instanceof yy.AssignmentNode
+            ) {
+                // process asignement node
+                if (singleCase instanceof yy.AssignmentNode) {
+                    if (singleCase.children[2] instanceof yy.ReceiveAsyncNode) {
+                        leftHand = singleCase.children.shift();
+                        operator = singleCase.children.shift();
+
+                        singleCase = singleCase.children[0];
+                        singleCase.forSelect = true;
+
+                        body = caseStmtList[i].children[3];
+                        body.addFront(leftHand, operator, singleCase.compilePerform(operator.lineno));
+                    } else {
+                        this.error('unexpected ' + singleCase.type, singleCase.lineno);
+                    }
+                }
+
+                singleCase.forSelect = true;
+                collectedCases.push(singleCase);
+
+                // setup case numbers
+                caseStmtList[i].children[1] = new yy.Lit(String(count++), getLesserLineNumber(singleCase));
+            } else {
+                this.error('unexpected ' + singleCase.type, singleCase.lineno);
+            }
+        }
+
+        // flatten
+        for (i = 0, len = collectedCases.length; i < len; i++) {
+            flattenToLine(collectedCases[i], lineno);
+        }
+
+        // insert commas
+        for (i = 1; i < collectedCases.length; i+=2) {
+            collectedCases.splice(i, 0, new yy.Lit(',', lineno));
+        }
+
+        this.children = collectedCases.concat(ch)
+    },
+
+    compile: function() {
+        var
+        ch    = this.children,
+        first = ch[0];
+
+        // remove first child
+        ch.shift();
+
+        // proc
+        this.processOperations();
+
+        ch = this.children;
+        ch.splice(0, 0, new yy.Lit('(yield ' + this.runtimeFn('select') + '[', getLesserLineNumber(this)));
+
+        first.children = 'switch';
+        ch.unshift(first);
+
+        ch.splice(ch.length-1, 0, new yy.Lit('])) ', ch[ch.length-2].lineno))
+    }
+
+})
+
+yy.SelectCaseNode = Class(yy.Node, {
+
+    type: 'SelectCaseNode',
+
+    compile: function() {
+        var ls = this.children[3];
+        ls.children.push(new yy.Lit(' break; ', ls.last().lineno - 1));
+    }
+
 })
 
 })(typeof cor === 'undefined' ? {} : cor);
@@ -4254,13 +4474,22 @@ var Compiler = cor.Class({
 
     compile: function(ast) {
         var i,
-        comments = this.env.getComments(),
-        len      = comments.length;
+        slComments = this.env.singleLineComments,
+        mlComments = this.env.multipleLineComments,
+        slen       = slComments.length,
+        mlen       = mlComments.length;
 
+        // write multiple line comments first
+        for (i = 0; i < mlen; i++) {
+            this.visitNode(mlComments[i]);
+        }
+
+        // write
         this.visitNode(ast);
 
-        for (i = 0; i < len; i++) {
-            this.visitNode(comments[i]);
+        // write single line comments
+        for (i = 0; i < slen; i++) {
+            this.visitNode(slComments[i]);
         }
 
         return this.generateCode();

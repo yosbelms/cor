@@ -35,7 +35,7 @@
 
 <p>This is the reference manual for the Cor programming language. It will guide you inside language aspects and concepts. Cor is a language designed with large web development in mind. Hence, is possible to develop your software without to execute any command to compile the source code, CLI tools are only needed to make the product able for production environments.</p>
 
-<p><h2>Table of Content</h2><a class="toclink toclink-2" href="#quickrecap">Quick recap</a><a class="toclink toclink-3" href="#inlcudingmodules">Inlcuding modules</a><a class="toclink toclink-3" href="#functions">Functions</a><a class="toclink toclink-3" href="#stringinterpolation">String Interpolation</a><a class="toclink toclink-3" href="#coroutineschannels">Coroutines/Channels</a><a class="toclink toclink-3" href="#slicescoalesceoperatorconditionaloperator">Slices/Coalesce Operator/Conditional Operator</a><a class="toclink toclink-3" href="#classesinheritanceinstance">Classes/Inheritance/Instance</a><a class="toclink toclink-3" href="#ifforswitch">If/For/Switch</a><a class="toclink toclink-3" href="#typeassertionerrors">Type Assertion/Errors</a><a class="toclink toclink-2" href="#platformcompatibility">Platform Compatibility</a><a class="toclink toclink-3" href="#servers">Servers</a><a class="toclink toclink-3" href="#browsers">Browsers</a><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#whitespaces">White Spaces</a><a class="toclink toclink-2" href="#expressions">Expressions</a><a class="toclink toclink-3" href="#comments">Comments</a><a class="toclink toclink-3" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-3" href="#objects">Objects</a><a class="toclink toclink-3" href="#parenthesisexpressions">Parenthesis Expressions</a><a class="toclink toclink-3" href="#strings">Strings</a><a class="toclink toclink-3" href="#templatesstringinterpolation">Templates (String Interpolation)</a><a class="toclink toclink-3" href="#numbers">Numbers</a><a class="toclink toclink-3" href="#operators">Operators</a><a class="toclink toclink-3" href="#coalesce">Coalesce</a><a class="toclink toclink-3" href="#existconditional">Exist Conditional</a><a class="toclink toclink-3" href="#arrays">Arrays</a><a class="toclink toclink-3" href="#slices">Slices</a><a class="toclink toclink-3" href="#typeassertion">Type Assertion</a><a class="toclink toclink-3" href="#coroutines">Coroutines</a><a class="toclink toclink-3" href="#asynchronicoperator">Asynchronic Operator</a><a class="toclink toclink-3" href="#classes">Classes</a><a class="toclink toclink-4" href="#initialization">Initialization</a><a class="toclink toclink-4" href="#inheritance">Inheritance</a><a class="toclink toclink-2" href="#builtinfunctions">Builtin Functions</a><a class="toclink toclink-3" href="#copy">Copy</a><a class="toclink toclink-3" href="#super">Super</a><a class="toclink toclink-3" href="#regex">Regex</a><a class="toclink toclink-3" href="#chan">Chan</a><a class="toclink toclink-3" href="#timeout">Timeout</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#statements">Statements</a><a class="toclink toclink-3" href="#forloop">For loop</a><a class="toclink toclink-3" href="#forin">For/In</a><a class="toclink toclink-3" href="#forinrange">For/In/Range</a><a class="toclink toclink-3" href="#ifelse">If/Else</a><a class="toclink toclink-3" href="#switchcasedefault">Switch/Case/Default</a><a class="toclink toclink-3" href="#incdec">Inc/Dec</a><a class="toclink toclink-3" href="#use">Use</a><a class="toclink toclink-3" href="#catcherror">Catch/Error</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#run">Run</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#theloader">The Loader</a><a class="toclink toclink-3" href="#configuration">Configuration</a><a class="toclink toclink-4" href="#dependenceinjection">Dependence injection</a><a class="toclink toclink-2" href="#corinthebrowser">Cor in the Browser</a><a class="toclink toclink-2" href="#thecrlcorruntimelibrary">The CRL (Cor Runtime Library)</a></p>
+<p><h2>Table of Content</h2><a class="toclink toclink-2" href="#quickrecap">Quick recap</a><a class="toclink toclink-3" href="#inlcudingmodules">Inlcuding modules</a><a class="toclink toclink-3" href="#functions">Functions</a><a class="toclink toclink-3" href="#stringinterpolation">String Interpolation</a><a class="toclink toclink-3" href="#coroutineschannels">Coroutines/Channels</a><a class="toclink toclink-3" href="#slicescoalesceoperatorconditionaloperator">Slices/Coalesce Operator/Conditional Operator</a><a class="toclink toclink-3" href="#classesinheritanceinstance">Classes/Inheritance/Instance</a><a class="toclink toclink-3" href="#ifforswitch">If/For/Switch</a><a class="toclink toclink-3" href="#typeassertionerrors">Type Assertion/Errors</a><a class="toclink toclink-2" href="#platformcompatibility">Platform Compatibility</a><a class="toclink toclink-3" href="#servers">Servers</a><a class="toclink toclink-3" href="#browsers">Browsers</a><a class="toclink toclink-2" href="#semicoloninsertion">Semicolon Insertion</a><a class="toclink toclink-2" href="#whitespaces">White Spaces</a><a class="toclink toclink-2" href="#expressions">Expressions</a><a class="toclink toclink-3" href="#comments">Comments</a><a class="toclink toclink-3" href="#variablesandlexicalscoping">Variables and Lexical Scoping</a><a class="toclink toclink-3" href="#objects">Objects</a><a class="toclink toclink-3" href="#parenthesisexpressions">Parenthesis Expressions</a><a class="toclink toclink-3" href="#strings">Strings</a><a class="toclink toclink-3" href="#templatesstringinterpolation">Templates (String Interpolation)</a><a class="toclink toclink-3" href="#numbers">Numbers</a><a class="toclink toclink-3" href="#operators">Operators</a><a class="toclink toclink-3" href="#coalesce">Coalesce</a><a class="toclink toclink-3" href="#existconditional">Exist Conditional</a><a class="toclink toclink-3" href="#arrays">Arrays</a><a class="toclink toclink-3" href="#slices">Slices</a><a class="toclink toclink-3" href="#typeassertion">Type Assertion</a><a class="toclink toclink-3" href="#coroutines">Coroutines</a><a class="toclink toclink-3" href="#asynchronicoperator">Asynchronic Operator</a><a class="toclink toclink-3" href="#classes">Classes</a><a class="toclink toclink-4" href="#initialization">Initialization</a><a class="toclink toclink-4" href="#inheritance">Inheritance</a><a class="toclink toclink-2" href="#builtinfunctions">Builtin Functions</a><a class="toclink toclink-3" href="#copy">Copy</a><a class="toclink toclink-3" href="#super">Super</a><a class="toclink toclink-3" href="#regex">Regex</a><a class="toclink toclink-3" href="#chan">Chan</a><a class="toclink toclink-3" href="#timeout">Timeout</a><a class="toclink toclink-2" href="#modules">Modules</a><a class="toclink toclink-2" href="#statements">Statements</a><a class="toclink toclink-3" href="#forloop">For loop</a><a class="toclink toclink-3" href="#forin">For/In</a><a class="toclink toclink-3" href="#forinrange">For/In/Range</a><a class="toclink toclink-3" href="#ifelse">If/Else</a><a class="toclink toclink-3" href="#switchcasedefault">Switch/Case/Default</a><a class="toclink toclink-3" href="#select">Select</a><a class="toclink toclink-3" href="#incdec">Inc/Dec</a><a class="toclink toclink-3" href="#use">Use</a><a class="toclink toclink-3" href="#catcherror">Catch/Error</a><a class="toclink toclink-2" href="#commands">Commands</a><a class="toclink toclink-3" href="#help">Help</a><a class="toclink toclink-3" href="#run">Run</a><a class="toclink toclink-3" href="#build">Build</a><a class="toclink toclink-3" href="#compile">Compile</a><a class="toclink toclink-3" href="#http">Http</a><a class="toclink toclink-2" href="#theloader">The Loader</a><a class="toclink toclink-3" href="#configuration">Configuration</a><a class="toclink toclink-4" href="#dependenceinjection">Dependence injection</a><a class="toclink toclink-2" href="#corinthebrowser">Cor in the Browser</a><a class="toclink toclink-2" href="#thecrlcorruntimelibrary">The CRL (Cor Runtime Library)</a></p>
 
 <h2 id="quickrecap">Quick recap</h2>
 
@@ -100,23 +100,6 @@ go {
     // receive
     c = &lt;- ch
     console.log(c)
-}
-</code></pre>
-
-<pre><code>// parallel
-go {
-    result = &lt;- (
-        books    : fetch.get('http://api.com/books'),
-        articles : fetch.get('http://api.com/articles'),
-    )
-
-    for book in result.books {
-        //..
-    }
-
-    for articles in result.articles {
-        //..
-    }
 }
 </code></pre>
 
@@ -669,24 +652,6 @@ prom.then(func(s) console.log(s))
 }
 </code></pre>
 
-<p>If receiving a array or object of future values it will resolve all values in parallel.</p>
-
-<pre><code>go {
-    result = &lt;- (
-        books    : fetch.get('http://api.com/books'),
-        articles : fetch.get('http://api.com/articles'),
-    )
-
-    for book in result.books {
-        //..
-    }
-
-    for articles in result.articles {
-        //..
-    }
-}
-</code></pre>
-
 <p>Awaiting a coroutine (idiomatic Cor):</p>
 
 <pre><code>// get articles in the las hour
@@ -1196,7 +1161,7 @@ if a &lt; b {
 
 <h3 id="switchcasedefault">Switch/Case/Default</h3>
 
-<p>With Cor you don't need to remember to <code>break</code> after every <code>case</code>. Cor switch statements prevents accidental fall-though by automatically breaking at the end of each <code>case</code> clause.</p>
+<p>With Cor you don't need to remember to <code>break</code> after every <code>case</code>. Cor switch statements prevents accidental fall-through by automatically breaking at the end of each <code>case</code> clause.</p>
 
 <p>Switch statements in Cor can take multiple values for each <code>case</code> clause. If any of the values match, the clause runs.</p>
 
@@ -1223,6 +1188,28 @@ switch num {
     case x &lt; 2 : doOtherThing()
 }
 </code></pre>
+
+<h3 id="select">Select</h3>
+
+<p>Select statemet is like <code>switch</code> statement but for asynchronic operations. It executes all cases in the same order as defined, once one of them has been resolved, it executes the instructions associated to resolved case. If none of the cases are resolved will block forever.</p>
+
+<pre><code>select {
+
+    // receive
+    case &lt;- chan :
+
+    // assign receive
+    case s = &lt;- chan :
+
+    // timeout
+    case timeout(500) :
+
+    // default
+    default :
+}
+</code></pre>
+
+<p>If <code>default</code> is provided and none of the other operations it will choose to execute the default instructions. The <code>timeout</code> builtin function is supported as a special case.</p>
 
 <h3 id="incdec">Inc/Dec</h3>
 
@@ -1587,7 +1574,7 @@ class TodoModel : bbone.Model {
 
 <h2 id="thecrlcorruntimelibrary">The CRL (Cor Runtime Library)</h2>
 
-<p>The CRL is a small (~13Kb unminified and uncompressed) library which makes possible to take advantage of features such as <em>for/in statements, inheritance, type assertions, among others</em>. Without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by the javascript resulting code.</p>        <div class="full-rule"></div>
+<p>The CRL is a small (~11Kb unminified and uncompressed) library which makes possible to take advantage of features such as <em>for/in statements, inheritance, type assertions, among others</em>. Without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by the javascript resulting code.</p>        <div class="full-rule"></div>
 
         <div class="feature footer-links">
             <ul>
