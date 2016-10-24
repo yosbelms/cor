@@ -1171,17 +1171,14 @@ switch {
 ```
 
 
-### Race
+### Select
 
-Race statemet is like `switch` statement but for asynchronic operations. It executes all cases in the same order as defined, once one of them has been resolved, it executes the instructions associated to resolved case. If none of the cases are resolved will block forever.
+Select statemet is like `switch` statement but for asynchronic operations. It executes all cases in the same order as defined, once one of them has been resolved, it executes the instructions associated to resolved case. If none of the cases are resolved will block forever.
 ```
-race {
+select {
 
     // receive
     case <- chan :
-
-    // send
-    case chan <- s :
 
     // assign receive
     case s = <- chan :
@@ -1194,7 +1191,7 @@ race {
 }
 ```
 
-If `default` is provided and none of the other operations it will choose to execute the default instructions.
+If `default` is provided and none of the other operations it will choose to execute the default instructions. The `timeout` builtin function is supported as a special case.
 
 
 ### Inc/Dec
