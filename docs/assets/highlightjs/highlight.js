@@ -782,11 +782,11 @@ hljs.registerLanguage('cor', function(hljs) {
         keyword:
             'use class func me return ' +
             'if else for in switch case default ' +
-            'continue break catch go',
+            'continue break catch go select',
         literal:
             'true false nil',
         built_in:
-            'super regex error chan timeout'
+            'super regex error chan timeout copy'
     };
 
     return {

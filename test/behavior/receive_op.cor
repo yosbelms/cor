@@ -10,6 +10,7 @@ func test(title) {
 
     describe('Receive operator ' + title, func() {
 
+        ---
         it('Should receive from array in parallel', func(done) {
             go {
                 v = <- (
@@ -18,7 +19,7 @@ func test(title) {
                     4,
                 )
 
-                expect(v).toEqual((2, 3, 4))
+                expect(v).toEqual (2, 3, 4)
                 done()
             }
         })
@@ -35,6 +36,7 @@ func test(title) {
                 done()
             }
         })
+        ---
 
         it('Should receive from promise', func(done) {
             go {

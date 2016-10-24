@@ -6,7 +6,7 @@
 [ \f\t\u00A0\u2028\u2029\uFEFF]+ /* skip whitespace */
 
 "//".*                      %{
-                                yy.env.addComment(
+                                yy.env.addSingleLineComment(
                                     new yy.SingleLineCommentNode(yytext, yylloc)
                                 );
                             %}
@@ -29,7 +29,7 @@
                                     throw yy.parseError('comments must end with a new line', {loc: {first_line: yylloc.last_line }}, true);
                                 }
 
-                                yy.env.addComment(
+                                yy.env.addMultipleLineComment(
                                     new yy.MultiLineCommentNode(yytext, yylloc)
                                 );
                             %}
@@ -84,6 +84,7 @@
 "for"                       return 'FOR'
 "in"                        return 'IN'
 "switch"                    return 'SWITCH'
+"select"                    return 'SELECT'
 "case"                      return 'CASE'
 "default"                   return 'DEFAULT'
 "continue"                  return 'CONTINUE'
@@ -162,6 +163,7 @@ reactiveTerms = {
     'FOR'     : true,
     'IN'      : true,
     'SWITCH'  : true,
+    'SELECT'  : true,
     'CASE'    : true,
     'DEFAULT' : true,
     'CONTINUE': true,

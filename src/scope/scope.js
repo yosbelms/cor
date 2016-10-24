@@ -8,7 +8,7 @@ var EcmaReservedKeywords = [
     'continue', 'for', 'switch', 'while',
     'debugger', 'function', 'with',
     'default', 'if', 'throw',
-    'delete', 'in', 'try',
+    'delete', 'in', 'try', 'null',
 
     // Ecma-262 FutureReservedWord
     'class', 'enum', 'extends',
@@ -99,6 +99,10 @@ function isEcmaReservedKeyWord(name) {
     return EcmaReservedKeywords.indexOf(name) !== -1;
 }
 
+function isUsedAsStatement(node) {
+    return node.parent instanceof yy.SimpleStmtNode;
+}
+
 yy.parseError = function parseError (msg, hash, replaceMsg) {
     var filename = yy.env.filename;
     //is non recoverable parser error?
@@ -172,6 +176,10 @@ function preorder(node, fn) {
     len = ch.length;
 
     for (i = 0; i < len; i++) {
+        if (!ch[i]) {
+            continue;
+        }
+
         if (fn(ch[i]) === false) {
             return;
         }
@@ -180,6 +188,7 @@ function preorder(node, fn) {
 }
 
 function flattenToLine(node, lineno) {
+    node.lineno = lineno;
     preorder(node, function(node) {
         node.lineno = lineno;
     })
@@ -1281,6 +1290,8 @@ yy.CallNode = Class(yy.Node, {
 
     name: null,
 
+    forSelect: false,
+
     initNode: function() {
         this.base('initNode', arguments);
         this.context = this.yy.env.context();
@@ -1437,12 +1448,12 @@ yy.CallNode = Class(yy.Node, {
 
         var ch = this.children;
         ch[0].children[0].children = this.runtimePrefix('timeout');
-        ch.unshift(new yy.Lit('yield ', getLesserLineNumber(ch[0])))
+        ch.unshift(new yy.Lit((this.forSelect ? '' : 'yield '), getLesserLineNumber(ch[0])))
     },
 
     copyBuiltin: function() {
         var ch = this.children;
-        ch[0].children[0].children = this.runtimePrefix('copyObj');
+        ch[0].children[0].children = this.runtimePrefix('copy');
     }
 });
 
@@ -1534,10 +1545,28 @@ yy.ForNode = Class(yy.Node, {
     type: 'ForNode',
 
     compile: function() {
-        var ch = this.children;
+        var ch = this.children, operation, chanName, block;
 
         if (ch.length <= 3) {
             ch[0].children = 'while ';
+        }
+
+        // channel receiving
+        if (ch.length === 3 && ch[1] instanceof yy.AssignmentNode && ch[1].children[2] instanceof yy.ReceiveAsyncNode) {
+            operation = ch[1];
+            chanName  = operation.children[2].channelVarName;
+            block     = ch[2];
+
+            ch.splice(1, 1);
+
+            block.children.splice(1, 0,
+                new yy.Lit(
+                    '; if (' + this.runtimePrefix('isChannel(') + chanName + ') && ' + chanName + '.closed) break;',
+                    block.children[0].lineno
+                )
+            );
+
+            block.children.splice(1, 0, operation);
         }
 
         if (ch.length === 2) {
@@ -1635,7 +1664,7 @@ yy.ForInRangeNode = Class(yy.Node, {
 
         i = ch[1].children[0].children;
         from = ch[3] || new yy.Lit('0', ch[0].lineno);
-        to   = ch[5] || new yy.Lit('9e9', ch[0].lineno);
+        to   = ch[5] || new yy.Lit('Infinity', ch[0].lineno);
 
         /*
         for i in n:m { }
@@ -1871,17 +1900,69 @@ yy.SendAsyncNode = Class(yy.Node, {
 
     type: 'SendAsyncNode',
 
+    initNode: function() {
+        this.base('initNode', arguments);
+        var ctx;
+
+        if (this.children[0] instanceof yy.VarNode) {
+            this.channelVarName = this.children[0].name;
+        } else {
+            ctx = this.yy.env.context();
+            this.channelVarName = ctx.generateVar('ch');
+            ctx.addLocalVar(this.channelVarName);    
+        }
+    },
+
     compile: function() {
         if (! isInGoExpr(this)) {
             this.error('unexpected async operation', this.lineno);
         }
 
         var
-        ch = this.children;
-        ch[1].children = ',';
+        newChildren,
+        ch    = this.children,
+        isVar = ch[0] instanceof yy.VarNode;
 
-        ch.splice(0, 0, new yy.Lit('yield ' + this.runtimeFn('send'), ch[0].lineno));
-        ch.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+        if (isVar) {
+            newChildren = [];
+        } else {
+            newChildren = [
+                new yy.Lit('(', ch[0].lineno),
+                new yy.Lit(this.channelVarName + ' = ', ch[0].lineno),
+                ch[0],
+                new yy.Lit(',', ch[0].lineno),
+            ];
+        }
+
+        this.children = newChildren.concat([
+            this.compileRequest(),
+            new yy.Lit('&&', ch[0].lineno)
+        ].concat(this.compilePerform()));
+
+        if (isUsedAsStatement(this)) {
+            this.children.unshift(new yy.Lit(';', ch[0].lineno));
+        }
+
+        if (!isVar) {
+            this.children.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+        }
+    },
+
+    compileRequest: function() {
+        var
+        ch = this.children;
+
+        return new yy.Lit('(yield ' + this.runtimeFn('requestSend') + this.channelVarName + '))', ch[0].lineno);
+    },
+
+    compilePerform: function() {
+        var
+        ch = this.children;
+        return [
+            new yy.Lit('(yield ' + this.runtimeFn('performSend') + this.channelVarName + ', ', ch[2].lineno),
+            ch[2],
+            new yy.Lit('))', ch[2].lineno)
+        ]
     }
 })
 
@@ -1889,16 +1970,88 @@ yy.ReceiveAsyncNode = Class(yy.Node, {
 
     type: 'ReceiveAsyncNode',
 
+    forSelect: false,
+
+    initNode: function() {
+        this.base('initNode', arguments);
+        var ctx;
+
+        if (this.children[1] instanceof yy.VarNode) {
+            this.channelVarName = this.children[1].name;
+        } else {
+            ctx = this.yy.env.context();
+            this.channelVarName = ctx.generateVar('ch');
+            ctx.addLocalVar(this.channelVarName);    
+        }
+    },
+
     compile: function() {
         if (! isInGoExpr(this)) {
             this.error('unexpected async operation', this.lineno);
         }
 
         var
+        newChildren,
+        ch    = this.children,
+        isVar = ch[1] instanceof yy.VarNode;
+
+        if (isVar) {
+            newChildren = [];
+        } else {
+            newChildren = [
+                new yy.Lit('(', ch[0].lineno),
+                new yy.Lit(this.channelVarName + ' = ', ch[0].lineno),
+                ch[1],
+                new yy.Lit(',', ch[1].lineno),
+            ];
+        }
+
+        if (this.forSelect) {
+            this.children = newChildren.concat([
+                this.compileRequest()
+            ]);
+        } else {
+            this.children = newChildren.concat([
+                this.compileRequest(),
+                new yy.Lit('? ', ch[1].lineno),
+                new yy.Lit('(', ch[1].lineno),
+                this.compilePerform(),
+                new yy.Lit(')', ch[1].lineno),
+                new yy.Lit(': void 0', ch[1].lineno)
+            ]);
+        }
+
+        if (isUsedAsStatement(this)) {
+            this.children.unshift(new yy.Lit(';', ch[0].lineno));
+        }
+
+        if (!isVar) {
+            this.children.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+        }
+    },
+
+    compileRequest: function(lineno) {
+        var
+        ch = this.children,
+        fnName = this.forSelect ? 'requestRecvForSelect': 'requestRecv';
+
+        lineno = lineno || ch[1].lineno;
+
+        return new yy.Lit(
+            (this.forSelect ? '' : '(yield ') +
+            this.runtimeFn(fnName) +
+            this.channelVarName +
+            (this.forSelect ? ')' : '))'),
+        lineno);
+    },
+
+    compilePerform: function(lineno) {
+        var
         ch = this.children;
 
-        ch[0].children = 'yield ' + this.runtimeFn('receive');
-        ch.push(new yy.Lit(')', ch[ch.length - 1].lineno));
+        lineno = lineno || ch[1].lineno;
+
+        return new yy.Lit('yield ' + this.runtimeFn('performRecv')  + this.channelVarName + ')' + (this.forSelect ? ';' : ''), lineno)
     }
 })
 
@@ -1932,6 +2085,100 @@ yy.TemplateLiteralNode = Class(yy.Node, {
             }
         }
     }
+})
+
+yy.SelectNode = Class(yy.Node, {
+
+    type: 'SelectNode',
+
+    processOperations: function() {
+        var
+        i, len, singleCase, cases,
+        leftHand, operator, body,
+        lineno = getLesserLineNumber(this),
+        count = 0, ch  = this.children,
+        collectedCases = [],
+        caseStmtList   = ch[0].children[1].children;
+
+        for (i = 0, len = caseStmtList.length; i < len; i++) {
+
+            singleCase = caseStmtList[i].children[1];
+
+            if (
+                singleCase instanceof yy.ReceiveAsyncNode ||
+                (singleCase instanceof yy.CallNode && singleCase.name == 'timeout') ||
+                singleCase instanceof yy.AssignmentNode
+            ) {
+                // process asignement node
+                if (singleCase instanceof yy.AssignmentNode) {
+                    if (singleCase.children[2] instanceof yy.ReceiveAsyncNode) {
+                        leftHand = singleCase.children.shift();
+                        operator = singleCase.children.shift();
+
+                        singleCase = singleCase.children[0];
+                        singleCase.forSelect = true;
+
+                        body = caseStmtList[i].children[3];
+                        body.addFront(leftHand, operator, singleCase.compilePerform(operator.lineno));
+                    } else {
+                        this.error('unexpected ' + singleCase.type, singleCase.lineno);
+                    }
+                }
+
+                singleCase.forSelect = true;
+                collectedCases.push(singleCase);
+
+                // setup case numbers
+                caseStmtList[i].children[1] = new yy.Lit(String(count++), getLesserLineNumber(singleCase));
+            } else {
+                this.error('unexpected ' + singleCase.type, singleCase.lineno);
+            }
+        }
+
+        // flatten
+        for (i = 0, len = collectedCases.length; i < len; i++) {
+            flattenToLine(collectedCases[i], lineno);
+        }
+
+        // insert commas
+        for (i = 1; i < collectedCases.length; i+=2) {
+            collectedCases.splice(i, 0, new yy.Lit(',', lineno));
+        }
+
+        this.children = collectedCases.concat(ch)
+    },
+
+    compile: function() {
+        var
+        ch    = this.children,
+        first = ch[0];
+
+        // remove first child
+        ch.shift();
+
+        // proc
+        this.processOperations();
+
+        ch = this.children;
+        ch.splice(0, 0, new yy.Lit('(yield ' + this.runtimeFn('select') + '[', getLesserLineNumber(this)));
+
+        first.children = 'switch';
+        ch.unshift(first);
+
+        ch.splice(ch.length-1, 0, new yy.Lit('])) ', ch[ch.length-2].lineno))
+    }
+
+})
+
+yy.SelectCaseNode = Class(yy.Node, {
+
+    type: 'SelectCaseNode',
+
+    compile: function() {
+        var ls = this.children[3];
+        ls.children.push(new yy.Lit(' break; ', ls.last().lineno - 1));
+    }
+
 })
 
 })(typeof cor === 'undefined' ? {} : cor);

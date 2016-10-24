@@ -1,5 +1,5 @@
 func worker(ch, name) go {    
-    for (n = <- ch)? {
+    for n = <- ch {
         timeout(n*30)
         console.log(n, name)
     }

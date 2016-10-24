@@ -135,18 +135,19 @@ yy.Environment = Class({
         this.errors     = [];
         this.exported   = {};
         this.classNodes = [];
-        this.comments   = [];
+        this.singleLineComments = [];
+        this.multipleLineComments = [];
 
         // initialize the first context (module)
         this.newContext();
     },
 
-    addComment: function(node) {
-        this.comments.push(node);
+    addSingleLineComment: function(node) {
+        this.singleLineComments.push(node);
     },
 
-    getComments: function() {
-        return this.comments;
+    addMultipleLineComment: function(node) {
+        this.multipleLineComments.push(node);
     },
 
     addExported: function(k, v) {

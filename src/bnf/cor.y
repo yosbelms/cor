@@ -265,7 +265,7 @@ ForInRangeStmt
         }
     ;
 
-
+// switch statement
 SwitchStmt
     : SWITCH OperationExpr? CaseBlock       { $$= new yy.SwitchNode(new yy.Lit($1, @1), $2, $3) }
     ;
@@ -282,6 +282,39 @@ CaseStmtList
 CaseStmt
     : CASE ExprList ':' StrictStmtList      { $$= new yy.CaseNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3), $4) }
     | DEFAULT ':' StrictStmtList            { $$= new yy.CaseNode(new yy.Lit($1, @1), new yy.Lit($2, @2), $3) }
+    ;
+
+// race statement
+SelectStmt
+    : SELECT SelectCaseBlock                { $$= new yy.SelectNode(new yy.Lit($1, @1), $2) }
+    ;
+
+SelectCaseBlock
+    : '{' SelectCaseStmtList '}'            { $$= new yy.Node(new yy.Lit($1, @1), $2, new yy.Lit($3, @3)) }
+    ;
+
+SelectCaseStmtList
+    : SelectCaseStmt                        { $$ = new yy.List($1) }
+    | SelectCaseStmtList SelectCaseStmt     { $1.add($2) }
+    ;
+
+SelectCaseStmt
+    : CASE Expr ':' StrictStmtList          { $$= new yy.SelectCaseNode(new yy.Lit($1, @1), $2, new yy.Lit($3, @3), $4) }
+    | DEFAULT ':' StrictStmtList            {
+
+                $$= new yy.SelectCaseNode(
+                    new yy.Lit('case', @1),
+                    new yy.CallNode(
+                        new yy.VarNode(new yy.Lit('timeout', @1)),
+                        new yy.Lit('(', @1),
+                        new yy.List(new yy.Lit('0', @1)),
+                        new yy.Lit(')', @1)
+                    ),
+                    new yy.Lit($2, @2),
+                    $3
+                )
+
+        }
     ;
 
 // Error management
@@ -321,6 +354,7 @@ Stmt
     | ForInStmt
     | ForInRangeStmt
     | SwitchStmt
+    | SelectStmt
     | ReturnStmt
     | BreakStmt
     | ContinueStmt
@@ -466,6 +500,7 @@ Property
     | BOOLEAN
     | CATCH
     | GO
+    | SELECT
     ;
 
 IndexExpr

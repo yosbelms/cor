@@ -5,7 +5,7 @@ func test(title) {
     describe('Corourines' + title, func() {
 
         it('Should break on promise', func(done) {
-            p = &Promise(func(resolve, reject) setTimeout(func() resolve(0), 100))
+            p = &Promise(func(resolve) setTimeout(func() resolve(0), 100))
 
             go {
                 val = <- p
@@ -18,7 +18,7 @@ func test(title) {
 
         it('Should allow comunication between', func(done) {
             go {
-                p = &Promise(func(resolve, reject) setTimeout(func() resolve(0), 100))
+                p = &Promise(func(resolve) setTimeout(func() resolve(0), 100))
             }
 
             go {
@@ -72,5 +72,6 @@ func test(title) {
 
 use '../utils'
 func init() {
-    utils.testWithPromise(test)
+    //utils.testWithPromise(test)
+    test()
 }

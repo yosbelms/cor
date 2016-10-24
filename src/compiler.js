@@ -75,13 +75,22 @@ var Compiler = cor.Class({
 
     compile: function(ast) {
         var i,
-        comments = this.env.getComments(),
-        len      = comments.length;
+        slComments = this.env.singleLineComments,
+        mlComments = this.env.multipleLineComments,
+        slen       = slComments.length,
+        mlen       = mlComments.length;
 
+        // write multiple line comments first
+        for (i = 0; i < mlen; i++) {
+            this.visitNode(mlComments[i]);
+        }
+
+        // write
         this.visitNode(ast);
 
-        for (i = 0; i < len; i++) {
-            this.visitNode(comments[i]);
+        // write single line comments
+        for (i = 0; i < slen; i++) {
+            this.visitNode(slComments[i]);
         }
 
         return this.generateCode();

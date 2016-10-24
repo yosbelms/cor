@@ -27,11 +27,6 @@ func init() {
             }
             expect(stack).toEqual((0, 1, 2, 3))
         })
-
-        it('using just "from"', func() {
-            for i in 9e9-10: { }
-            expect(i).toBe(9e9)
-        })
     })
     
 }

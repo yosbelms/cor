@@ -71,25 +71,6 @@ go {
 }
 ```
 
-```
-// parallel
-go {
-    result = <- (
-        books    : fetch.get('http://api.com/books'),
-        articles : fetch.get('http://api.com/articles'),
-    )
-
-    for book in result.books {
-        //..
-    }
-
-    for articles in result.articles {
-        //..
-    }
-}
-
-```
-
 ### Slices/Coalesce Operator/Conditional Operator
 ```
 ---
@@ -650,24 +631,6 @@ go {
 }
 ```
 
-If receiving a array or object of future values it will resolve all values in parallel.
-```
-go {
-    result = <- (
-        books    : fetch.get('http://api.com/books'),
-        articles : fetch.get('http://api.com/articles'),
-    )
-
-    for book in result.books {
-        //..
-    }
-
-    for articles in result.articles {
-        //..
-    }
-}
-```
-
 Awaiting a coroutine (idiomatic Cor):
 ```
 // get articles in the las hour
@@ -1179,7 +1142,7 @@ if a < b {
 
 ### Switch/Case/Default
 
-With Cor you don't need to remember to `break` after every `case`. Cor switch statements prevents accidental fall-though by automatically breaking at the end of each `case` clause.
+With Cor you don't need to remember to `break` after every `case`. Cor switch statements prevents accidental fall-through by automatically breaking at the end of each `case` clause.
 
 Switch statements in Cor can take multiple values for each `case` clause. If any of the values match, the clause runs.
 ```
@@ -1206,6 +1169,29 @@ switch {
     case x < 2 : doOtherThing()
 }
 ```
+
+
+### Select
+
+Select statemet is like `switch` statement but for asynchronic operations. It executes all cases in the same order as defined, once one of them has been resolved, it executes the instructions associated to resolved case. If none of the cases are resolved will block forever.
+```
+select {
+
+    // receive
+    case <- chan :
+
+    // assign receive
+    case s = <- chan :
+
+    // timeout
+    case timeout(500) :
+
+    // default
+    default :
+}
+```
+
+If `default` is provided and none of the other operations it will choose to execute the default instructions. The `timeout` builtin function is supported as a special case.
 
 
 ### Inc/Dec
@@ -1570,4 +1556,4 @@ The Cor distribution for browsers is recomended only for development purpose, to
 
 ## The CRL (Cor Runtime Library)
 
-The CRL is a small (~13Kb unminified and uncompressed) library which makes possible to take advantage of features such as *for/in statements, inheritance, type assertions, among others*. Without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by the javascript resulting code.
+The CRL is a small (~11Kb unminified and uncompressed) library which makes possible to take advantage of features such as *for/in statements, inheritance, type assertions, among others*. Without the CRL, the javascript code obtained as the result of compilation could be repetitive and bigger in consequence, that's one of the reasons that CRL exits, to provide a small set of features that will be internally used by the javascript resulting code.
