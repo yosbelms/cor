@@ -782,7 +782,7 @@ hljs.registerLanguage('cor', function(hljs) {
         keyword:
             'use class func me return ' +
             'if else for in switch case default ' +
-            'continue break catch go race',
+            'continue break catch go select',
         literal:
             'true false nil',
         built_in:
